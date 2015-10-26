@@ -1,0 +1,12 @@
+{
+  "name": "short_project_name",
+  "dependencies": {
+    "proj4": "~2.3.12"
+  },
+  "devDependencies": {},
+  "exportsOverride": {
+    "proj4": {
+        "js": "dist/proj4.js"
+    }
+  }
+}

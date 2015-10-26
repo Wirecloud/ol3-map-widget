@@ -1,0 +1,12 @@
+body, html, .map {
+    height: 100%;
+    width: 100%;
+    padding: 0px;
+    margin: 0px;
+}
+
+#button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
