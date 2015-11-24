@@ -4,6 +4,7 @@
 
     window.ol = {
         layer: {
+            Group: function () {},
             Image: function () {},
             Tile: function () {}
         },

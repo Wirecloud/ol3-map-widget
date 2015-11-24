@@ -11,8 +11,11 @@
             source: new ol.source.MapQuest({layer: 'osm'})
         }),
 
-        MAPQUEST_HYBRID: new ol.layer.Tile({
-            source: new ol.source.MapQuest({layer: 'hyb'})
+        MAPQUEST_HYBRID: new ol.layer.Group({
+            layers: [
+                new ol.layer.Tile({source: new ol.source.MapQuest({layer: 'sat'})}),
+                new ol.layer.Tile({source: new ol.source.MapQuest({layer: 'hyb'})})
+            ]
         }),
 
         MAPQUEST_SATELLITE: new ol.layer.Tile({
