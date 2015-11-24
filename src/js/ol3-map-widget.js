@@ -33,9 +33,9 @@
     };
 
     Widget.prototype.init = function init() {
-        document.getElementById('button').addEventListener('click', function () {
+        document.getElementById('button').addEventListener('click', function (event) {
             if (this.layers_widget == null) {
-                this.layers_widget = MashupPlatform.mashup.addWidget('CoNWeT/layer-selector/0.3');
+                this.layers_widget = MashupPlatform.mashup.addWidget('CoNWeT/layer-selector/0.3', {refposition: event.target.getBoundingClientRect()});
                 this.layers_widget.outputs.layerInfoOutput.connect(MashupPlatform.widget.inputs.layerInfo);
             }
         });
