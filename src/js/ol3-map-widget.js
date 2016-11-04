@@ -26,6 +26,17 @@
     CORE_LAYERS.GOOGLE_HYBRID = CORE_LAYERS.MAPQUEST_HYBRID;
     CORE_LAYERS.GOOGLE_SATELLITE = CORE_LAYERS.MAPQUEST_SATELLITE;
 
+    // Create the default Marker style
+    var DEFAULT_MARKER = new ol.style.Style({
+        image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+            anchor: [0.5, 46],
+            anchorXUnits: 'fraction',
+            anchorYUnits: 'pixels',
+            opacity: 0.75,
+            src: 'http://openlayers.org/en/v3.11.2/examples/data/icon.png'
+        }))
+    });
+
     var Widget = function Widget() {
         this.layers_widget = null;
         this.base_layer = null;
@@ -57,14 +68,41 @@
             }
         }.bind(this));
 
+        MashupPlatform.wiring.registerCallback('poiInput', function (poi_info) {
+            poi_info = JSON.parse(poi_info);
+            var iconFeature = this.vector_source.getFeatureById(poi_info.id);
+
+            if (iconFeature != null) {
+                iconFeature = new ol.Feature({
+                    geometry: new ol.geom.Point([poi_info.currentLocation.lat, poi_info.currentLocation.lng]),
+                    style: DEFAULT_MARKER,
+                    data: poi_info.data
+                });
+                this.vector_source.addFeature(iconFeature);
+            }
+        }.bind(this));
+
+        this.vector_source = new ol.source.Vector({});
+        this.vector_layer = new ol.layer.Vector({source: this.vector_source, style: DEFAULT_MARKER});
         this.map = new ol.Map({
-            target: 'map',
-            layers: [],
+            target: document.getElementById('map'),
+            layers: [this.vector_layer],
             view: new ol.View({
                 center: ol.proj.transform([37.41, 8.82], 'EPSG:4326', 'EPSG:3857'),
                 zoom: MashupPlatform.prefs.get('initialZoom')
             })
         });
+
+        // change mouse cursor when over marker
+        this.map.on('pointermove', function (e) {
+            if (e.dragging) {
+                //$(element).popover('destroy');
+                return;
+            }
+            var pixel = this.map.getEventPixel(e.originalEvent);
+            var hit = this.map.hasFeatureAtPixel(pixel);
+            this.map.getTarget().style.cursor = hit ? 'pointer' : '';
+        }.bind(this));
 
         this.setBaseLayer({id: "OSM"});
     };
