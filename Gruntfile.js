@@ -1,5 +1,5 @@
-/*!
- *   Copyright 2014-2015 CoNWeT Lab., Universidad Politecnica de Madrid
+/*
+ *   Copyright 2014-2016 CoNWeT Lab., Universidad Politecnica de Madrid
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -14,13 +14,17 @@
  *   limitations under the License.
  */
 
+var ConfigParser = require('wirecloud-config-parser');
+var parser = new ConfigParser('src/config.xml');
+
 module.exports = function (grunt) {
 
     'use strict';
 
     grunt.initConfig({
 
-        pkg: grunt.file.readJSON('src/config.json'),
+        isDev: grunt.option('dev') ? '-dev' : '',
+        metadata: parser.getData(),
 
         bower: {
             install: {
@@ -33,69 +37,35 @@ module.exports = function (grunt) {
             }
         },
 
-        jshint: {
-            options: {
-                jshintrc: true
-            },
-            all: {
-                files: {
-                    src: ['src/js/**/*.js']
-                }
+        eslint: {
+            widget: {
+                src: 'src/js/**/*.js'
             },
             grunt: {
                 options: {
-                    jshintrc: '.jshintrc-node'
+                    configFile: '.eslintrc-node'
                 },
-                files: {
-                    src: ['Gruntfile.js']
-                }
+                src: 'Gruntfile.js',
             },
             test: {
                 options: {
-                    jshintrc: '.jshintrc-jasmine'
+                    configFile: '.eslintrc-jasmine'
                 },
-                files: {
-                    src: ['src/test/**/*.js', '!src/test/fixtures/']
-                }
-            }
-        },
-
-        jscs: {
-            widget: {
-                src: 'src/js/**/*.js',
-                options: {
-                    config: ".jscsrc"
-                }
-            },
-            grunt: {
-                src: 'Gruntfile.js',
-                options: {
-                    config: ".jscsrc"
-                }
+                src: ['src/test/**/*.js', '!src/test/fixtures/']
             }
         },
 
         copy: {
             main: {
-                files: [{
-                    expand: true,
-                    cwd: 'src/js',
-                    src: '*',
-                    dest: 'build/src/js'
-                }]
+                files: [
+                    {expand: true, cwd: 'src/js', src: '*', dest: 'build/src/js'}
+                ]
             }
         },
 
         strip_code: {
             multiple_files: {
                 src: ['build/src/js/**/*.js']
-            },
-            imports: {
-                options: {
-                    start_comment: 'import-block',
-                    end_comment: 'end-import-block'
-                },
-                src: ['src/js/*.js']
             }
         },
 
@@ -103,48 +73,54 @@ module.exports = function (grunt) {
             widget: {
                 options: {
                     mode: 'zip',
-                    archive: 'dist/<%= pkg.vendor %>_<%= pkg.name %>_<%= pkg.version %>.wgt'
+                    archive: 'dist/<%= metadata.vendor %>_<%= metadata.name %>_<%= metadata.version %><%= isDev %>.wgt'
                 },
-                files: [{
-                    expand: true,
-                    cwd: 'src',
-                    src: [
-                        'DESCRIPTION.md',
-                        'css/**/*',
-                        'doc/**/*',
-                        'images/**/*',
-                        'index.html',
-                        'config.xml'
-                    ]
-                }, {
-                    expand: true,
-                    cwd: 'build/lib',
-                    src: [
-                        'lib/**/*'
-                    ]
-                }, {
-                    expand: true,
-                    cwd: 'node_modules/openlayers/dist',
-                    src: ['ol.js'],
-                    dest: "lib/js"
-                }, {
-                    expand: true,
-                    cwd: 'node_modules/openlayers/dist',
-                    src: ['ol.css'],
-                    dest: "lib/css"
-                }, {
-                    expand: true,
-                    cwd: 'build/src',
-                    src: [
-                        'js/**/*'
-                    ]
-                }, {
-                    expand: true,
-                    cwd: '.',
-                    src: [
-                        'LICENSE'
-                    ]
-                }]
+                files: [
+                    {
+                        expand: true,
+                        cwd: 'src',
+                        src: [
+                            'DESCRIPTION.md',
+                            'css/**/*',
+                            'doc/**/*',
+                            'images/**/*',
+                            'index.html',
+                            'config.xml'
+                        ]
+                    },
+                    {
+                        expand: true,
+                        cwd: 'build/lib',
+                        src: [
+                            'lib/**/*'
+                        ]
+                    },
+                    {
+                        expand: true,
+                        cwd: 'node_modules/openlayers/dist',
+                        src: ['ol.js'],
+                        dest: "lib/js"
+                    }, {
+                        expand: true,
+                        cwd: 'node_modules/openlayers/dist',
+                        src: ['ol.css'],
+                        dest: "lib/css"
+                    },
+                    {
+                        expand: true,
+                        cwd: 'build/src',
+                        src: [
+                            'js/**/*'
+                        ]
+                    },
+                    {
+                        expand: true,
+                        cwd: '.',
+                        src: [
+                            'LICENSE'
+                        ]
+                    }
+                ]
             }
         },
 
@@ -157,17 +133,6 @@ module.exports = function (grunt) {
             }
         },
 
-        jsbeautifier: {
-            files: ["Gruntfile.js"],
-            options: {
-                js: {
-                    spaceAfterAnonFunction: true,
-                    endWithNewline: false,
-                    jslintHappy: true
-                }
-            }
-        },
-
         jasmine: {
             test: {
                 src: ['src/js/*.js', '!src/js/main.js'],
@@ -175,6 +140,7 @@ module.exports = function (grunt) {
                     specs: 'src/test/js/*Spec.js',
                     helpers: ['src/test/helpers/*.js'],
                     vendor: [
+                        'node_modules/jquery/dist/jquery.js',
                         'node_modules/jasmine-jquery/lib/jasmine-jquery.js',
                         'node_modules/mock-applicationmashup/lib/vendor/mockMashupPlatform.js',
                         'src/test/vendor/*.js'
@@ -190,63 +156,57 @@ module.exports = function (grunt) {
                     template: require('grunt-template-jasmine-istanbul'),
                     templateOptions: {
                         coverage: 'build/coverage/json/coverage.json',
-                        report: [{
-                            type: 'html',
-                            options: {
-                                dir: 'build/coverage/html'
-                            }
-                        }, {
-                            type: 'cobertura',
-                            options: {
-                                dir: 'build/coverage/xml'
-                            }
-                        }, {
-                            type: 'text-summary'
-                        }]
+                        report: [
+                            {type: 'html', options: {dir: 'build/coverage/html'}},
+                            {type: 'cobertura', options: {dir: 'build/coverage/xml'}},
+                            {type: 'text-summary'}
+                        ]
                     }
                 }
+            }
+        },
+
+        wirecloud: {
+            options: {
+                overwrite: false
+            },
+            publish: {
+                file: 'dist/<%= metadata.vendor %>_<%= metadata.name %>_<%= metadata.version %><%= isDev %>.wgt'
             }
         }
     });
 
-
+    grunt.loadNpmTasks('grunt-wirecloud');
     grunt.loadNpmTasks('grunt-bower-task');
-    grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-jasmine'); // when test?
-    grunt.loadNpmTasks('grunt-jscs');
+    grunt.loadNpmTasks('gruntify-eslint');
     grunt.loadNpmTasks('grunt-contrib-compress');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-strip-code');
     grunt.loadNpmTasks('grunt-text-replace');
-    grunt.loadNpmTasks('grunt-jsbeautifier');
 
     grunt.registerTask('test', [
         'bower:install',
-        'jshint',
-        'jshint:grunt',
-        'jscs',
-        'jasmine:coverage'
-
+        'eslint',
+        //'jasmine:coverage'
     ]);
 
     grunt.registerTask('build', [
         'clean:temp',
-
         'copy:main',
         'strip_code',
         'compress:widget'
     ]);
 
     grunt.registerTask('default', [
-        'jsbeautifier',
-
         'test',
         'build'
     ]);
 
     grunt.registerTask('publish', [
-        'default'
-
+        'default',
+        'wirecloud'
     ]);
+
 };
