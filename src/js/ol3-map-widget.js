@@ -131,13 +131,35 @@
             })
         });
 
+        // display popup on click
+        this.map.on('click', function (event) {
+            var feature;
+
+            feature = this.map.forEachFeatureAtPixel(event.pixel,
+                function (feature, layer) {
+                    return feature;
+                });
+
+            if (feature != null && feature !== this.selected_feature) {
+                this.select_feature(feature);
+            } else if (feature !== this.selected_feature) {
+                if (this.popover != null) {
+                    this.popover.hide();
+                    this.popover = null;
+                }
+            }
+        }.bind(this));
+
         // change mouse cursor when over marker
-        this.map.on('pointermove', function (e) {
-            if (e.dragging) {
-                //$(element).popover('destroy');
+        this.map.on('pointermove', function (event) {
+            if (event.dragging) {
+                if (this.popover != null) {
+                    this.popover.hide();
+                    this.popover = null;
+                }
                 return;
             }
-            var pixel = this.map.getEventPixel(e.originalEvent);
+            var pixel = this.map.getEventPixel(event.originalEvent);
             var hit = this.map.hasFeatureAtPixel(pixel);
             this.map.getTarget().style.cursor = hit ? 'pointer' : '';
         }.bind(this));
@@ -251,6 +273,59 @@
         }
         this.base_layer = CORE_LAYERS[layer_info.id];
         this.map.getLayers().insertAt(0, this.base_layer);
+    };
+
+    Widget.prototype.center_popup_menu = function center_popup_menu(feature) {
+
+        this.selected_feature = feature;
+        this.popover = new StyledElements.Popover({
+            placement: ['top', 'bottom', 'right', 'left'],
+            title: feature.get('title'),
+            content: new StyledElements.Fragment(feature.get('content'))
+        });
+        this.popover.on('show', function () {
+            this.selected_feature = feature;
+        }.bind(this));
+        this.popover.on('hide', function () {
+            if (this.selected_feature === feature) {
+                this.selected_feature = null;
+            }
+        }.bind(this));
+
+        // Delay popover show action
+        setTimeout(function () {
+            var marker_coordinates, marker_position, marker_image, refpos;
+
+            marker_coordinates = ol.extent.getCenter(feature.getGeometry().getExtent());
+            marker_position = this.map.getPixelFromCoordinate(marker_coordinates);
+            marker_image = feature.getStyle().getImage();
+            if (marker_image != null) {
+                var marker_scale = marker_image.getScale();
+                var marker_size = marker_image.getSize().map(function (value) {
+                    return value * marker_scale;
+                });
+                refpos = {
+                    top: marker_position[1] - marker_size[1],
+                    left: marker_position[0] - (marker_size[0] / 2),
+                    width: marker_size[0],
+                    height: marker_size[1]
+                };
+            } else {
+                refpos = {
+                    top: marker_position[1],
+                    left: marker_position[0],
+                    width: 0,
+                    height: 0
+                };
+            }
+            this.selected_feature = feature;
+            this.popover.show(refpos);
+        }.bind(this), 100);
+    };
+
+    Widget.prototype.select_feature = function select_feature(feature) {
+        // this.selected_feature = feature;
+        this.center_popup_menu(feature);
     };
 
     window.Widget = Widget;
