@@ -119,15 +119,23 @@
             }
         });
 
+        var initialLayer = CORE_LAYERS.WIKIMEDIA;
+        var initialCenter = MashupPlatform.prefs.get("initialCenter").split(",").map(Number);
+        if (initialCenter.length != 2 || !Number.isFinite(initialCenter[0]) || !Number.isFinite(initialCenter[0])) {
+            initialCenter = [0, 0];
+        }
 
         this.vector_source = new ol.source.Vector({});
         this.vector_layer = new ol.layer.Vector({source: this.vector_source, style: DEFAULT_MARKER});
         this.map = new ol.Map({
             target: document.getElementById('map'),
-            layers: [this.vector_layer],
+            layers: [
+                initialLayer,
+                this.vector_layer
+            ],
             view: new ol.View({
-                center: ol.proj.transform([37.41, 8.82], 'EPSG:4326', 'EPSG:3857'),
-                zoom: MashupPlatform.prefs.get('initialZoom')
+                center: ol.proj.transform(initialCenter, 'EPSG:4326', 'EPSG:3857'),
+                zoom: parseInt(MashupPlatform.prefs.get('initialZoom'), 10)
             })
         });
 
@@ -164,7 +172,7 @@
             this.map.getTarget().style.cursor = hit ? 'pointer' : '';
         }.bind(this));
 
-        this.setBaseLayer({id: "OSM"});
+        this.base_layer = initialLayer;
         this.geojsonparser = new ol.format.GeoJSON();
     };
 
