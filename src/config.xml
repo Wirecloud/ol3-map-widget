@@ -20,6 +20,7 @@
     <wiring>
         <inputendpoint name="layerInfo" type="text" label="Layer Info" description="Add or remove layers to the map, in addition to changing its base layer." actionlabel="Update Layers" friendcode="wms-layer-command"/>
         <inputendpoint name="poiInput" type="text" label="Insert/Update PoI" description="Insert or update a Point of Interest." actionlabel="Map Viewer Insert/Update PoI" friendcode="poi"/>
+        <inputendpoint name="replacePoIs" type="text" label="Replace PoIs" description="Replace all the rendered PoIs by the ones provided in the event." actionlabel="Map Viewer Insert/Update PoI" friendcode="poi poi-list"/>
     </wiring>
 
     <contents src="index.html" useplatformstyle="true"/>

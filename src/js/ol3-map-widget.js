@@ -2,40 +2,108 @@
 
     "use strict";
 
+    var internalUrl = function internalUrl(data) {
+        var url = document.createElement("a");
+        url.setAttribute('href', data);
+        return url.href;
+    };
+
     var CORE_LAYERS = {
+        WIKIMEDIA: new ol.layer.Tile({
+            source: new ol.source.OSM({
+                url: "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
+            })
+        }),
+        CARTODB_LIGHT: new ol.layer.Tile({
+            source: new ol.source.OSM({
+                url: "https://cartodb-basemaps-{1-4}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png"
+            })
+        }),
+        NOKIA_HERE_CARNAV_DAY: new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                url: "https://{a-c}.maptile.maps.svc.ovi.com/maptiler/v2/maptile/newest/carnav.day/{z}/{x}/{y}/256/png",
+                attribution: 'Map Tiles &copy; ' + new Date().getFullYear() + ' ' + '<a target="_blank" href="http://developer.here.com">HERE</a>'
+            })
+        }),
+        NOKIA_HERE_NORMAL_DAY: new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                url: "https://{a-c}.maptile.maps.svc.ovi.com/maptiler/v2/maptile/newest/normal.day/{z}/{x}/{y}/256/png",
+                attribution: 'Map Tiles &copy; ' + new Date().getFullYear() + ' ' + '<a target="_blank" href="http://developer.here.com">HERE</a>'
+            })
+        }),
+        NOKIA_HERE_NORMAL_DAY_TRANSIT: new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                url: "https://{a-c}.maptile.maps.svc.ovi.com/maptiler/v2/maptile/newest/normal.day.transit/{z}/{x}/{y}/256/png",
+                attribution: 'Map Tiles &copy; ' + new Date().getFullYear() + ' ' + '<a target="_blank" href="http://developer.here.com">HERE</a>'
+            })
+        }),
+        NOKIA_HERE_NORMAL_NIGHT: new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                url: "https://{a-c}.maptile.maps.svc.ovi.com/maptiler/v2/maptile/newest/normal.night/{z}/{x}/{y}/256/png",
+                attribution: 'Map Tiles &copy; ' + new Date().getFullYear() + ' ' + '<a target="_blank" href="http://developer.here.com">HERE</a>'
+            })
+        }),
+        NOKIA_HERE_PEDESTRIAN: new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                url: "https://{a-c}.maptile.maps.svc.ovi.com/maptiler/v2/maptile/newest/pedestrian.day/{z}/{x}/{y}/256/png",
+                attribution: 'Map Tiles &copy; ' + new Date().getFullYear() + ' ' + '<a target="_blank" href="http://developer.here.com">HERE</a>'
+            })
+        }),
+        NOKIA_HERE_TERRAIN_DAY: new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                url: "https://{a-c}.maptile.maps.svc.ovi.com/maptiler/v2/maptile/newest/terrain.day/{z}/{x}/{y}/256/png",
+                attribution: 'Map Tiles &copy; ' + new Date().getFullYear() + ' ' + '<a target="_blank" href="http://developer.here.com">HERE</a>'
+            })
+        }),
+        NOKIA_HERE_SATELLITE_DAY: new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                url: "https://{a-c}.maptile.maps.svc.ovi.com/maptiler/v2/maptile/newest/satellite.day/{z}/{x}/{y}/256/png",
+                attribution: 'Map Tiles &copy; ' + new Date().getFullYear() + ' ' + '<a target="_blank" href="http://developer.here.com">HERE</a>'
+            })
+        }),
+        NOKIA_HERE_HIBRID_DAY: new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                url: "https://{a-c}.maptile.maps.svc.ovi.com/maptiler/v2/maptile/newest/hibrid.day/{z}/{x}/{y}/256/png",
+                attribution: 'Map Tiles &copy; ' + new Date().getFullYear() + ' ' + '<a target="_blank" href="http://developer.here.com">HERE</a>'
+            })
+        }),
         OSM: new ol.layer.Tile({
             source: new ol.source.OSM()
         }),
-
-        MAPQUEST_ROAD: new ol.layer.Tile({
-            source: new ol.source.MapQuest({layer: 'osm'})
-        }),
-
-        MAPQUEST_HYBRID: new ol.layer.Group({
-            layers: [
-                new ol.layer.Tile({source: new ol.source.MapQuest({layer: 'sat'})}),
-                new ol.layer.Tile({source: new ol.source.MapQuest({layer: 'hyb'})})
-            ]
-        }),
-
-        MAPQUEST_SATELLITE: new ol.layer.Tile({
-            source: new ol.source.MapQuest({layer: 'sat'})
-        })
     };
     CORE_LAYERS.GOOGLE_STANDARD = CORE_LAYERS.MAPQUEST_ROAD;
     CORE_LAYERS.GOOGLE_HYBRID = CORE_LAYERS.MAPQUEST_HYBRID;
     CORE_LAYERS.GOOGLE_SATELLITE = CORE_LAYERS.MAPQUEST_SATELLITE;
 
+    var build_basic_style = function build_basic_style(options) {
+        if (options == null) {
+            options = {};
+        }
+
+        if (options.image == null) {
+            options.image = new ol.style.Icon({
+                anchor: [0.5, 46],
+                anchorXUnits: 'fraction',
+                anchorYUnits: 'pixels',
+                opacity: 0.75,
+                src: internalUrl('images/icon.png')
+            });
+        }
+
+        return new ol.style.Style({
+            image: options.image,
+            stroke: new ol.style.Stroke({
+                color: 'blue',
+                width: 3
+            }),
+            fill: new ol.style.Fill({
+                color: 'rgba(0, 0, 255, 0.1)'
+            })
+        });
+    };
+
     // Create the default Marker style
-    var DEFAULT_MARKER = new ol.style.Style({
-        image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
-            anchor: [0.5, 46],
-            anchorXUnits: 'fraction',
-            anchorYUnits: 'pixels',
-            opacity: 0.75,
-            src: 'http://openlayers.org/en/v3.11.2/examples/data/icon.png'
-        }))
-    });
+    var DEFAULT_MARKER = build_basic_style();
 
     var Widget = function Widget() {
         this.layers_widget = null;
@@ -51,36 +119,6 @@
             }
         });
 
-        MashupPlatform.wiring.registerCallback('layerInfo', function (command_info) {
-            command_info = JSON.parse(command_info);
-            switch (command_info.action) {
-            case "addLayer":
-                this.addLayer(command_info.data);
-                break;
-            case "removeLayer":
-                this.removeLayer(command_info.data);
-                break;
-            case "setBaseLayer":
-                this.setBaseLayer(command_info.data);
-                break;
-            default:
-                throw new MashupPlatform.wiring.EndpointValueError();
-            }
-        }.bind(this));
-
-        MashupPlatform.wiring.registerCallback('poiInput', function (poi_info) {
-            poi_info = JSON.parse(poi_info);
-            var iconFeature = this.vector_source.getFeatureById(poi_info.id);
-
-            if (iconFeature != null) {
-                iconFeature = new ol.Feature({
-                    geometry: new ol.geom.Point([poi_info.currentLocation.lat, poi_info.currentLocation.lng]),
-                    style: DEFAULT_MARKER,
-                    data: poi_info.data
-                });
-                this.vector_source.addFeature(iconFeature);
-            }
-        }.bind(this));
 
         this.vector_source = new ol.source.Vector({});
         this.vector_layer = new ol.layer.Vector({source: this.vector_source, style: DEFAULT_MARKER});
@@ -105,6 +143,68 @@
         }.bind(this));
 
         this.setBaseLayer({id: "OSM"});
+        this.geojsonparser = new ol.format.GeoJSON();
+    };
+
+    Widget.prototype.registerPoI = function registerPoI(poi_info) {
+        var iconFeature, style;
+        iconFeature = this.vector_source.getFeatureById(poi_info.id);
+
+        if (iconFeature == null) {
+            iconFeature = new ol.Feature();
+            iconFeature.setId(poi_info.id);
+            this.vector_source.addFeature(iconFeature);
+        }
+
+        iconFeature.set('data', poi_info.data);
+        iconFeature.set('title', poi_info.title);
+        iconFeature.set('content', poi_info.infoWindow);
+        if ('location' in poi_info) {
+            iconFeature.setGeometry(this.geojsonparser.readGeometry(poi_info.location).transform('EPSG:4326', 'EPSG:3857'));
+        } else {
+            iconFeature.setGeometry(
+                new ol.geom.Point(
+                    ol.proj.transform([poi_info.currentLocation.lng, poi_info.currentLocation.lat], 'EPSG:4326', 'EPSG:3857')
+                )
+            );
+        }
+
+        if (typeof poi_info.icon === 'string') {
+            style = build_basic_style({
+                image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+                    anchor: [0.5, 0.5],
+                    anchorXUnits: 'fraction',
+                    anchorYUnits: 'fraction',
+                    opacity: 1,
+                    src: poi_info.icon,
+                    scale: 0.5
+                }))
+            });
+        } else if (typeof poi_info.icon === 'object') {
+            style = build_basic_style({
+                image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+                    anchor: poi_info.icon.anchor,
+                    anchorXUnits: 'fraction',
+                    anchorYUnits: 'fraction',
+                    opacity: 1,
+                    src: poi_info.icon.src,
+                    scale: poi_info.icon.scale
+                }))
+            });
+        } else if (poi_info.style != null) {
+            style = new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: poi_info.style.stroke,
+                    width: 3
+                }),
+                fill: new ol.style.Fill({
+                    color: poi_info.style.fill
+                })
+            });
+        } else {
+            style = DEFAULT_MARKER;
+        }
+        iconFeature.setStyle(style);
     };
 
     Widget.prototype.addLayer = function addLayer(layer_info) {
