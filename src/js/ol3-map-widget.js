@@ -1,3 +1,5 @@
+/* globals ol, StyledElements */
+
 (function () {
 
     "use strict";
@@ -275,6 +277,10 @@
     };
 
     Widget.prototype.setBaseLayer = function setBaseLayer(layer_info) {
+        if ('id' in layer_info && !(layer_info.id in CORE_LAYERS)) {
+            throw new TypeError('Invalid layer id');
+        }
+
         if (this.base_layer != null) {
             this.map.removeLayer(this.base_layer);
             this.base_layer = null;

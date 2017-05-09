@@ -1,4 +1,4 @@
-/* global $, MashupPlatform, MockMP, ol, Widget */
+/* global MashupPlatform, MockMP, ol, Widget */
 
 (function () {
 
@@ -9,7 +9,7 @@
 
     var clearDocument = function clearDocument() {
         var elements = document.querySelectorAll('body > *:not(.jasmine_html-reporter)');
-        
+
         for (var i = 0; i < elements.length; i++) {
             elements[i].parentElement.removeChild(elements[i]);
         }
