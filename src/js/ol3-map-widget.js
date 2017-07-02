@@ -92,14 +92,26 @@
             });
         }
 
+        if (options.style == null) {
+            options.style = {};
+        }
+
+        if (options.style.stroke == null) {
+            options.style.stroke = 'blue';
+        }
+
+        if (options.style.fill == null) {
+            options.style.fill = 'rgba(0, 0, 255, 0.1)';
+        }
+
         return new ol.style.Style({
             image: options.image,
             stroke: new ol.style.Stroke({
-                color: 'blue',
+                color: options.style.stroke,
                 width: 3
             }),
             fill: new ol.style.Fill({
-                color: 'rgba(0, 0, 255, 0.1)'
+                color: options.style.fill
             })
         });
     };
@@ -192,7 +204,9 @@
         iconFeature.set('title', poi_info.title);
         iconFeature.set('content', poi_info.infoWindow);
         if ('location' in poi_info) {
-            iconFeature.setGeometry(this.geojsonparser.readGeometry(poi_info.location).transform('EPSG:4326', 'EPSG:3857'));
+            var geometry = this.geojsonparser.readGeometry(poi_info.location).transform('EPSG:4326', 'EPSG:3857');
+            var marker = new ol.geom.Point(ol.extent.getCenter(geometry.getExtent()));
+            iconFeature.setGeometry(new ol.geom.GeometryCollection([geometry, marker]));
         } else {
             iconFeature.setGeometry(
                 new ol.geom.Point(
@@ -210,7 +224,8 @@
                     opacity: 1,
                     src: poi_info.icon,
                     scale: 0.5
-                }))
+                })),
+                style: poi_info.style
             });
         } else if (typeof poi_info.icon === 'object') {
             style = build_basic_style({
@@ -221,18 +236,11 @@
                     opacity: 1,
                     src: poi_info.icon.src,
                     scale: poi_info.icon.scale
-                }))
+                })),
+                style: poi_info.style
             });
         } else if (poi_info.style != null) {
-            style = new ol.style.Style({
-                stroke: new ol.style.Stroke({
-                    color: poi_info.style.stroke,
-                    width: 3
-                }),
-                fill: new ol.style.Fill({
-                    color: poi_info.style.fill
-                })
-            });
+            style = build_basic_style({style: poi_info.style});
         } else {
             style = DEFAULT_MARKER;
         }
