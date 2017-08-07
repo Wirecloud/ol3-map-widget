@@ -116,6 +116,24 @@
         });
     };
 
+    var send_visible_pois = function send_visible_pois() {
+
+        if (this.visiblePoisTimeout != null) {
+            clearTimeout(this.visiblePoisTimeout);
+            this.visiblePoisTimeout = null;
+        }
+
+        if (!MashupPlatform.widget.outputs.poiListOutput.connected) {
+            return;
+        }
+
+        var extent = this.map.getView().calculateExtent(this.map.getSize());
+        var data = this.vector_source.getFeaturesInExtent(extent).map((feature) => {
+            return feature.get('data');
+        });
+        MashupPlatform.widget.outputs.poiListOutput.pushEvent(data);
+    };
+
     // Create the default Marker style
     var DEFAULT_MARKER = build_basic_style();
 
@@ -155,9 +173,7 @@
 
         // display popup on click
         this.map.on('click', function (event) {
-            var feature;
-
-            feature = this.map.forEachFeatureAtPixel(event.pixel,
+            var feature = this.map.forEachFeatureAtPixel(event.pixel,
                 function (feature, layer) {
                     return feature;
                 });
@@ -186,7 +202,16 @@
             this.map.getTarget().style.cursor = hit ? 'pointer' : '';
         }.bind(this));
 
-        this.base_layer = initialLayer;
+        // send poi updates on changes
+        this.send_visible_pois_bound = send_visible_pois.bind(this);
+        this.vector_source.on("change", function () {
+            if (this.visiblePoisTimeout != null) {
+                clearTimeout(this.visiblePoisTimeout);
+            }
+            this.visiblePoisTimeout = setTimeout(this.send_visible_pois_bound, 50);
+        }.bind(this));
+        this.map.on('moveend', this.send_visible_pois_bound);
+
         this.geojsonparser = new ol.format.GeoJSON();
     };
 
