@@ -6,8 +6,8 @@ Map viewer widget using OpenLayers. It can receive Layers or Point of Interest d
 ## Settings
 
 
-- **Initial Location**: Decimal coordinates where map will be centered on load (e.g. `52, 5`). Leave this setting empty if you don't want to center the map at init. Remember to change the initial zoom level if you provide an initial location. 
-- **Initial Zoom Level**: Initial zoom level. From 1 to 22, where '1' represents the furthest level and '22' the maximum zoom level. 
+- **Initial Location**: Decimal coordinates where map will be centered on load (e.g. `52, 5`). Leave this setting empty if you don't want to center the map at init. Remember to change the initial zoom level if you provide an initial location.
+- **Initial Zoom Level**: Initial zoom level. From 1 to 22, where '1' represents the furthest level and '22' the maximum zoom level.
 - **Min Zoom**: Minimal zoom level.
 
 
@@ -25,7 +25,7 @@ Map viewer widget using OpenLayers. It can receive Layers or Point of Interest d
       - `version` (optional)
       - `extent` (optional)
       - `projection` (optional)
-    - `removeLayer`: Removes a layer from the map. This action uses the following data fields: 
+    - `removeLayer`: Removes a layer from the map. This action uses the following data fields:
       - **`name`** (required)
       - **`url`** (required)
     - `setBaseLayer`: Change the base layer of the map. This action uses the following data fields:
@@ -35,24 +35,24 @@ Map viewer widget using OpenLayers. It can receive Layers or Point of Interest d
     - `version`: The version of the layer.
     - `url`: The URL of the WMS service.
     - `extent`: The bounding extent for layer rendering.
-    - `projection`: 
+    - `projection`: Coordinate system used by the layer.
     - `id`: The name of the new base layer. e.g. `"WIKIMEDIA"`
 
 - **Insert/Update PoI**: Insert or update a Point of Interest. This endpoint
   supports sending just a PoI or severals through an array. Each PoI is composed
   of the following fields:
-    - `id` (required): id used for identifying this PoI. Used in the update and
-        delete operators for locating the associated PoI.
+    - **`id`** (required): id used for identifying this PoI. Used in the update
+      and delete operations for locating the associated PoI.
     - `location` (required if `currentLocation` not used): a GeoJSON geometry.
       e.g. `{"type": "Point", "coordinates": [125.6, 10.1]}`
     - `currentLocation` (deprecated, required if `location` not used):
-        - `longitude` (required):
-		- `latitude` (required):
+        - **`longitude`** (required): Longitude.
+        - **`latitude`** (required): Latitude.
         - `system`: geodetic datum system (usually WGS84, it can be UTM)
-	- `title`: title associated to the PoI
+    - `title`: title associated to the PoI
     - `subtitle`: subtitle associated to the PoI
     - `infoWindow`: content (using HTML) associated with the PoI.
-    - `tooltip`: 
+    - `tooltip`: text to be displayed as tooltip when the mouse is over the PoI.
     - `data`: Data associated with the point of interest, used by the **PoI
       selected** output endpoint.
     - `icon`: URL of the icon to use for the marker
