@@ -1,7 +1,8 @@
-My project name widget
+OpenLayers Map Widget
 ======================
 
-The My project name widget is a WireCloud widget that provides ...
+Map viewer widget using OpenLayers. It can receive Layers or Point of Interest data and display them
+ on the map.
 
 Build
 -----
@@ -41,30 +42,15 @@ grunt
 
 If everything goes well, you will find a wgt file in the `dist` folder.
 
-## Settings
+## Documentation
 
-`Write here the preferences`
-
-## Wiring
-
-
-### Input Endpoints
-
-`Write here the input wiring endpoints`
-
-
-### Output Endpoints
-
-
-`Write here the output wiring endpoints`
-
-## Usage
-
-
-## Reference
-
-- [FIWARE Mashup](https://mashup.lab.fiware.org/)
+Documentation about how to use this widget is available on the
+[User Guide](src/doc/userguide.md). Anyway, you can find general information
+about how to use widgets on the
+[WireCloud's User Guide](https://wirecloud.readthedocs.io/en/stable/user_guide/)
+available on Read the Docs.
 
 ## Copyright and License
 
-Copyright (c) 2015 CoNWeT
+Copyright (c) 2016 CoNWeT
+Licensed under the MIT license.

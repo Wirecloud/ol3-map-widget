@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <widget xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="CoNWeT" name="ol3-map" version="1.0">
     <details>
-        <title>OpenLayers Basic Map</title>
+        <title>OpenLayers Map</title>
         <email>aarranz@conwet.com</email>
         <image>images/catalogue.png</image>
-        <description>This widget wraps the quick start example found a the main page of the OpenLayers 3 web page</description>
+        <description>Map viewer widget using OpenLayers.</description>
         <doc>doc/index.md</doc>
         <authors>aarranz</authors>
     </details>
