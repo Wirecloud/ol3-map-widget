@@ -5,7 +5,7 @@
         <email>aarranz@conwet.com</email>
         <image>images/catalogue.png</image>
         <description>Map viewer widget using OpenLayers.</description>
-        <doc>doc/index.md</doc>
+        <doc>doc/userguide.md</doc>
         <authors>aarranz</authors>
     </details>
 
