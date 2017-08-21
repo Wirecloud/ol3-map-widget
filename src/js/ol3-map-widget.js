@@ -272,20 +272,26 @@
         iconFeature.setStyle(style);
     };
 
+    var layer_builders = {
+        "ImageWMS": addImageWMSLayer,
+        "Vector": addVectorLayer,
+        "OSM": addOSMLayer,
+        "TileImage": addTileImageLayer,
+        "XYZ": addXYZLayer,
+        "Stamen": addStamenLayer,
+        "MapQuest": addMapQuestLayer,
+        "ImageArcGisRest": addImageArcGISRestLayer,
+        "ImageMapGuide": addImageMapGuideLayer,
+        "ImageStatic": addImageStaticLayer,
+        "BingMaps": addBingMapsLayer,
+        "CartoDB": addCartoDBLayer
+
+    }
+
     Widget.prototype.addLayer = function addLayer(layer_info) {
         var layer;
 
-        switch (layer_info.type) {
-        case "ImageWMS": layer = addImageWMSLayer(layer_info); break;
-        case "Vector": layer = addVectorLayer(layer_info); break;
-        case "OSM": layer = addOSMLayer(layer_info); break;
-        case "TileImage": layer = addTileImageLayer(layer_info); break;
-        case "XYZ": layer = addXYZLayer(layer_info); break;
-        case "Stamen": layer = addStamenLayer(layer_info); break;
-        case "MapQuest": layer = addMapQuestLayer(layer_info); break;
-        default: break;
-        }
-
+        layer = layer_builders[layer_info.type](layer_info);
 
         this.map.addLayer(layer);
 
@@ -312,6 +318,89 @@
             source: new ol.source.ImageWMS({
                 url: service_url,
                 params: params,
+                projection: layer_info.projection,
+                crossOrigin: layer_info.crossOrigin,
+                hidpi: layer_info.hidpi,
+                serverType: layer_info.serverType,
+                logo: layer_info.logo,
+                ratio: layer_info.ratio
+            })
+        });
+
+        return layer;
+    }
+
+    var addImageArcGISRestLayer = function addImageArcGISRestLayer(layer_info) {
+        var layer, service_url;
+
+        service_url = new URL(layer_info.url);
+        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
+            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
+        } else {
+            service_url = layer_info.url;
+        }
+
+        layer = new ol.layer.Image({
+            extent: layer_info.extent,
+            crossOrigin: 'anonymous',
+            source: new ol.source.ImageArcGISRest({
+                url: service_url,
+                crossOrigin: layer_info.crossOrigin,
+                hidpi: layer_info.hidpi,
+                logo: layer_info.logo,
+                ratio: layer_info.ratio,
+                projection: layer_info.projection
+            })
+        });
+
+        return layer;
+    }
+
+    var addImageMapGuideLayer = function addImageMapGuideLayer(layer_info) {
+        var layer, service_url;
+
+        service_url = new URL(layer_info.url);
+        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
+            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
+        } else {
+            service_url = layer_info.url;
+        }
+
+        layer = new ol.layer.Image({
+            extent: layer_info.extent,
+            crossOrigin: 'anonymous',
+            source: new ol.source.ImageMapGuide({
+                url: service_url,
+                displayDpi: layer_info.displayDpi,
+                metersPerUnit: layer_info.metersPerUnit,
+                hidpi: layer_info.hidpi,
+                useOverlay: layer_info.useOverlay,
+                ratio: layer_info.ratio
+
+            })
+        });
+
+        return layer;
+    }
+
+    var addImageStaticLayer = function addImageStaticLayer(layer_info) {
+        var layer, service_url;
+
+        service_url = new URL(layer_info.url);
+        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
+            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
+        } else {
+            service_url = layer_info.url;
+        }
+
+        layer = new ol.layer.Image({
+            extent: layer_info.extent,
+            crossOrigin: 'anonymous',
+            source: new ol.source.ImageStatic({
+                url: service_url,
+                crossOrigin: layer_info.crossOrigin,
+                logo: layer_info.logo,
+                imageExtent: layer_info.imageExtent,
                 projection: layer_info.projection
             })
         });
@@ -369,7 +458,11 @@
             extent: layer_info.extent,
             source: new ol.source.OSM({
                 wrapX: layer_info.wrapX,
-                url: service_url
+                url: service_url,
+                cacheSize: layer_info.cacheSize,
+                maxZoom: layer_info.maxZoom,
+                opaque: layer_info.opaque,
+                reprojectionErrorThreshold: layer_info.reprojectionErrorThreshold
             })
         });
 
@@ -471,6 +564,49 @@
 
         return layer;
     }
+
+    var addBingMapsLayer = function addBingMapsLayer(layer_info) {
+        var layer;
+
+        layer = new ol.layer.Tile({
+            extent: layer_info.extent,
+            source: new ol.source.BingMaps({
+                cacheSize: layer_info.cacheSize,
+                hidpi: layer_info.hidpi,
+                culture: layer_info.culture,
+                key: layer_info.key,
+                imagerySet: layer_info.imagerySet,
+                maxZoom: layer_info.maxZoom,
+                reprojectionErrorThreshold: layer_info.reprojectionErrorThreshold,
+                wrapX: layer_info.wrapX
+            })
+        });
+
+        return layer;
+    }
+
+    var addCartoDBLayer = function addCartoDBLayer(layer_info) {
+        var layer;
+
+        layer = new ol.layer.Tile({
+            extent: layer_info.extent,
+            source: new ol.source.BingMaps({
+                cacheSize: layer_info.cacheSize,
+                crossOrigin: layer_info.crossOrigin,
+                logo: layer_info.logo,
+                maxZoom: layer_info.maxZoom,
+                minZoom: layer_info.minZoom,
+                wrapX: layer_info.wrapX,
+                config: layer_info.config,
+                map: layer_info.map,
+                account: layer_info.account
+            })
+        });
+
+        return layer;
+    }
+
+
 
     Widget.prototype.removeLayer = function removeLayer(layer_info) {
         var layer_id = layer_info.url + '#' + layer_info.name;
