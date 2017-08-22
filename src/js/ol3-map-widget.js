@@ -295,7 +295,7 @@
 
         this.map.addLayer(layer);
 
-        this.layers[layer_info.url + '#' + layer_info.name] = layer;
+        this.layers[layer_info.name] = layer;
     };
 
     var addImageWMSLayer = function addImageWMSLayer(layer_info) {
@@ -609,7 +609,7 @@
 
 
     Widget.prototype.removeLayer = function removeLayer(layer_info) {
-        var layer_id = layer_info.url + '#' + layer_info.name;
+        var layer_id = layer_info.name;
         if (layer_id in this.layers) {
             this.map.removeLayer(this.layers[layer_id]);
             delete this.layers[layer_id];
