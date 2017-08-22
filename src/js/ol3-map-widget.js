@@ -284,8 +284,12 @@
         "ImageMapGuide": addImageMapGuideLayer,
         "ImageStatic": addImageStaticLayer,
         "BingMaps": addBingMapsLayer,
-        "CartoDB": addCartoDBLayer
-
+        "CartoDB": addCartoDBLayer,
+        "TileUTFGrid": addTileUTFGridLayer,
+        "TileJson": addTileJsonLayer,
+        "VectorTile": addVectorTileLayer,
+        "WMTS": addWMTSLayer,
+        "Zoomify": addZoomifyLayer
     }
 
     Widget.prototype.addLayer = function addLayer(layer_info) {
@@ -444,6 +448,45 @@
         return layer;
     }
 
+    var addVectorTileLayer = function addVectorTileLayer(layer_info) {
+        var layer, format, service_url;
+
+        service_url = new URL(layer_info.url);
+        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
+            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
+        } else {
+            service_url = layer_info.url;
+        }
+
+        switch (layer_info.format) {
+        case "GeoJSON": format = new ol.format.GeoJSON(); break;
+        case "KML": format = new ol.format.KML();break;
+        }
+
+        switch (layer_info.format) {
+        case "GeoJSON": format = new ol.format.GeoJSON(); break;
+        case "KML": format = new ol.format.KML();break;
+        }
+
+        layer = new ol.layer.Tile({
+            extent: layer_info.extent,
+            crossOrigin: 'anonymous',
+            source: new ol.source.VectorTile({
+                cacheSize: layer_info.cacheSize,
+                format: format,
+                logo: layer_info.logo,
+                overlaps: layer_info.overlaps,
+                projection: layer_info.projection,
+                state: layer_info.state,
+                tileClass: layer_info.tileClass,
+                url: service_url,
+                wrapX: layer_info.wrapX
+            })
+        });
+
+        return layer;
+    }
+
     var addOSMLayer = function addOSMLayer(layer_info) {
         var layer, service_url;
 
@@ -488,6 +531,55 @@
                 tilePixelRatio: layer_info.tilePixelRatio,
                 opaque: layer_info.opaque,
                 logo: layer_info.logo
+            })
+        });
+
+        return layer;
+    }
+
+    var addTileJsonLayer = function addTileJsonLayer(layer_info) {
+        var layer, service_url;
+
+        service_url = new URL(layer_info.url);
+        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
+            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
+        } else {
+            service_url = layer_info.url;
+        }
+
+        layer = new ol.layer.Tile({
+            extent: layer_info.extent,
+            source: new ol.source.TileJson({
+                cacheSize: layer_info.cacheSize,
+                crossOrigin: layer_info.crossOrigin,
+                jsonp: layer_info.jsonp,
+                reprojectionErrorThreshold: layer_info.reprojectionErrorThreshold,
+                tileJSON: layer_info.tileJSON,
+                url: service_url,
+                wrapX: layer_info.wrapX
+            })
+        });
+
+        return layer;
+    }
+
+    var addTileUTFGridLayer = function addTileUTFGridLayer(layer_info) {
+        var layer, service_url;
+
+        service_url = new URL(layer_info.url);
+        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
+            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
+        } else {
+            service_url = layer_info.url;
+        }
+
+        layer = new ol.layer.Tile({
+            extent: layer_info.extent,
+            source: new ol.source.TileUTFGrid({
+                jsonp: layer_info.jsonp,
+                preemptive: layer_info.preemptive,
+                tileJSON: layer_info.tileJSON,
+                url: service_url,
             })
         });
 
@@ -557,7 +649,7 @@
         layer = new ol.layer.Tile({
             extent: layer_info.extent,
             source: new ol.source.MapQuest({
-                layer: layer_info.wrapX,
+                layer: layer_info.layer,
                 url: service_url
             })
         });
@@ -606,7 +698,62 @@
         return layer;
     }
 
+    var addWMTSLayer = function addWMTSLayer(layer_info) {
+        var layer, service_url;
 
+        service_url = new URL(layer_info.url);
+        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
+            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
+        } else {
+            service_url = layer_info.url;
+        }
+
+        layer = new ol.layer.Tile({
+            extent: layer_info.extent,
+            source: new ol.source.WMTS({
+                cacheSize: layer_info.cacheSize,
+                logo: layer_info.logo,
+                projection: layer_info.projection,
+                reprojectionErrorThreshold: layer_info.reprojectionErrorThreshold,
+                requestEncoding: layer_info.requestEncoding,
+                layer: layer_info.layer,
+                style: layer_info.style,
+                tilePixelRatio: layer_info.tilePixelRatio,
+                version: layer_info.version,
+                format: layer_info.format,
+                matrixSet: layer_info.matrixSet,
+                url: service_url,
+                wrapX: layer_info.wrapX
+            })
+        });
+
+        return layer;
+    }
+
+    var addZoomifyLayer = function addZoomifyLayer(layer_info) {
+        var layer, service_url;
+
+        service_url = new URL(layer_info.url);
+        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
+            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
+        } else {
+            service_url = layer_info.url;
+        }
+
+        layer = new ol.layer.Tile({
+            extent: layer_info.extent,
+            source: new ol.source.Zoomify({
+                cacheSize: layer_info.cacheSize,
+                logo: layer_info.logo,
+                projection: layer_info.projection,
+                url: service_url,
+                tierSizeCalculation: layer_info.tierSizeCalculation,
+                size: layer_info.size
+            })
+        });
+
+        return layer;
+    }
 
     Widget.prototype.removeLayer = function removeLayer(layer_info) {
         var layer_id = layer_info.name;
