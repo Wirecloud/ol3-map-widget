@@ -292,6 +292,39 @@
         "Zoomify": addZoomifyLayer
     }
 
+    var format_builders = {
+        "GPX": ol.format.GPX,
+        "KML": ol.format.KML,
+        "OSMXML": ol.format.OSMXML,
+        "WFS": ol.format.WFS,
+        "WMSGetFeatureInfo": ol.format.WMSGetFeatureInfo,
+        "IGC": ol.format.IGC,
+        "Polyline": ol.format.Polyline,
+        "WKT": ol.format.WKT,
+        "MVT": ol.format.MVT,
+        "EsriJSON": ol.format.EsriJSON,
+        "GeoJSON": ol.format.GeoJSON,
+        "TopoJSON": ol.format.TopoJSON
+    }
+
+    var addFormat = function addFormat(layer_info) {
+        if (!layer_info.format) {
+            return undefined;
+        }
+
+        if(layer_info.format === "GML") {
+            return new ol.format.GML({srsName: layer_info.srsName});
+        }
+        if(layer_info.format === "GML2") {
+            return new ol.format.GML2({srsName: layer_info.srsName});
+        }
+        if(layer_info.format === "GML3") {
+            return new ol.format.GML3({srsName: layer_info.srsName});
+        }
+
+        return new format_builders[layer_info.format]()
+    }
+
     Widget.prototype.addLayer = function addLayer(layer_info) {
         var layer;
 
@@ -413,7 +446,7 @@
     }
 
     var addVectorLayer = function addVectorLayer(layer_info) {
-        var layer, format, service_url;
+        var layer, service_url;
 
         service_url = new URL(layer_info.url);
         if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
@@ -422,19 +455,12 @@
             service_url = layer_info.url;
         }
 
-        switch (layer_info.format) {
-        case "GeoJSON": format = new ol.format.GeoJSON(); break;
-        case "KML": format = new ol.format.KML();break;
-        }
-
         layer = new ol.layer.Vector({
             extent: layer_info.extent,
             crossOrigin: 'anonymous',
             source: new ol.source.Vector({
-                format: format,
+                format: addFormat(layer_info),
                 wrapX: layer_info.wrapX,
-                // format: new ol.format.GeoJSON(),
-                // format: new ol.format.KML(),
                 url: service_url,
             }),
             style: new ol.style.Style({
@@ -449,7 +475,7 @@
     }
 
     var addVectorTileLayer = function addVectorTileLayer(layer_info) {
-        var layer, format, service_url;
+        var layer, service_url;
 
         service_url = new URL(layer_info.url);
         if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
@@ -458,22 +484,12 @@
             service_url = layer_info.url;
         }
 
-        switch (layer_info.format) {
-        case "GeoJSON": format = new ol.format.GeoJSON(); break;
-        case "KML": format = new ol.format.KML();break;
-        }
-
-        switch (layer_info.format) {
-        case "GeoJSON": format = new ol.format.GeoJSON(); break;
-        case "KML": format = new ol.format.KML();break;
-        }
-
         layer = new ol.layer.Tile({
             extent: layer_info.extent,
             crossOrigin: 'anonymous',
             source: new ol.source.VectorTile({
                 cacheSize: layer_info.cacheSize,
-                format: format,
+                format: addFormat(layer_info),
                 logo: layer_info.logo,
                 overlaps: layer_info.overlaps,
                 projection: layer_info.projection,
@@ -720,7 +736,7 @@
                 style: layer_info.style,
                 tilePixelRatio: layer_info.tilePixelRatio,
                 version: layer_info.version,
-                format: layer_info.format,
+                format: addFormat(layer_info),
                 matrixSet: layer_info.matrixSet,
                 url: service_url,
                 wrapX: layer_info.wrapX
