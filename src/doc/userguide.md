@@ -19,24 +19,25 @@ Map viewer widget using OpenLayers. It can receive Layers or Point of Interest d
 - **Layer Info**: Add or remove layers to the map, in addition to changing its base layer. Currently only ImageWMS layers are supported.
   The Layer Info endpoint receives a JSON with two fields: `action` and `data`
   - `action`: This field indicates the action to be executed with a layer. There are three available actions:
-    - `addLayer`: Adds a layer to the map. This action uses the following data fields:
-      - **`name`** (required)
-      - **`url`** (required)
-      - `version` (optional)
-      - `extent` (optional)
-      - `projection` (optional)
-    - `removeLayer`: Removes a layer from the map. This action uses the following data fields:
-      - **`name`** (required)
-      - **`url`** (required)
-    - `setBaseLayer`: Change the base layer of the map. This action uses the following data fields:
-      - **`id`** (required)
-  - `data`: This field defines the layer the action should be applied to.
-    - `name`: The name of the layer.
-    - `version`: The version of the layer.
-    - `url`: The URL of the WMS service.
-    - `extent`: The bounding extent for layer rendering.
-    - `projection`: Coordinate system used by the layer.
-    - `id`: The name of the new base layer. e.g. `"WIKIMEDIA"`
+    - `addLayer`: Adds a layer to the map. This action requires the "name" data field to be set.
+    - `removeLayer`: Removes a layer from the map. This action requires the "name" data field to be set.
+    - `setBaseLayer`: Change the base layer of the map. This action requires the "id" data field to be set.
+
+  - `data`: This field contains all the data needed to identify to which layer the action will be performed, and, in the case of the addLayer action, to define and configure the layer.
+
+In order to create the layer, a layer type must be defined, aside from the desired settings for the layer source. I.E:
+
+    ``` javascript
+      {
+        action: "addLayer",
+        data: {
+          name: "My Layer",
+          type: "ImageWMS",
+          url: "UrlToMyWMSService"
+        }
+      }
+    ```
+Refer to the [OpenLayers Documentation](http://openlayers.org/en/latest/apidoc/) to check available types and options
 
 - **Insert/Update PoI**: Insert or update a Point of Interest. This endpoint
   supports sending just a PoI or severals through an array. Each PoI is composed
