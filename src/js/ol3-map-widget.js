@@ -523,10 +523,10 @@
             extent: layer_info.extent,
             source: new ol.source.TileImage({
                 wrapX: layer_info.wrapX,
-                tileLoadFunction: service_url,
                 tilePixelRatio: layer_info.tilePixelRatio,
                 opaque: layer_info.opaque,
-                logo: layer_info.logo
+                logo: layer_info.logo,
+                url: service_url
             })
         });
 
