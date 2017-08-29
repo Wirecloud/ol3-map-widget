@@ -272,26 +272,6 @@
         iconFeature.setStyle(style);
     };
 
-    var layer_builders = {
-        "ImageWMS": addImageWMSLayer,
-        "Vector": addVectorLayer,
-        "OSM": addOSMLayer,
-        "TileImage": addTileImageLayer,
-        "XYZ": addXYZLayer,
-        "Stamen": addStamenLayer,
-        "MapQuest": addMapQuestLayer,
-        "ImageArcGisRest": addImageArcGISRestLayer,
-        "ImageMapGuide": addImageMapGuideLayer,
-        "ImageStatic": addImageStaticLayer,
-        "BingMaps": addBingMapsLayer,
-        "CartoDB": addCartoDBLayer,
-        "TileUTFGrid": addTileUTFGridLayer,
-        "TileJson": addTileJsonLayer,
-        "VectorTile": addVectorTileLayer,
-        "WMTS": addWMTSLayer,
-        "Zoomify": addZoomifyLayer
-    }
-
     var format_builders = {
         "GPX": ol.format.GPX,
         "KML": ol.format.KML,
@@ -312,13 +292,13 @@
             return undefined;
         }
 
-        if(layer_info.format === "GML") {
+        if (layer_info.format === "GML") {
             return new ol.format.GML({srsName: layer_info.srsName});
         }
-        if(layer_info.format === "GML2") {
+        if (layer_info.format === "GML2") {
             return new ol.format.GML2({srsName: layer_info.srsName});
         }
-        if(layer_info.format === "GML3") {
+        if (layer_info.format === "GML3") {
             return new ol.format.GML3({srsName: layer_info.srsName});
         }
 
@@ -844,6 +824,26 @@
         // this.selected_feature = feature;
         this.center_popup_menu(feature);
     };
+
+    var layer_builders = {
+        "ImageWMS": addImageWMSLayer,
+        "Vector": addVectorLayer,
+        "OSM": addOSMLayer,
+        "TileImage": addTileImageLayer,
+        "XYZ": addXYZLayer,
+        "Stamen": addStamenLayer,
+        "MapQuest": addMapQuestLayer,
+        "ImageArcGisRest": addImageArcGISRestLayer,
+        "ImageMapGuide": addImageMapGuideLayer,
+        "ImageStatic": addImageStaticLayer,
+        "BingMaps": addBingMapsLayer,
+        "CartoDB": addCartoDBLayer,
+        "TileUTFGrid": addTileUTFGridLayer,
+        "TileJson": addTileJsonLayer,
+        "VectorTile": addVectorTileLayer,
+        "WMTS": addWMTSLayer,
+        "Zoomify": addZoomifyLayer
+    }
 
     window.Widget = Widget;
 
