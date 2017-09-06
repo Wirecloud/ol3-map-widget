@@ -317,10 +317,16 @@
 
     var addImageWMSLayer = function addImageWMSLayer(layer_info) {
         var layer, params, service_url;
-        params = {
-            'LAYERS': layer_info.name,
-            'VERSION': layer_info.version
-        };
+
+        params = layer_info.params;
+
+        if (params == null) {
+            params = {
+                'LAYERS': layer_info.id
+            };
+        } else if (params.LAYERS == null) {
+            params.LAYERS = layer_info.id;
+        }
 
         service_url = new URL(layer_info.url);
         if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
