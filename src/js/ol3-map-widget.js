@@ -306,10 +306,14 @@
     }
 
     Widget.prototype.addLayer = function addLayer(layer_info) {
-        var layer;
+        var builder = layer_builders[layer_info.type];
+        if (builder == null) {
+            throw new MashupPlatform.wiring.EndpointValueError("Invalid layer type: " + layer_info.type);
+        }
 
-        layer = layer_builders[layer_info.type](layer_info);
-
+        var layer = builder(layer_info);
+        var layers = this.map.getLayers();
+        layers.insertAt(layers.getLength() - 1, layer);
         this.map.addLayer(layer);
 
         this.layers[layer_info.id] = layer;
@@ -351,7 +355,7 @@
         });
 
         return layer;
-    }
+    };
 
     var addImageArcGISRestLayer = function addImageArcGISRestLayer(layer_info) {
         var layer, service_url;
@@ -377,7 +381,7 @@
         });
 
         return layer;
-    }
+    };
 
     var addImageMapGuideLayer = function addImageMapGuideLayer(layer_info) {
         var layer, service_url;
@@ -404,7 +408,7 @@
         });
 
         return layer;
-    }
+    };
 
     var addImageStaticLayer = function addImageStaticLayer(layer_info) {
         var layer, service_url;
@@ -429,7 +433,7 @@
         });
 
         return layer;
-    }
+    };
 
     var addVectorLayer = function addVectorLayer(layer_info) {
         var layer, service_url;
@@ -458,7 +462,7 @@
         });
 
         return layer;
-    }
+    };
 
     var addVectorTileLayer = function addVectorTileLayer(layer_info) {
         var layer, service_url;
@@ -487,7 +491,7 @@
         });
 
         return layer;
-    }
+    };
 
     var addOSMLayer = function addOSMLayer(layer_info) {
         var layer, service_url;
@@ -513,7 +517,7 @@
 
 
         return layer;
-    }
+    };
 
     var addTileImageLayer = function addTileImageLayer(layer_info) {
         var layer, service_url;
@@ -537,7 +541,7 @@
         });
 
         return layer;
-    }
+    };
 
     var addTileJsonLayer = function addTileJsonLayer(layer_info) {
         var layer, service_url;
@@ -563,7 +567,7 @@
         });
 
         return layer;
-    }
+    };
 
     var addTileUTFGridLayer = function addTileUTFGridLayer(layer_info) {
         var layer, service_url;
@@ -586,7 +590,7 @@
         });
 
         return layer;
-    }
+    };
 
     var addXYZLayer = function addXYZLayer(layer_info) {
         var layer, service_url;
@@ -612,7 +616,7 @@
         });
 
         return layer;
-    }
+    };
 
     var addStamenLayer = function addStamenLayer(layer_info) {
         var layer, service_url;
@@ -636,7 +640,7 @@
         });
 
         return layer;
-    }
+    };
 
     var addMapQuestLayer = function addMapQuestLayer(layer_info) {
         var layer, service_url;
@@ -657,7 +661,7 @@
         });
 
         return layer;
-    }
+    };
 
     var addBingMapsLayer = function addBingMapsLayer(layer_info) {
         var layer;
@@ -677,7 +681,7 @@
         });
 
         return layer;
-    }
+    };
 
     var addCartoDBLayer = function addCartoDBLayer(layer_info) {
         var layer;
@@ -698,7 +702,7 @@
         });
 
         return layer;
-    }
+    };
 
     var addWMTSLayer = function addWMTSLayer(layer_info) {
         var layer, service_url;
@@ -730,7 +734,7 @@
         });
 
         return layer;
-    }
+    };
 
     var addZoomifyLayer = function addZoomifyLayer(layer_info) {
         var layer, service_url;
@@ -755,7 +759,7 @@
         });
 
         return layer;
-    }
+    };
 
     Widget.prototype.removeLayer = function removeLayer(layer_info) {
         var layer_id = layer_info.id;
@@ -833,22 +837,22 @@
     };
 
     var layer_builders = {
+        "BingMaps": addBingMapsLayer,
+        "CartoDB": addCartoDBLayer,
         "ImageWMS": addImageWMSLayer,
-        "Vector": addVectorLayer,
-        "OSM": addOSMLayer,
-        "TileImage": addTileImageLayer,
-        "XYZ": addXYZLayer,
-        "Stamen": addStamenLayer,
-        "MapQuest": addMapQuestLayer,
         "ImageArcGisRest": addImageArcGISRestLayer,
         "ImageMapGuide": addImageMapGuideLayer,
         "ImageStatic": addImageStaticLayer,
-        "BingMaps": addBingMapsLayer,
-        "CartoDB": addCartoDBLayer,
-        "TileUTFGrid": addTileUTFGridLayer,
+        "MapQuest": addMapQuestLayer,
+        "OSM": addOSMLayer,
+        "Stamen": addStamenLayer,
+        "TileImage": addTileImageLayer,
         "TileJson": addTileJsonLayer,
+        "TileUTFGrid": addTileUTFGridLayer,
+        "Vector": addVectorLayer,
         "VectorTile": addVectorTileLayer,
         "WMTS": addWMTSLayer,
+        "XYZ": addXYZLayer,
         "Zoomify": addZoomifyLayer
     }
 

@@ -25,7 +25,16 @@
     widget.init();
 
     MashupPlatform.wiring.registerCallback('layerInfo', (command_info) => {
-        command_info = JSON.parse(command_info);
+        if (typeof command_info === "string") {
+            try {
+                command_info = JSON.parse(command_info);
+            } catch (e) {
+                throw new MashupPlatform.wiring.EndpointTypeValue();
+            }
+        } else if (command_info == null || typeof command_info !== "object") {
+            throw new MashupPlatform.wiring.EndpointTypeValue();
+        }
+
         switch (command_info.action) {
         case "addLayer":
             widget.addLayer(command_info.data);
@@ -43,8 +52,15 @@
 
     MashupPlatform.wiring.registerCallback('poiInput', (poi_info) => {
         if (typeof poi_info === "string") {
-            poi_info = JSON.parse(poi_info);
+            try {
+                poi_info = JSON.parse(poi_info);
+            } catch (e) {
+                throw new MashupPlatform.wiring.EndpointTypeValue();
+            }
+        } else if (poi_info == null || typeof poi_info !== "object") {
+            throw new MashupPlatform.wiring.EndpointTypeValue();
         }
+
         if (!Array.isArray(poi_info)) {
             poi_info = [poi_info];
         }
@@ -52,10 +68,17 @@
     });
 
     MashupPlatform.wiring.registerCallback('replacePoIs', (poi_info) => {
-        widget.vector_source.clear();
         if (typeof poi_info === "string") {
-            poi_info = JSON.parse(poi_info);
+            try {
+                poi_info = JSON.parse(poi_info);
+            } catch (e) {
+                throw new MashupPlatform.wiring.EndpointTypeValue();
+            }
+        } else if (poi_info == null || typeof poi_info !== "object") {
+            throw new MashupPlatform.wiring.EndpointTypeValue();
         }
+
+        widget.vector_source.clear();
         if (!Array.isArray(poi_info)) {
             poi_info = [poi_info];
         }
