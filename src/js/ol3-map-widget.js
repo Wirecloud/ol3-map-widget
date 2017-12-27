@@ -97,21 +97,35 @@
         }
 
         if (options.style.stroke == null) {
-            options.style.stroke = 'blue';
+            options.style.stroke = {
+                color: 'blue',
+                width: 3
+            };
+        } else if (typeof options.style.stroke === "string") {
+            options.style.stroke = {
+                color: options.style.stroke,
+                width: 3
+            };
         }
 
         if (options.style.fill == null) {
-            options.style.fill = 'rgba(0, 0, 255, 0.1)';
+            options.style.fill = {
+                color: 'rgba(0, 0, 255, 0.1)'
+            };
+        } else if (typeof options.style.fill === "string") {
+            options.style.fill = {
+                color: options.style.fill
+            };
         }
 
         return new ol.style.Style({
             image: options.image,
             stroke: new ol.style.Stroke({
-                color: options.style.stroke,
-                width: 3
+                color: options.style.stroke.color,
+                width: options.style.stroke.width
             }),
             fill: new ol.style.Fill({
-                color: options.style.fill
+                color: options.style.fill.color
             })
         });
     };
