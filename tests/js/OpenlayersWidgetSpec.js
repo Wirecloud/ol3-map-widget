@@ -15,10 +15,18 @@
         }
     };
 
-    describe("Test ShortProjectName", function () {
+    describe("ol3-map", function () {
+
         var widget;
+
         beforeAll(function () {
-            window.MashupPlatform = new MockMP.MockMP();
+            window.MashupPlatform = new MockMP({
+                type: 'widget',
+                prefs: {
+                    'initialCenter': '',
+                    'initialZoom': ''
+                }
+            });
         });
 
         beforeEach(function () {
@@ -28,19 +36,18 @@
             widget = new Widget();
         });
 
-        it("Registers input endpoint callbacks", function () {
-            widget.init();
-            expect(MashupPlatform.wiring.registerCallback).toHaveBeenCalledWith("layerInfo", jasmine.any(Function));
-        });
-
-        it("Accepts the addLayer command", function () {
+        it("accepts the addLayer command (ImageWMS)", function () {
             window.URL = function (url) {
                 this.prototcol = "http:";
                 this.href = url;
             };
             widget.init();
-            widget.map.addLayer.calls.reset();
-            MashupPlatform.simulateReceiveEvent('layerInfo', '{"action": "addLayer", "data": {"url": "http://wms.example.com", "name": "LayerName"}}');
+            spyOn(widget.map, 'addLayer');
+            widget.addLayer({
+                type: "ImageWMS",
+                url: "http://wms.example.com",
+                name: "LayerName"
+            });
             expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Image));
         });
     });
