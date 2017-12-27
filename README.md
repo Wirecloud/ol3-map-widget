@@ -1,5 +1,7 @@
-OpenLayers Map Widget
-======================
+# OpenLayers Map Widget
+
+[![Build Status](https://travis-ci.org/Wirecloud/ol3-map-widget.svg?branch=develop)](https://travis-ci.org/Wirecloud/ol3-map-widget)
+[![Coverage Status](https://coveralls.io/repos/github/Wirecloud/ol3-map-widget/badge.svg?branch=develop)](https://coveralls.io/github/Wirecloud/ol3-map-widget?branch=develop)
 
 Map viewer widget using OpenLayers. It can receive Layers or Point of Interest data and display them
  on the map.
