@@ -25,7 +25,8 @@
                 prefs: {
                     'initialCenter': '',
                     'initialZoom': ''
-                }
+                },
+                outputs: ['poiListOutput']
             });
         });
 
@@ -36,19 +37,41 @@
             widget = new Widget();
         });
 
-        it("accepts the addLayer command (ImageWMS)", function () {
-            window.URL = function (url) {
-                this.prototcol = "http:";
-                this.href = url;
-            };
+        it("supports adding PoIs", () => {
             widget.init();
-            spyOn(widget.map, 'addLayer');
-            widget.addLayer({
-                type: "ImageWMS",
-                url: "http://wms.example.com",
-                name: "LayerName"
+            widget.registerPoI({
+                id: '1',
+                data: {},
+                location: {
+                    type: 'Point',
+                    coordinates: [0, 0]
+                }
             });
-            expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Image));
+
+        });
+
+        describe("addLayer", function () {
+
+            it("throws an EndpointValueError exception for invalid layer types", () => {
+                widget.init();
+                expect(() => {
+                    widget.addLayer({
+                        type: "invalid"
+                    });
+                }).toThrowError(MashupPlatform.wiring.EndpointValueError);
+            });
+
+            it("supports basic ImageWMS layers", function () {
+                widget.init();
+                spyOn(widget.map, 'addLayer');
+                widget.addLayer({
+                    type: "ImageWMS",
+                    url: "http://wms.example.com",
+                    name: "LayerName"
+                });
+                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Image));
+            });
+
         });
     });
 })();
