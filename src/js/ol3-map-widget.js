@@ -306,17 +306,23 @@
             return undefined;
         }
 
-        if (layer_info.format === "GML") {
+        if (typeof layer_info.format === "string") {
+            layer_info.format = {
+                type: layer_info.format
+            };
+        }
+
+        if (layer_info.format.type === "GML") {
             return new ol.format.GML({srsName: layer_info.srsName});
         }
-        if (layer_info.format === "GML2") {
+        if (layer_info.format.type === "GML2") {
             return new ol.format.GML2({srsName: layer_info.srsName});
         }
-        if (layer_info.format === "GML3") {
+        if (layer_info.format.type === "GML3") {
             return new ol.format.GML3({srsName: layer_info.srsName});
         }
 
-        return new format_builders[layer_info.format]()
+        return new format_builders[layer_info.format.type](layer_info.format)
     }
 
     Widget.prototype.addLayer = function addLayer(layer_info) {
@@ -326,15 +332,28 @@
         }
 
         var layer = builder(layer_info);
-        var layers = this.map.getLayers();
-        layers.insertAt(layers.getLength() - 1, layer);
         this.map.addLayer(layer);
 
         this.layers[layer_info.id] = layer;
     };
 
+    var build_compatible_url = function build_compatible_url(url, required) {
+        if (required != true && url == null) {
+            return undefined;
+        } else if (required == true && url == null) {
+            throw new MashupPlatform.wiring.EndpointValueError("Missing layer url option");
+        }
+
+        var parsed_url = new URL(url);
+        if (document.location.protocol === 'https:' && parsed_url.protocol !== 'https:') {
+            return MashupPlatform.http.buildProxyURL(parsed_url);
+        } else {
+            return url;
+        }
+    };
+
     var addImageWMSLayer = function addImageWMSLayer(layer_info) {
-        var layer, params, service_url;
+        var layer, params;
 
         params = layer_info.params;
 
@@ -346,18 +365,12 @@
             params.LAYERS = layer_info.id;
         }
 
-        service_url = new URL(layer_info.url);
-        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
-            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
-        } else {
-            service_url = layer_info.url;
-        }
 
         layer = new ol.layer.Image({
             extent: layer_info.extent,
             crossOrigin: 'anonymous',
             source: new ol.source.ImageWMS({
-                url: service_url,
+                url: build_compatible_url(layer_info.url, true),
                 params: params,
                 projection: layer_info.projection,
                 crossOrigin: layer_info.crossOrigin,
@@ -372,20 +385,11 @@
     };
 
     var addImageArcGISRestLayer = function addImageArcGISRestLayer(layer_info) {
-        var layer, service_url;
-
-        service_url = new URL(layer_info.url);
-        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
-            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
-        } else {
-            service_url = layer_info.url;
-        }
-
-        layer = new ol.layer.Image({
+        return new ol.layer.Image({
             extent: layer_info.extent,
             crossOrigin: 'anonymous',
             source: new ol.source.ImageArcGISRest({
-                url: service_url,
+                url: build_compatible_url(layer_info.url, true),
                 crossOrigin: layer_info.crossOrigin,
                 hidpi: layer_info.hidpi,
                 logo: layer_info.logo,
@@ -393,79 +397,47 @@
                 projection: layer_info.projection
             })
         });
-
-        return layer;
     };
 
     var addImageMapGuideLayer = function addImageMapGuideLayer(layer_info) {
-        var layer, service_url;
-
-        service_url = new URL(layer_info.url);
-        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
-            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
-        } else {
-            service_url = layer_info.url;
-        }
-
-        layer = new ol.layer.Image({
+        return new ol.layer.Image({
             extent: layer_info.extent,
             crossOrigin: 'anonymous',
             source: new ol.source.ImageMapGuide({
-                url: service_url,
+                url: build_compatible_url(layer_info.url, true),
                 displayDpi: layer_info.displayDpi,
                 metersPerUnit: layer_info.metersPerUnit,
                 hidpi: layer_info.hidpi,
                 useOverlay: layer_info.useOverlay,
                 ratio: layer_info.ratio
-
             })
         });
-
-        return layer;
     };
 
     var addImageStaticLayer = function addImageStaticLayer(layer_info) {
-        var layer, service_url;
-
-        service_url = new URL(layer_info.url);
-        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
-            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
-        } else {
-            service_url = layer_info.url;
-        }
-
-        layer = new ol.layer.Image({
+        return new ol.layer.Image({
             extent: layer_info.extent,
             crossOrigin: 'anonymous',
             source: new ol.source.ImageStatic({
-                url: service_url,
+                url: build_compatible_url(layer_info.url, true),
                 crossOrigin: layer_info.crossOrigin,
                 logo: layer_info.logo,
                 imageExtent: layer_info.imageExtent,
                 projection: layer_info.projection
             })
         });
-
-        return layer;
     };
 
     var addVectorLayer = function addVectorLayer(layer_info) {
-        var layer, service_url;
-
-        service_url = new URL(layer_info.url);
-        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
-            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
-        } else {
-            service_url = layer_info.url;
-        }
-
-        layer = new ol.layer.Vector({
+        return new ol.layer.Vector({
             extent: layer_info.extent,
             crossOrigin: 'anonymous',
             source: new ol.source.Vector({
                 format: addFormat(layer_info),
                 wrapX: layer_info.wrapX,
-                url: service_url,
+                // Vector source does not require an url
+                // But currently we do not provide any way to populate this layer
+                url: build_compatible_url(layer_info.url, true),
             }),
             style: new ol.style.Style({
                 stroke: new ol.style.Stroke({
@@ -474,21 +446,10 @@
                 })
             })
         });
-
-        return layer;
     };
 
     var addVectorTileLayer = function addVectorTileLayer(layer_info) {
-        var layer, service_url;
-
-        service_url = new URL(layer_info.url);
-        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
-            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
-        } else {
-            service_url = layer_info.url;
-        }
-
-        layer = new ol.layer.Tile({
+        return new ol.layer.Tile({
             extent: layer_info.extent,
             crossOrigin: 'anonymous',
             source: new ol.source.VectorTile({
@@ -499,75 +460,41 @@
                 projection: layer_info.projection,
                 state: layer_info.state,
                 tileClass: layer_info.tileClass,
-                url: service_url,
+                url: build_compatible_url(layer_info.url, true),
                 wrapX: layer_info.wrapX
             })
         });
-
-        return layer;
     };
 
     var addOSMLayer = function addOSMLayer(layer_info) {
-        var layer, service_url;
-
-        service_url = new URL(layer_info.tileLoadFunction);
-        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
-            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
-        } else {
-            service_url = layer_info.tileLoadFunction;
-        }
-
-        layer = new ol.layer.Tile({
+        return new ol.layer.Tile({
             extent: layer_info.extent,
             source: new ol.source.OSM({
                 wrapX: layer_info.wrapX,
-                url: service_url,
+                url: build_compatible_url(layer_info.url, false),
                 cacheSize: layer_info.cacheSize,
                 maxZoom: layer_info.maxZoom,
                 opaque: layer_info.opaque,
                 reprojectionErrorThreshold: layer_info.reprojectionErrorThreshold
             })
         });
-
-
-        return layer;
     };
 
     var addTileImageLayer = function addTileImageLayer(layer_info) {
-        var layer, service_url;
-
-        service_url = new URL(layer_info.url);
-        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
-            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
-        } else {
-            service_url = layer_info.url;
-        }
-
-        layer = new ol.layer.Tile({
+        return new ol.layer.Tile({
             extent: layer_info.extent,
             source: new ol.source.TileImage({
                 wrapX: layer_info.wrapX,
                 tilePixelRatio: layer_info.tilePixelRatio,
                 opaque: layer_info.opaque,
                 logo: layer_info.logo,
-                url: service_url
+                url: build_compatible_url(layer_info.url, true),
             })
         });
-
-        return layer;
     };
 
     var addTileJsonLayer = function addTileJsonLayer(layer_info) {
-        var layer, service_url;
-
-        service_url = new URL(layer_info.url);
-        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
-            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
-        } else {
-            service_url = layer_info.url;
-        }
-
-        layer = new ol.layer.Tile({
+        return new ol.layer.Tile({
             extent: layer_info.extent,
             source: new ol.source.TileJson({
                 cacheSize: layer_info.cacheSize,
@@ -575,52 +502,30 @@
                 jsonp: layer_info.jsonp,
                 reprojectionErrorThreshold: layer_info.reprojectionErrorThreshold,
                 tileJSON: layer_info.tileJSON,
-                url: service_url,
+                url: build_compatible_url(layer_info.url, true),
                 wrapX: layer_info.wrapX
             })
         });
-
-        return layer;
     };
 
     var addTileUTFGridLayer = function addTileUTFGridLayer(layer_info) {
-        var layer, service_url;
-
-        service_url = new URL(layer_info.url);
-        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
-            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
-        } else {
-            service_url = layer_info.url;
-        }
-
-        layer = new ol.layer.Tile({
+        return new ol.layer.Tile({
             extent: layer_info.extent,
             source: new ol.source.TileUTFGrid({
                 jsonp: layer_info.jsonp,
                 preemptive: layer_info.preemptive,
                 tileJSON: layer_info.tileJSON,
-                url: service_url,
+                url: build_compatible_url(layer_info.url, false),
             })
         });
-
-        return layer;
     };
 
     var addXYZLayer = function addXYZLayer(layer_info) {
-        var layer, service_url;
-
-        service_url = new URL(layer_info.url);
-        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
-            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
-        } else {
-            service_url = layer_info.url;
-        }
-
-        layer = new ol.layer.Tile({
+        return new ol.layer.Tile({
             extent: layer_info.extent,
             source: new ol.source.XYZ({
                 wrapX: layer_info.wrapX,
-                url: service_url,
+                url: build_compatible_url(layer_info.url, true),
                 logo: layer_info.logo,
                 maxZoom: layer_info.maxZoom,
                 minZoom: layer_info.minZoom,
@@ -628,59 +533,23 @@
                 tileSize: layer_info.tileSize
             })
         });
-
-        return layer;
     };
 
     var addStamenLayer = function addStamenLayer(layer_info) {
-        var layer, service_url;
-
-        service_url = new URL(layer_info.url);
-        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
-            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
-        } else {
-            service_url = layer_info.url;
-        }
-
-        layer = new ol.layer.Tile({
+        return new ol.layer.Tile({
             extent: layer_info.extent,
             source: new ol.source.Stamen({
-                layer: layer_info.wrapX,
-                url: service_url,
+                layer: layer_info.layer,
+                url: build_compatible_url(layer_info.url, false),
                 maxZoom: layer_info.maxZoom,
                 minZoom: layer_info.minZoom,
                 opaque: layer_info.opaque
             })
         });
-
-        return layer;
-    };
-
-    var addMapQuestLayer = function addMapQuestLayer(layer_info) {
-        var layer, service_url;
-
-        service_url = new URL(layer_info.url);
-        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
-            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
-        } else {
-            service_url = layer_info.url;
-        }
-
-        layer = new ol.layer.Tile({
-            extent: layer_info.extent,
-            source: new ol.source.MapQuest({
-                layer: layer_info.layer,
-                url: service_url
-            })
-        });
-
-        return layer;
     };
 
     var addBingMapsLayer = function addBingMapsLayer(layer_info) {
-        var layer;
-
-        layer = new ol.layer.Tile({
+        return new ol.layer.Tile({
             extent: layer_info.extent,
             source: new ol.source.BingMaps({
                 cacheSize: layer_info.cacheSize,
@@ -693,19 +562,17 @@
                 wrapX: layer_info.wrapX
             })
         });
-
-        return layer;
     };
 
     var addCartoDBLayer = function addCartoDBLayer(layer_info) {
-        var layer;
-
-        layer = new ol.layer.Tile({
+        return new ol.layer.Tile({
             extent: layer_info.extent,
-            source: new ol.source.BingMaps({
+            source: new ol.source.CartoDB({
+                attributions: layer_info.attributions,
                 cacheSize: layer_info.cacheSize,
                 crossOrigin: layer_info.crossOrigin,
                 logo: layer_info.logo,
+                projection: layer_info.projection,
                 maxZoom: layer_info.maxZoom,
                 minZoom: layer_info.minZoom,
                 wrapX: layer_info.wrapX,
@@ -714,21 +581,10 @@
                 account: layer_info.account
             })
         });
-
-        return layer;
     };
 
     var addWMTSLayer = function addWMTSLayer(layer_info) {
-        var layer, service_url;
-
-        service_url = new URL(layer_info.url);
-        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
-            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
-        } else {
-            service_url = layer_info.url;
-        }
-
-        layer = new ol.layer.Tile({
+        return new ol.layer.Tile({
             extent: layer_info.extent,
             source: new ol.source.WMTS({
                 cacheSize: layer_info.cacheSize,
@@ -740,39 +596,26 @@
                 style: layer_info.style,
                 tilePixelRatio: layer_info.tilePixelRatio,
                 version: layer_info.version,
-                format: addFormat(layer_info),
+                format: layer_info.format,
                 matrixSet: layer_info.matrixSet,
-                url: service_url,
+                url: build_compatible_url(layer_info.url, true),
                 wrapX: layer_info.wrapX
             })
         });
-
-        return layer;
     };
 
     var addZoomifyLayer = function addZoomifyLayer(layer_info) {
-        var layer, service_url;
-
-        service_url = new URL(layer_info.url);
-        if (document.location.protocol === 'https:' && service_url.protocol !== 'https:') {
-            service_url = MashupPlatform.http.buildProxyURL(service_url.href);
-        } else {
-            service_url = layer_info.url;
-        }
-
-        layer = new ol.layer.Tile({
+        return new ol.layer.Tile({
             extent: layer_info.extent,
             source: new ol.source.Zoomify({
                 cacheSize: layer_info.cacheSize,
                 logo: layer_info.logo,
                 projection: layer_info.projection,
-                url: service_url,
+                url: build_compatible_url(layer_info.url, false),
                 tierSizeCalculation: layer_info.tierSizeCalculation,
                 size: layer_info.size
             })
         });
-
-        return layer;
     };
 
     Widget.prototype.removeLayer = function removeLayer(layer_info) {
@@ -854,10 +697,9 @@
         "BingMaps": addBingMapsLayer,
         "CartoDB": addCartoDBLayer,
         "ImageWMS": addImageWMSLayer,
-        "ImageArcGisRest": addImageArcGISRestLayer,
+        "ImageArcGISRest": addImageArcGISRestLayer,
         "ImageMapGuide": addImageMapGuideLayer,
         "ImageStatic": addImageStaticLayer,
-        "MapQuest": addMapQuestLayer,
         "OSM": addOSMLayer,
         "Stamen": addStamenLayer,
         "TileImage": addTileImageLayer,
