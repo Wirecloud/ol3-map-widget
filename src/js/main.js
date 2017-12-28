@@ -74,4 +74,13 @@
         poi_info.forEach(widget.registerPoI, widget);
     });
 
+    MashupPlatform.wiring.registerCallback('deletePoiInput', (poi_info) => {
+        poi_info = parseInputEndpointData(poi_info);
+
+        if (!Array.isArray(poi_info)) {
+            poi_info = [poi_info];
+        }
+        poi_info.forEach(widget.removePoI, widget);
+    });
+
 })();
