@@ -150,6 +150,7 @@ module.exports = function (grunt) {
                 files: [
                     'node_modules/mock-applicationmashup/dist/MockMP.js',
                     'node_modules/openlayers/dist/ol.js',
+                    'tests/helpers/StyledElements.min.js',
                     'src/js/*.js',
                     'tests/js/*Spec.js'
                 ],

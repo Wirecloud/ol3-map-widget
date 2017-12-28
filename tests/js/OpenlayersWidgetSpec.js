@@ -24,7 +24,8 @@
                 type: 'widget',
                 prefs: {
                     'initialCenter': '',
-                    'initialZoom': ''
+                    'initialZoom': '',
+                    'poiZoom': 10
                 },
                 outputs: ['poiListOutput']
             });
@@ -50,7 +51,55 @@
 
         });
 
-        describe("addLayer", function () {
+        describe("centerPoI(poi_list)", () => {
+
+            it("should work with one Poi", () => {
+                widget.init();
+                spyOn(widget.map.getView(), 'fit').and.callThrough();
+                // TODO
+                widget.registerPoI({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+
+                widget.centerPoI([{id: '1'}]);
+
+                expect(widget.map.getView().fit).toHaveBeenCalledTimes(1);
+            });
+
+            it("should work with multiple Poi", () => {
+                widget.init();
+                spyOn(widget.map.getView(), 'fit').and.callThrough();
+                // TODO
+                widget.registerPoI({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                widget.registerPoI({
+                    id: '2',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [1, 0]
+                    }
+                });
+
+                widget.centerPoI([{id: '1'}, {id: '2'}]);
+
+                expect(widget.map.getView().fit).toHaveBeenCalledTimes(1);
+            });
+
+        });
+
+        describe("addLayer(options)", function () {
 
             it("throws an EndpointValueError exception for invalid layer types", () => {
                 widget.init();

@@ -286,6 +286,30 @@
         iconFeature.setStyle(style);
     };
 
+    /**
+     * Centers map view on the provided PoIs.
+     *
+     * @param poi_info
+     */
+    Widget.prototype.centerPoI = function centerPoI(poi_info) {
+        var geometry, zoom;
+
+        geometry = new ol.geom.GeometryCollection(poi_info.map((poi) => {
+            var feature = this.vector_source.getFeatureById(poi.id);
+            return feature.getGeometry();
+        }));
+
+        // Update map view
+        zoom = parseInt(MashupPlatform.prefs.get('poiZoom'), 10);
+        this.map.getView().fit(geometry.getExtent(), {
+            maxZoom: zoom
+        });
+
+        if (poi_info.length == 1) {
+            this.select_feature(this.vector_source.getFeatureById(poi_info[0].id));
+        }
+    };
+
     var format_builders = {
         "GPX": ol.format.GPX,
         "KML": ol.format.KML,
