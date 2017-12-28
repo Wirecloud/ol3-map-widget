@@ -21,19 +21,24 @@
 
     "use strict";
 
+    var parseInputEndpointData = function parseInputEndpointData(data) {
+        if (typeof data === "string") {
+            try {
+                data = JSON.parse(data);
+            } catch (e) {
+                throw new MashupPlatform.wiring.EndpointTypeValue();
+            }
+        } else if (data == null || typeof data !== "object") {
+            throw new MashupPlatform.wiring.EndpointTypeValue();
+        }
+        return data;
+    };
+
     var widget = new Widget('body', '#incoming-modal');
     widget.init();
 
     MashupPlatform.wiring.registerCallback('layerInfo', (command_info) => {
-        if (typeof command_info === "string") {
-            try {
-                command_info = JSON.parse(command_info);
-            } catch (e) {
-                throw new MashupPlatform.wiring.EndpointTypeValue();
-            }
-        } else if (command_info == null || typeof command_info !== "object") {
-            throw new MashupPlatform.wiring.EndpointTypeValue();
-        }
+        poi_info = parseInputEndpointData(poi_info);
 
         switch (command_info.action) {
         case "addLayer":
@@ -51,15 +56,7 @@
     });
 
     MashupPlatform.wiring.registerCallback('poiInput', (poi_info) => {
-        if (typeof poi_info === "string") {
-            try {
-                poi_info = JSON.parse(poi_info);
-            } catch (e) {
-                throw new MashupPlatform.wiring.EndpointTypeValue();
-            }
-        } else if (poi_info == null || typeof poi_info !== "object") {
-            throw new MashupPlatform.wiring.EndpointTypeValue();
-        }
+        poi_info = parseInputEndpointData(poi_info);
 
         if (!Array.isArray(poi_info)) {
             poi_info = [poi_info];
@@ -68,15 +65,7 @@
     });
 
     MashupPlatform.wiring.registerCallback('replacePoIs', (poi_info) => {
-        if (typeof poi_info === "string") {
-            try {
-                poi_info = JSON.parse(poi_info);
-            } catch (e) {
-                throw new MashupPlatform.wiring.EndpointTypeValue();
-            }
-        } else if (poi_info == null || typeof poi_info !== "object") {
-            throw new MashupPlatform.wiring.EndpointTypeValue();
-        }
+        poi_info = parseInputEndpointData(poi_info);
 
         widget.vector_source.clear();
         if (!Array.isArray(poi_info)) {
