@@ -38,7 +38,7 @@
     widget.init();
 
     MashupPlatform.wiring.registerCallback('layerInfo', (command_info) => {
-        poi_info = parseInputEndpointData(poi_info);
+        command_info = parseInputEndpointData(command_info);
 
         switch (command_info.action) {
         case "addLayer":
