@@ -38,15 +38,55 @@
             widget = new Widget();
         });
 
-        it("supports adding PoIs", () => {
-            widget.init();
-            widget.registerPoI({
-                id: '1',
-                data: {},
-                location: {
-                    type: 'Point',
-                    coordinates: [0, 0]
-                }
+        afterEach(function () {
+            if (widget && widget.visiblePoisTimeout) {
+                clearTimeout(widget.visiblePoisTimeout);
+            }
+        });
+
+        describe("registerPoI(poi)", () => {
+
+            it("supports adding PoIs", () => {
+                widget.init();
+                spyOn(widget.vector_source, 'addFeature');
+                widget.registerPoI({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+            });
+
+            it("supports updating PoIs", () => {
+                widget.init();
+                var feature_mock = new ol.Feature();
+                spyOn(feature_mock, 'set');
+                spyOn(feature_mock, 'setGeometry');
+                spyOn(feature_mock, 'setStyle');
+
+                spyOn(widget.vector_source, 'addFeature');
+                spyOn(widget.vector_source, 'getFeatureById').and.returnValue(feature_mock);
+                widget.registerPoI({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+
+                expect(feature_mock.set).toHaveBeenCalledWith('data', {});
+                expect(feature_mock.set).toHaveBeenCalledWith('title', undefined);
+                expect(feature_mock.set).toHaveBeenCalledWith('content', undefined);
+                expect(feature_mock.setGeometry).toHaveBeenCalledTimes(1);
+                expect(feature_mock.setStyle).toHaveBeenCalledTimes(1);
+
+                expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(0);
+                expect(feature_mock.setStyle).toHaveBeenCalledWith(jasmine.any(Object));
             });
 
         });
