@@ -682,15 +682,15 @@
 
         // Delay popover show action
         setTimeout(function () {
-            var marker_coordinates, marker_position, marker_image, marker_style, refpos;
+            var marker_coordinates, marker_position, marker_image, marker_size, marker_style, refpos;
 
             marker_coordinates = ol.extent.getCenter(feature.getGeometry().getExtent());
             marker_position = this.map.getPixelFromCoordinate(marker_coordinates);
-            marker_style = feature.getStyle()(feature, this.map.getView().getResolution());
+            marker_style = feature.getStyle();
             marker_image = marker_style.getImage();
-            if (marker_image != null) {
+            if (marker_image != null && (marker_size = marker_image.getSize()) != null) {
                 var marker_scale = marker_image.getScale();
-                var marker_size = marker_image.getSize().map(function (value) {
+                marker_size = marker_size.map(function (value) {
                     return value * marker_scale;
                 });
                 refpos = {
