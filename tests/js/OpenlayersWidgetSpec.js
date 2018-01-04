@@ -1,3 +1,8 @@
+/*
+ *   Copyright (c) 2017 CoNWeT Lab., Universidad Politecnica de Madrid
+ *   Copyright (c) 2017-2018 Future Internet Consulting and Development Solutions S.L.
+ */
+
 /* global MashupPlatform, MockMP, ol, Widget */
 
 (function () {
@@ -61,6 +66,21 @@
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
             });
 
+            it("supports adding PoIs using the deprecated currentLocation ", () => {
+                widget.init();
+                spyOn(widget.vector_source, 'addFeature');
+                widget.registerPoI({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+            });
+
             it("supports updating PoIs", () => {
                 widget.init();
                 var feature_mock = new ol.Feature();
@@ -87,6 +107,103 @@
 
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(0);
                 expect(feature_mock.setStyle).toHaveBeenCalledWith(jasmine.any(Object));
+            });
+
+            describe("handles the style option:", () => {
+                const test = function (style, expected) {
+                    return () => {
+                        widget.init();
+                        spyOn(widget.vector_source, 'addFeature');
+                        widget.registerPoI({
+                            id: '1',
+                            data: {},
+                            location: {
+                                type: 'Point',
+                                coordinates: [0, 0]
+                            },
+                            style: style
+                        });
+                        expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                        expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+                        let fstyle = widget.vector_source.addFeature.calls.argsFor(0)[0].getStyle();
+                        expect(fstyle.getStroke().getColor()).toEqual(expected.stroke.color);
+                        expect(fstyle.getStroke().getWidth()).toEqual(expected.stroke.width);
+                        expect(fstyle.getFill().getColor()).toEqual(expected.fill.color);
+                    };
+                };
+
+                it("null (default)", test(
+                    null,
+                    {stroke: {color: "blue", width: 3}, fill: {color: "rgba(0, 0, 255, 0.1)"}}
+                ));
+                it("empty (default)", test(
+                    {},
+                    {stroke: {color: "blue", width: 3}, fill: {color: "rgba(0, 0, 255, 0.1)"}}
+                ));
+                it("partial (stroke)", test(
+                    {stroke: "#F00"},
+                    {stroke: {color: "#F00", width: 3}, fill: {color: "rgba(0, 0, 255, 0.1)"}}
+                ));
+                it("partial (fill)", test(
+                    {fill: "#F00"},
+                    {stroke: {color: "blue", width: 3}, fill: {color: "#F00"}}
+                ));
+                it("full sytle", test(
+                    {stroke: {color: "#F00", width: 5}, fill: {color: "#0F0"}},
+                    {stroke: {color: "#F00", width: 5}, fill: {color: "#0F0"}}
+                ));
+
+            });
+
+            describe("handles the icon option:", () => {
+                const test = function (icon, expected) {
+                    return () => {
+                        widget.init();
+                        spyOn(widget.vector_source, 'addFeature');
+                        widget.registerPoI({
+                            id: '1',
+                            data: {},
+                            location: {
+                                type: 'Point',
+                                coordinates: [0, 0]
+                            },
+                            icon: icon
+                        });
+                        expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                        expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+                        let fimage = widget.vector_source.addFeature.calls.argsFor(0)[0].getStyle().getImage();
+                        // TODO anchor can only be tested if anchorXUnits and anchorYUnits are both set to pixels
+                        if (expected.anchor != null) {
+                            expect(fimage.getAnchor()).toEqual(expected.anchor);
+                        }
+                        expect(fimage.getOpacity()).toEqual(expected.opacity);
+                        expect(fimage.getScale()).toEqual(expected.scale);
+                        expect(fimage.getSrc()).toEqual(expected.src);
+                        // TODO search a way to test anchorXUnits and anchorYUnits are handled correctly
+                    };
+                };
+
+                it("null (default)", test(
+                    null,
+                    {opacity: 0.75, src: "http://localhost:9876/images/icon.png", scale: 1}
+                ));
+                it("empty (default)", test(
+                    {},
+                    {opacity: 0.75, src: "http://localhost:9876/images/icon.png", scale: 1}
+                ));
+                it("url string", test(
+                    "https://www.example.com/image.png",
+                    {opacity: 1, src: "https://www.example.com/image.png", scale: 1}
+                ));
+                it("partial (url)", test(
+                    {src: "https://www.example.com/image.png"},
+                    {opacity: 1, src: "https://www.example.com/image.png", scale: 1}
+                ));
+                it("full icon", test(
+                    {anchor: [40, 50], anchorXUnits: 'pixels', anchorYUnits: 'pixels', opacity: 0.2, src: "https://www.example.com/image.png", scale: 0.1},
+                    {anchor: [40, 50], opacity: 0.2, src: "https://www.example.com/image.png", scale: 0.1}
+                ));
+
             });
 
         });

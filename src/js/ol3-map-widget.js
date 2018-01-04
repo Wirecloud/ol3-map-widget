@@ -1,3 +1,8 @@
+/*
+ *   Copyright (c) 2017 CoNWeT Lab., Universidad Politecnica de Madrid
+ *   Copyright (c) 2017-2018 Future Internet Consulting and Development Solutions S.L.
+ */
+
 /* globals ol, StyledElements */
 
 (function () {
@@ -255,24 +260,30 @@
         }
 
         if (typeof poi_info.icon === 'string') {
-            style = build_basic_style({
-                image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
-                    anchor: [0.5, 0.5],
-                    anchorXUnits: 'fraction',
-                    anchorYUnits: 'fraction',
-                    opacity: 1,
-                    src: poi_info.icon,
-                    scale: 0.5
-                })),
-                style: poi_info.style
-            });
-        } else if (typeof poi_info.icon === 'object') {
+            poi_info.icon = {
+                src: poi_info.icon
+            };
+        }
+
+        if (poi_info.icon != null && typeof poi_info.icon === 'object' && poi_info.icon.src != null) {
+            if (!Array.isArray(poi_info.icon.anchor)) {
+                poi_info.icon.anchor = [0.5, 0.5];
+            }
+
+            if (poi_info.icon.opacity == null || typeof poi_info.icon.opacity !== "number") {
+                poi_info.icon.opacity = 1;
+            }
+
+            if (poi_info.icon.scale == null || typeof poi_info.icon.scale !== "number") {
+                poi_info.icon.scale = 1;
+            }
+
             style = build_basic_style({
                 image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
                     anchor: poi_info.icon.anchor,
-                    anchorXUnits: 'fraction',
-                    anchorYUnits: 'fraction',
-                    opacity: 1,
+                    anchorXUnits: poi_info.icon.anchorXUnits,
+                    anchorYUnits: poi_info.icon.anchorYUnits,
+                    opacity: poi_info.icon.opacity,
                     src: poi_info.icon.src,
                     scale: poi_info.icon.scale
                 })),
