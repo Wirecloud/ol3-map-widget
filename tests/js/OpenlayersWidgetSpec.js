@@ -66,15 +66,15 @@
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
             });
 
-            it("supports adding PoIs using the deprecated currentLocation ", () => {
+            it("supports adding PoIs using the deprecated currentLocation option", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
                 widget.registerPoI({
                     id: '1',
                     data: {},
-                    location: {
-                        type: 'Point',
-                        coordinates: [0, 0]
+                    currentLocation: {
+                        lat: 0,
+                        lng: 0
                     }
                 });
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
@@ -381,6 +381,19 @@
                         type: "Vector",
                         url: 'https://openlayers.org/en/v4.6.4/examples/data/kml/2012_Earthquakes_Mag5.kml',
                         id: "LayerName"
+                    });
+                }).toThrowError(MashupPlatform.wiring.EndpointValueError);
+            });
+
+            it("raises an EndpointValueError exception when trying to create a Vector layer without providing a layer url", function () {
+                widget.init();
+                spyOn(widget.map, 'addLayer');
+
+                expect(() => {
+                    widget.addLayer({
+                        type: "Vector",
+                        id: "LayerName",
+                        format: "KML"
                     });
                 }).toThrowError(MashupPlatform.wiring.EndpointValueError);
             });

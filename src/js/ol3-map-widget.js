@@ -377,6 +377,7 @@
         }
 
         var parsed_url = new URL(url);
+        /* istanbul ignore if */
         if (document.location.protocol === 'https:' && parsed_url.protocol !== 'https:') {
             return MashupPlatform.http.buildProxyURL(parsed_url);
         } else {
