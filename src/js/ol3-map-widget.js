@@ -160,6 +160,7 @@
         this.selected_feature = null;
         this.layers_widget = null;
         this.base_layer = null;
+        this.popover = null;
         this.layers = {};
     };
 
@@ -245,7 +246,7 @@
             this.vector_source.addFeature(iconFeature);
         }
 
-        iconFeature.set('data', poi_info.data);
+        iconFeature.set('data', poi_info);
         iconFeature.set('title', poi_info.title);
         iconFeature.set('content', poi_info.infoWindow);
         if ('location' in poi_info) {
@@ -728,7 +729,6 @@
     };
 
     Widget.prototype.select_feature = function select_feature(feature) {
-        // this.selected_feature = feature;
         this.center_popup_menu(feature);
     };
 

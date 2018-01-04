@@ -213,6 +213,27 @@
 
             });
 
+            describe("moveend", () => {
+
+                it("should send visible pois", () => {
+                    widget.init();
+                    MashupPlatform.widget.outputs.poiListOutput.connect({simulate: () => {}});
+                    spyOn(widget.map.getView(), 'calculateExtent');
+                    const poi_info = {
+                        "id": "1",
+                        "location": {"type": "Point"}
+                    };
+                    spyOn(widget.vector_source, 'getFeaturesInExtent').and.returnValue([
+                        {get: () => {return poi_info;}}
+                    ]);
+
+                    widget.map.dispatchEvent("moveend");
+
+                    expect(MashupPlatform.widget.outputs.poiListOutput.pushEvent).toHaveBeenCalledWith([poi_info]);
+                });
+
+            });
+
         });
 
         describe("registerPoI(poi)", () => {
@@ -256,16 +277,17 @@
 
                 spyOn(widget.vector_source, 'addFeature');
                 spyOn(widget.vector_source, 'getFeatureById').and.returnValue(feature_mock);
-                widget.registerPoI({
+                let poi_info = {
                     id: '1',
                     data: {},
                     location: {
                         type: 'Point',
                         coordinates: [0, 0]
                     }
-                });
+                };
+                widget.registerPoI(poi_info);
 
-                expect(feature_mock.set).toHaveBeenCalledWith('data', {});
+                expect(feature_mock.set).toHaveBeenCalledWith('data', poi_info);
                 expect(feature_mock.set).toHaveBeenCalledWith('title', undefined);
                 expect(feature_mock.set).toHaveBeenCalledWith('content', undefined);
                 expect(feature_mock.setGeometry).toHaveBeenCalledTimes(1);
