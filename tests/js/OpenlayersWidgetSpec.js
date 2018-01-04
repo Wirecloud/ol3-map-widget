@@ -267,7 +267,24 @@
                 }).toThrowError(MashupPlatform.wiring.EndpointValueError);
             });
 
-            it("supports ImageWMS layers", function () {
+            it("supports Image WMS layers", function () {
+                widget.init();
+                spyOn(widget.map, 'addLayer');
+
+                widget.addLayer({
+                    type: "ImageWMS",
+                    url: "http://wms.example.com",
+                    name: "LayerName",
+                    params: {
+                        'LAYERS': 'mylayer'
+                    }
+                });
+
+                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Image));
+                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.ImageWMS));
+            });
+
+            it("supports Image WMS layers (provides a default params option)", function () {
                 widget.init();
                 spyOn(widget.map, 'addLayer');
 
@@ -275,6 +292,23 @@
                     type: "ImageWMS",
                     url: "http://wms.example.com",
                     name: "LayerName"
+                });
+
+                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Image));
+                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.ImageWMS));
+            });
+
+            it("supports Image WMS layers (uses layer name as default LAYERS parameter)", function () {
+                widget.init();
+                spyOn(widget.map, 'addLayer');
+
+                widget.addLayer({
+                    type: "ImageWMS",
+                    url: "http://wms.example.com",
+                    name: "LayerName",
+                    params: {
+                        'FORMAT': 'image/jpeg'
+                    }
                 });
 
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Image));
@@ -338,6 +372,19 @@
                 expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.Vector));
             });
 
+            it("raises an EndpointValueError exception when trying to create a Vector layer without providing the format", function () {
+                widget.init();
+                spyOn(widget.map, 'addLayer');
+
+                expect(() => {
+                    widget.addLayer({
+                        type: "Vector",
+                        url: 'https://openlayers.org/en/v4.6.4/examples/data/kml/2012_Earthquakes_Mag5.kml',
+                        name: "LayerName"
+                    });
+                }).toThrowError(MashupPlatform.wiring.EndpointValueError);
+            });
+
             it("supports Vector layers (with format options)", function () {
                 widget.init();
                 spyOn(widget.map, 'addLayer');
@@ -355,6 +402,25 @@
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Vector));
                 expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.Vector));
             });
+
+            it("supports Vector layers (with GML format options)", function () {
+                widget.init();
+                spyOn(widget.map, 'addLayer');
+
+                widget.addLayer({
+                    type: "Vector",
+                    url: 'https://openlayers.org/en/v4.6.4/examples/data/kml/2012_Earthquakes_Mag5.kml',
+                    format: {
+                        type: "GML",
+                        curve: true
+                    },
+                    name: "LayerName"
+                });
+
+                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Vector));
+                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.Vector));
+            });
+
 
             it("supports VectorTile layers", function () {
                 widget.init();
@@ -375,7 +441,6 @@
                 expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.VectorTile));
             });
 
-
             it("supports OSM layers", function () {
                 widget.init();
                 spyOn(widget.map, 'addLayer');
@@ -387,6 +452,87 @@
 
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
                 expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.OSM));
+            });
+
+            it("supports Tile WMS layers", function () {
+                widget.init();
+                spyOn(widget.map, 'addLayer');
+
+                widget.addLayer({
+                    type: "TileWMS",
+                    name: "LayerName",
+                    url: 'https://wms.geo.admin.ch/',
+                    params: {
+                        'LAYERS': 'ch.swisstopo.pixelkarte-farbe-pk1000.noscale',
+                        'FORMAT': 'image/jpeg'
+                    },
+                    serverType: 'mapserver'
+                });
+
+                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
+                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.TileWMS));
+            });
+
+            it("supports Tile WMS layers (provides a default params option)", function () {
+                widget.init();
+                spyOn(widget.map, 'addLayer');
+
+                widget.addLayer({
+                    type: "TileWMS",
+                    name: "LayerName",
+                    url: 'https://wms.geo.admin.ch/',
+                    serverType: 'mapserver'
+                });
+
+                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
+                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.TileWMS));
+            });
+
+            it("supports Tile WMS layers (uses layer name as default LAYERS parameter)", function () {
+                widget.init();
+                spyOn(widget.map, 'addLayer');
+
+                widget.addLayer({
+                    type: "TileWMS",
+                    name: "LayerName",
+                    url: 'https://wms.geo.admin.ch/',
+                    params: {
+                        'FORMAT': 'image/jpeg'
+                    },
+                    serverType: 'mapserver'
+                });
+
+                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
+                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.TileWMS));
+            });
+
+            it("supports Tile JSON layers", function () {
+                widget.init();
+                spyOn(widget.map, 'addLayer');
+
+                widget.addLayer({
+                    type: "TileJSON",
+                    name: "LayerName",
+                    url: 'https://api.tiles.mapbox.com/v3/mapbox.geography-class.json?secure',
+                    crossOrigin: 'anonymous'
+                });
+
+                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
+                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.TileJSON));
+            });
+
+            it("supports Tile UTF Grid layers", function () {
+                widget.init();
+                spyOn(widget.map, 'addLayer');
+
+                widget.addLayer({
+                    type: "TileUTFGrid",
+                    name: "LayerName",
+                    url: 'https://api.tiles.mapbox.com/v4/mapbox.geography-class.json?secure&access_token=XXX'
+                });
+
+                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
+                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.TileUTFGrid));
             });
 
             it("supports XYZ layers", function () {

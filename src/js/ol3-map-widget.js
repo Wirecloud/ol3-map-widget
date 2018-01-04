@@ -322,23 +322,26 @@
     };
 
     var format_builders = {
-        "GPX": ol.format.GPX,
-        "KML": ol.format.KML,
-        "OSMXML": ol.format.OSMXML,
-        "WFS": ol.format.WFS,
-        "WMSGetFeatureInfo": ol.format.WMSGetFeatureInfo,
-        "IGC": ol.format.IGC,
-        "Polyline": ol.format.Polyline,
-        "WKT": ol.format.WKT,
-        "MVT": ol.format.MVT,
         "EsriJSON": ol.format.EsriJSON,
         "GeoJSON": ol.format.GeoJSON,
-        "TopoJSON": ol.format.TopoJSON
+        "GML": ol.format.GML,
+        "GML2": ol.format.GML2,
+        "GML3": ol.format.GML3,
+        "GPX": ol.format.GPX,
+        "KML": ol.format.KML,
+        "IGC": ol.format.IGC,
+        "OSMXML": ol.format.OSMXML,
+        "MVT": ol.format.MVT,
+        "Polyline": ol.format.Polyline,
+        "TopoJSON": ol.format.TopoJSON,
+        "WFS": ol.format.WFS,
+        "WKT": ol.format.WKT,
+        "WMSGetFeatureInfo": ol.format.WMSGetFeatureInfo,
     }
 
     var addFormat = function addFormat(layer_info) {
-        if (!layer_info.format) {
-            return undefined;
+        if (layer_info.format == null) {
+            throw new MashupPlatform.wiring.EndpointValueError("format option is required");
         }
 
         if (typeof layer_info.format === "string") {
@@ -347,14 +350,8 @@
             };
         }
 
-        if (layer_info.format.type === "GML") {
-            return new ol.format.GML({srsName: layer_info.srsName});
-        }
-        if (layer_info.format.type === "GML2") {
-            return new ol.format.GML2({srsName: layer_info.srsName});
-        }
-        if (layer_info.format.type === "GML3") {
-            return new ol.format.GML3({srsName: layer_info.srsName});
+        if (["GML", "GML2", "GML3"].indexOf(layer_info.format.type) !== -1 && typeof layer_info.format.srsName !== "string") {
+            layer_info.format.srsName = layer_info.srsName;
         }
 
         return new format_builders[layer_info.format.type](layer_info.format)
@@ -388,9 +385,7 @@
     };
 
     var addImageWMSLayer = function addImageWMSLayer(layer_info) {
-        var layer, params;
-
-        params = layer_info.params;
+        var params = layer_info.params;
 
         if (params == null) {
             params = {
@@ -400,8 +395,7 @@
             params.LAYERS = layer_info.id;
         }
 
-
-        layer = new ol.layer.Image({
+        return new ol.layer.Image({
             extent: layer_info.extent,
             crossOrigin: 'anonymous',
             source: new ol.source.ImageWMS({
@@ -415,8 +409,6 @@
                 ratio: layer_info.ratio
             })
         });
-
-        return layer;
     };
 
     var addImageArcGISRestLayer = function addImageArcGISRestLayer(layer_info) {
@@ -515,23 +507,36 @@
         });
     };
 
-    var addTileImageLayer = function addTileImageLayer(layer_info) {
+    var addTileWMSLayer = function addTileWMSLayer(layer_info) {
+        var params = layer_info.params;
+
+        if (params == null) {
+            params = {
+                'LAYERS': layer_info.id
+            };
+        } else if (params.LAYERS == null) {
+            params.LAYERS = layer_info.id;
+        }
+
         return new ol.layer.Tile({
             extent: layer_info.extent,
-            source: new ol.source.TileImage({
-                wrapX: layer_info.wrapX,
-                tilePixelRatio: layer_info.tilePixelRatio,
-                opaque: layer_info.opaque,
+            source: new ol.source.TileWMS({
+                cacheSize: layer_info.cacheSize,
+                crossOrigin: layer_info.crossOrigin,
+                hidpi: layer_info.hidpi,
                 logo: layer_info.logo,
+                opaque: layer_info.opaque,
+                params: layer_info.params,
                 url: build_compatible_url(layer_info.url, true),
+                wrapX: layer_info.wrapX
             })
         });
     };
 
-    var addTileJsonLayer = function addTileJsonLayer(layer_info) {
+    var addTileJSONLayer = function addTileJSONLayer(layer_info) {
         return new ol.layer.Tile({
             extent: layer_info.extent,
-            source: new ol.source.TileJson({
+            source: new ol.source.TileJSON({
                 cacheSize: layer_info.cacheSize,
                 crossOrigin: layer_info.crossOrigin,
                 jsonp: layer_info.jsonp,
@@ -737,9 +742,9 @@
         "ImageStatic": addImageStaticLayer,
         "OSM": addOSMLayer,
         "Stamen": addStamenLayer,
-        "TileImage": addTileImageLayer,
-        "TileJson": addTileJsonLayer,
+        "TileJSON": addTileJSONLayer,
         "TileUTFGrid": addTileUTFGridLayer,
+        "TileWMS": addTileWMSLayer,
         "Vector": addVectorLayer,
         "VectorTile": addVectorTileLayer,
         "WMTS": addWMTSLayer,
