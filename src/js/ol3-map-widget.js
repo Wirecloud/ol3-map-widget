@@ -170,7 +170,7 @@
             }
         });
 
-        var initialLayer = CORE_LAYERS.WIKIMEDIA;
+        this.base_layer = CORE_LAYERS.WIKIMEDIA;
         var initialCenter = MashupPlatform.prefs.get("initialCenter").split(",").map(Number);
         if (initialCenter.length != 2 || !Number.isFinite(initialCenter[0]) || !Number.isFinite(initialCenter[0])) {
             initialCenter = [0, 0];
@@ -181,7 +181,7 @@
         this.map = new ol.Map({
             target: document.getElementById('map'),
             layers: [
-                initialLayer,
+                this.base_layer,
                 this.vector_layer
             ],
             view: new ol.View({
@@ -667,14 +667,11 @@
     };
 
     Widget.prototype.setBaseLayer = function setBaseLayer(layer_info) {
-        if ('id' in layer_info && !(layer_info.id in CORE_LAYERS)) {
-            throw new TypeError('Invalid layer id');
+        if (layer_info.id == null || !(layer_info.id in CORE_LAYERS)) {
+            throw new MashupPlatform.wiring.EndpointValueError('Invalid layer id');
         }
 
-        if (this.base_layer != null) {
-            this.map.removeLayer(this.base_layer);
-            this.base_layer = null;
-        }
+        this.map.removeLayer(this.base_layer);
         this.base_layer = CORE_LAYERS[layer_info.id];
         this.map.getLayers().insertAt(0, this.base_layer);
     };

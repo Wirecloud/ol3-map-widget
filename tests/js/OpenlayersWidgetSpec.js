@@ -274,7 +274,7 @@
                 widget.addLayer({
                     type: "ImageWMS",
                     url: "http://wms.example.com",
-                    name: "LayerName",
+                    id: "LayerName",
                     params: {
                         'LAYERS': 'mylayer'
                     }
@@ -291,21 +291,21 @@
                 widget.addLayer({
                     type: "ImageWMS",
                     url: "http://wms.example.com",
-                    name: "LayerName"
+                    id: "LayerName"
                 });
 
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Image));
                 expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.ImageWMS));
             });
 
-            it("supports Image WMS layers (uses layer name as default LAYERS parameter)", function () {
+            it("supports Image WMS layers (uses layer id as default LAYERS parameter)", function () {
                 widget.init();
                 spyOn(widget.map, 'addLayer');
 
                 widget.addLayer({
                     type: "ImageWMS",
                     url: "http://wms.example.com",
-                    name: "LayerName",
+                    id: "LayerName",
                     params: {
                         'FORMAT': 'image/jpeg'
                     }
@@ -322,7 +322,7 @@
                 widget.addLayer({
                     type: "ImageArcGISRest",
                     url: "http://wms.example.com",
-                    name: "LayerName"
+                    id: "LayerName"
                 });
 
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Image));
@@ -336,7 +336,7 @@
                 widget.addLayer({
                     type: "ImageMapGuide",
                     url: "http://wms.example.com",
-                    name: "LayerName"
+                    id: "LayerName"
                 });
 
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Image));
@@ -350,7 +350,7 @@
                 widget.addLayer({
                     type: "ImageStatic",
                     url: "http://www.example.com/map.png",
-                    name: "LayerName"
+                    id: "LayerName"
                 });
 
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Image));
@@ -365,7 +365,7 @@
                     type: "Vector",
                     url: 'https://openlayers.org/en/v4.6.4/examples/data/kml/2012_Earthquakes_Mag5.kml',
                     format: "KML",
-                    name: "LayerName"
+                    id: "LayerName"
                 });
 
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Vector));
@@ -380,7 +380,7 @@
                     widget.addLayer({
                         type: "Vector",
                         url: 'https://openlayers.org/en/v4.6.4/examples/data/kml/2012_Earthquakes_Mag5.kml',
-                        name: "LayerName"
+                        id: "LayerName"
                     });
                 }).toThrowError(MashupPlatform.wiring.EndpointValueError);
             });
@@ -396,7 +396,7 @@
                         type: "KML",
                         extractStyles: false
                     },
-                    name: "LayerName"
+                    id: "LayerName"
                 });
 
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Vector));
@@ -414,7 +414,7 @@
                         type: "GML",
                         curve: true
                     },
-                    name: "LayerName"
+                    id: "LayerName"
                 });
 
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Vector));
@@ -434,7 +434,7 @@
                         layerName: 'layer',
                         layers: ['water', 'roads', 'buildings']
                     },
-                    name: "LayerName"
+                    id: "LayerName"
                 });
 
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
@@ -447,7 +447,7 @@
 
                 widget.addLayer({
                     type: "OSM",
-                    name: "LayerName"
+                    id: "LayerName"
                 });
 
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
@@ -460,7 +460,7 @@
 
                 widget.addLayer({
                     type: "TileWMS",
-                    name: "LayerName",
+                    id: "LayerName",
                     url: 'https://wms.geo.admin.ch/',
                     params: {
                         'LAYERS': 'ch.swisstopo.pixelkarte-farbe-pk1000.noscale',
@@ -479,7 +479,7 @@
 
                 widget.addLayer({
                     type: "TileWMS",
-                    name: "LayerName",
+                    id: "LayerName",
                     url: 'https://wms.geo.admin.ch/',
                     serverType: 'mapserver'
                 });
@@ -488,13 +488,13 @@
                 expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.TileWMS));
             });
 
-            it("supports Tile WMS layers (uses layer name as default LAYERS parameter)", function () {
+            it("supports Tile WMS layers (uses layer id as default LAYERS parameter)", function () {
                 widget.init();
                 spyOn(widget.map, 'addLayer');
 
                 widget.addLayer({
                     type: "TileWMS",
-                    name: "LayerName",
+                    id: "LayerName",
                     url: 'https://wms.geo.admin.ch/',
                     params: {
                         'FORMAT': 'image/jpeg'
@@ -512,7 +512,7 @@
 
                 widget.addLayer({
                     type: "TileJSON",
-                    name: "LayerName",
+                    id: "LayerName",
                     url: 'https://api.tiles.mapbox.com/v3/mapbox.geography-class.json?secure',
                     crossOrigin: 'anonymous'
                 });
@@ -527,7 +527,7 @@
 
                 widget.addLayer({
                     type: "TileUTFGrid",
-                    name: "LayerName",
+                    id: "LayerName",
                     url: 'https://api.tiles.mapbox.com/v4/mapbox.geography-class.json?secure&access_token=XXX'
                 });
 
@@ -542,7 +542,7 @@
                 widget.addLayer({
                     type: "XYZ",
                     url: "https://{a-c}.maptile.maps.svc.ovi.com/maptiler/v2/maptile/newest/carnav.day/{z}/{x}/{y}/256/png",
-                    name: "LayerName"
+                    id: "LayerName"
                 });
 
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
@@ -556,7 +556,7 @@
                 widget.addLayer({
                     type: "Stamen",
                     layer: "watercolor",
-                    name: "LayerName"
+                    id: "LayerName"
                 });
 
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
@@ -570,7 +570,7 @@
                 widget.addLayer({
                     type: "BingMaps",
                     imagerySet: "Road",
-                    name: "LayerName"
+                    id: "LayerName"
                 });
 
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
@@ -594,7 +594,7 @@
                             }
                         }]
                     },
-                    name: "LayerName"
+                    id: "LayerName"
                 });
 
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
@@ -608,7 +608,7 @@
                 widget.addLayer({
                     type: "WMTS",
                     url: "https://www.example.com/MapServer/WMTS/",
-                    name: "LayerName"
+                    id: "LayerName"
                 });
 
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
@@ -623,7 +623,7 @@
                     type: "Zoomify",
                     url: "http://vips.vtech.fr/cgi-bin/iipsrv.fcgi?zoomify=/mnt/MD1/AD00/plan_CHU-4HD-01/FOND.TIF/",
                     size: [9911, 6100],
-                    name: "LayerName"
+                    id: "LayerName"
                 });
 
                 expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
@@ -631,6 +631,61 @@
             });
 
         });
+
+        describe("removeLayer(options)", () => {
+
+            it("does nothing if the layer does not exist", () => {
+                widget.init();
+                spyOn(widget.map, 'removeLayer');
+
+                widget.removeLayer({
+                    id: "LayerName"
+                });
+
+                expect(widget.map.removeLayer).not.toHaveBeenCalled();
+            });
+
+            it("removes existing layers", () => {
+                widget.init();
+                spyOn(widget.map, 'removeLayer');
+                let layer_mock = jasmine.createSpy('layer_mock');
+                widget.layers["LayerName"] = layer_mock;
+
+                widget.removeLayer({
+                    id: "LayerName"
+                });
+
+                expect(widget.map.removeLayer).toHaveBeenCalledWith(layer_mock);
+                expect(widget.layers.LayerName).toBe(undefined);
+            });
+
+        });
+
+        describe("setBaseLayer(options)", () => {
+
+            it("throws an EndpointValueError if the new layer is not available", () => {
+                widget.init();
+
+                expect(() => {
+                    widget.setBaseLayer({
+                        id: 'inexistent'
+                    });
+                }).toThrowError(MashupPlatform.wiring.EndpointValueError);
+            });
+
+            it("switches current base layer", () => {
+                widget.init();
+
+                let initial_base_layer = widget.base_layer;
+                widget.setBaseLayer({
+                    id: 'CARTODB_LIGHT'
+                });
+
+                expect(widget.base_layer).not.toBe(initial_base_layer);
+            });
+
+        });
+
     });
 
 })();
