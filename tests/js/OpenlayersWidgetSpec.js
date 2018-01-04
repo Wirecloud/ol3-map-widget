@@ -49,6 +49,172 @@
             }
         });
 
+        describe("events", () => {
+
+            describe("click", () => {
+
+                it("on a not selected feature", () => {
+                    let pixel_mock = jasmine.createSpy('pixel');
+                    let feature_mock = new ol.Feature();
+                    widget.init();
+                    spyOn(widget, "select_feature");
+                    spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
+                        expect(pixel).toBe(pixel_mock);
+                        return listener(feature_mock);
+                    });
+
+                    widget.map.dispatchEvent({
+                        type: "click",
+                        pixel: pixel_mock
+                    });
+
+                    expect(widget.select_feature).toHaveBeenCalledWith(feature_mock);
+                });
+
+                it("on the selected feature", () => {
+                    let pixel_mock = jasmine.createSpy('pixel');
+                    let feature_mock = new ol.Feature();
+                    widget.init();
+                    widget.selected_feature = feature_mock;
+                    spyOn(widget, "select_feature");
+                    spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
+                        expect(pixel).toBe(pixel_mock);
+                        return listener(feature_mock);
+                    });
+
+                    widget.map.dispatchEvent({
+                        type: "click",
+                        pixel: pixel_mock
+                    });
+
+                    expect(widget.select_feature).not.toHaveBeenCalled();
+                });
+
+                it("on a not selected feature (but while there is a selected feature)", () => {
+                    let pixel_mock = jasmine.createSpy('pixel');
+                    let feature_mock1 = new ol.Feature();
+                    let feature_mock2 = new ol.Feature();
+                    widget.init();
+                    widget.selected_feature = feature_mock1;
+                    widget.popover = {
+                        hide: jasmine.createSpy('hide')
+                    };
+                    spyOn(widget, "select_feature");
+                    spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
+                        expect(pixel).toBe(pixel_mock);
+                        return listener(feature_mock2);
+                    });
+
+                    widget.map.dispatchEvent({
+                        type: "click",
+                        pixel: pixel_mock
+                    });
+
+                    expect(widget.popover.hide).not.toHaveBeenCalled();
+                    expect(widget.select_feature).toHaveBeenCalledWith(feature_mock2);
+                });
+
+                it("outside any feature", () => {
+                    let pixel_mock = jasmine.createSpy('pixel');
+                    widget.init();
+                    spyOn(widget, "select_feature");
+                    spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
+                        expect(pixel).toBe(pixel_mock);
+                        return null;
+                    });
+
+                    widget.map.dispatchEvent({
+                        type: "click",
+                        pixel: pixel_mock
+                    });
+
+                    expect(widget.select_feature).not.toHaveBeenCalled();
+                });
+
+                it("outside any feature (but while there is a selected feature)", () => {
+                    let pixel_mock = jasmine.createSpy('pixel');
+                    let feature_mock = new ol.Feature();
+                    widget.init();
+                    widget.selected_feature = feature_mock;
+                    let popover_mock = widget.popover = {
+                        hide: jasmine.createSpy('hide')
+                    };
+                    spyOn(widget, "select_feature");
+                    spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
+                        expect(pixel).toBe(pixel_mock);
+                        return null;
+                    });
+
+                    widget.map.dispatchEvent({
+                        type: "click",
+                        pixel: pixel_mock
+                    });
+
+                    expect(widget.popover).toBe(null)
+                    expect(popover_mock.hide).toHaveBeenCalled();
+                    expect(widget.select_feature).not.toHaveBeenCalled();
+                });
+
+            });
+
+            describe("pointermove", () => {
+
+                it("outside any feature", () => {
+                    widget.init();
+                    spyOn(widget.map, "getEventPixel");
+                    spyOn(widget.map, "hasFeatureAtPixel").and.returnValue(null);
+                    widget.map.dispatchEvent({
+                        type: "pointermove",
+                        dragging: false
+                    });
+
+                    expect(widget.map.getTarget().style.cursor).toBe("");
+                });
+
+                it("inside a feature", () => {
+                    widget.init();
+                    spyOn(widget.map, "getEventPixel");
+                    spyOn(widget.map, "hasFeatureAtPixel").and.returnValue({});
+                    widget.map.dispatchEvent({
+                        type: "pointermove",
+                        dragging: false
+                    });
+
+                    expect(widget.map.getTarget().style.cursor).toBe("pointer");
+                });
+
+                it("dragging (no popover)", () => {
+                    widget.init();
+                    spyOn(widget.map, "getEventPixel");
+                    spyOn(widget.map, "hasFeatureAtPixel").and.returnValue({});
+
+                    widget.map.dispatchEvent({
+                        type: "pointermove",
+                        dragging: true
+                    });
+                });
+
+                it("dragging (popover)", () => {
+                    widget.init();
+                    spyOn(widget.map, "getEventPixel");
+                    spyOn(widget.map, "hasFeatureAtPixel").and.returnValue({});
+                    let popover_mock = widget.popover = {
+                        hide: jasmine.createSpy('hide')
+                    };
+
+                    widget.map.dispatchEvent({
+                        type: "pointermove",
+                        dragging: true
+                    });
+
+                    expect(popover_mock.hide).toHaveBeenCalled();
+                    expect(widget.popover).toBe(null);
+                });
+
+            });
+
+        });
+
         describe("registerPoI(poi)", () => {
 
             it("supports adding PoIs", () => {

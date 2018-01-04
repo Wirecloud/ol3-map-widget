@@ -157,6 +157,7 @@
     var DEFAULT_MARKER = build_basic_style();
 
     var Widget = function Widget() {
+        this.selected_feature = null;
         this.layers_widget = null;
         this.base_layer = null;
         this.layers = {};
