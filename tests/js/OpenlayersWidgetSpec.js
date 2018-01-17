@@ -32,7 +32,7 @@
                     'initialZoom': '',
                     'poiZoom': 10
                 },
-                outputs: ['poiListOutput']
+                outputs: ['poiListOutput', 'poiOutput']
             });
         });
 
@@ -58,6 +58,33 @@
                     let feature_mock = new ol.Feature();
                     widget.init();
                     spyOn(widget, "select_feature");
+                    spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
+                        expect(pixel).toBe(pixel_mock);
+                        return listener(feature_mock);
+                    });
+
+                    widget.map.dispatchEvent({
+                        type: "click",
+                        pixel: pixel_mock
+                    });
+
+                    expect(widget.select_feature).toHaveBeenCalledWith(feature_mock);
+                });
+
+                it("on a not selected feature (with a marker)", () => {
+                    let pixel_mock = jasmine.createSpy('pixel');
+                    let feature_mock = new ol.Feature();
+                    feature_mock.setGeometry(new ol.geom.Point([0, 0]));
+                    let style_mock = new ol.style.Style();
+                    feature_mock.setStyle(style_mock);
+                    style_mock.getImage = function () {
+                        return {
+                            getScale: () => {return 0.5;},
+                            getSize: () => {return [1, 2];}
+                        };
+                    };
+                    widget.init();
+                    spyOn(widget, "select_feature").and.callThrough();
                     spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
                         expect(pixel).toBe(pixel_mock);
                         return listener(feature_mock);
@@ -129,17 +156,23 @@
                     });
 
                     expect(widget.select_feature).not.toHaveBeenCalled();
+                    expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).not.toHaveBeenCalled();
                 });
 
                 it("outside any feature (but while there is a selected feature)", () => {
                     let pixel_mock = jasmine.createSpy('pixel');
                     let feature_mock = new ol.Feature();
+                    feature_mock.setGeometry(new ol.geom.Point([0, 0]));
+                    feature_mock.setStyle(new ol.style.Style());
+
                     widget.init();
-                    widget.selected_feature = feature_mock;
-                    let popover_mock = widget.popover = {
-                        hide: jasmine.createSpy('hide')
-                    };
+                    widget.select_feature(feature_mock);
+                    MashupPlatform.widget.outputs.poiOutput.reset();
+                    let popover = widget.popover;
+                    spyOn(popover, "on");
+                    spyOn(popover, "hide").and.callThrough();
                     spyOn(widget, "select_feature");
+
                     spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
                         expect(pixel).toBe(pixel_mock);
                         return null;
@@ -151,8 +184,10 @@
                     });
 
                     expect(widget.popover).toBe(null)
-                    expect(popover_mock.hide).toHaveBeenCalled();
+                    expect(widget.selected_feature).toBe(null);
+                    expect(popover.hide).toHaveBeenCalled();
                     expect(widget.select_feature).not.toHaveBeenCalled();
+                    expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(null);
                 });
 
             });
@@ -402,18 +437,20 @@
                 widget.init();
                 spyOn(widget.map.getView(), 'fit').and.callThrough();
                 // TODO
-                widget.registerPoI({
+                let poi_info = {
                     id: '1',
                     data: {},
                     location: {
                         type: 'Point',
                         coordinates: [0, 0]
                     }
-                });
+                };
+                widget.registerPoI(poi_info);
 
                 widget.centerPoI([{id: '1'}]);
 
                 expect(widget.map.getView().fit).toHaveBeenCalledTimes(1);
+                expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info);
             });
 
             it("should work with multiple Poi", () => {

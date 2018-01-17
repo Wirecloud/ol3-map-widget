@@ -202,10 +202,9 @@
             if (feature != null && feature !== this.selected_feature) {
                 this.select_feature(feature);
             } else if (feature !== this.selected_feature) {
-                if (this.popover != null) {
-                    this.popover.hide();
-                    this.popover = null;
-                }
+                this.popover.hide();
+                this.popover = null;
+                update_selected_feature.call(this, null);
             }
         }.bind(this));
 
@@ -216,6 +215,7 @@
                     this.popover.hide();
                     this.popover = null;
                 }
+                update_selected_feature.call(this, null);
                 return;
             }
             var pixel = this.map.getEventPixel(event.originalEvent);
@@ -679,26 +679,33 @@
         this.map.getLayers().insertAt(0, this.base_layer);
     };
 
-    Widget.prototype.center_popup_menu = function center_popup_menu(feature) {
+    var update_selected_feature = function update_selected_feature(feature) {
+        if (this.selected_feature != feature) {
+            this.selected_feature = feature;
+            MashupPlatform.widget.outputs.poiOutput.pushEvent(feature != null ? feature.get('data') : null);
+        }
+    };
 
-        this.selected_feature = feature;
-        this.popover = new StyledElements.Popover({
+    Widget.prototype.select_feature = function select_feature(feature) {
+
+        update_selected_feature.call(this, feature);
+        let popover = this.popover = new StyledElements.Popover({
             placement: ['top', 'bottom', 'right', 'left'],
             title: feature.get('title'),
             content: new StyledElements.Fragment(feature.get('content'))
         });
-        this.popover.on('show', function () {
-            this.selected_feature = feature;
-        }.bind(this));
-        this.popover.on('hide', function () {
-            if (this.selected_feature === feature) {
-                this.selected_feature = null;
-            }
+        popover.on('show', function () {
+            update_selected_feature.call(this, feature);
         }.bind(this));
 
         // Delay popover show action
         setTimeout(function () {
             var marker_coordinates, marker_position, marker_image, marker_size, marker_style, refpos;
+
+            if (this.popover !== popover) {
+                // Selection has changed in the middle
+                return;
+            }
 
             marker_coordinates = ol.extent.getCenter(feature.getGeometry().getExtent());
             marker_position = this.map.getPixelFromCoordinate(marker_coordinates);
@@ -723,13 +730,9 @@
                     height: 0
                 };
             }
-            this.selected_feature = feature;
+            update_selected_feature.call(this, feature);
             this.popover.show(refpos);
         }.bind(this), 100);
-    };
-
-    Widget.prototype.select_feature = function select_feature(feature) {
-        this.center_popup_menu(feature);
     };
 
     var layer_builders = {
