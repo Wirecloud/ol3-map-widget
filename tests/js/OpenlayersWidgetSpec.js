@@ -483,6 +483,15 @@
 
         describe("addLayer(options)", function () {
 
+            var mock_layers = function mock_layers(widget) {
+                var layers_mock = {
+                    getLength: () => {return 2;},
+                    insertAt: jasmine.createSpy('insertAt')
+                };
+                spyOn(widget.map, 'getLayers').and.returnValue(layers_mock);
+                return layers_mock;
+            };
+
             it("throws an EndpointValueError exception for invalid layer types", () => {
                 widget.init();
                 expect(() => {
@@ -494,7 +503,7 @@
 
             it("supports Image WMS layers", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "ImageWMS",
@@ -505,13 +514,13 @@
                     }
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Image));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.ImageWMS));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Image));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.ImageWMS));
             });
 
             it("supports Image WMS layers (provides a default params option)", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "ImageWMS",
@@ -519,13 +528,13 @@
                     id: "LayerName"
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Image));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.ImageWMS));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Image));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.ImageWMS));
             });
 
             it("supports Image WMS layers (uses layer id as default LAYERS parameter)", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "ImageWMS",
@@ -536,13 +545,13 @@
                     }
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Image));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.ImageWMS));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Image));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.ImageWMS));
             });
 
             it("supports ImageArcGISRest layers", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "ImageArcGISRest",
@@ -550,13 +559,13 @@
                     id: "LayerName"
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Image));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.ImageArcGISRest));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Image));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.ImageArcGISRest));
             });
 
             it("supports ImageMapGuide layers", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "ImageMapGuide",
@@ -564,13 +573,13 @@
                     id: "LayerName"
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Image));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.ImageMapGuide));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Image));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.ImageMapGuide));
             });
 
             it("supports ImageStatic layers", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "ImageStatic",
@@ -578,13 +587,13 @@
                     id: "LayerName"
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Image));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.ImageStatic));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Image));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.ImageStatic));
             });
 
             it("supports Vector layers", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "Vector",
@@ -593,13 +602,13 @@
                     id: "LayerName"
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Vector));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.Vector));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Vector));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.Vector));
             });
 
             it("raises an EndpointValueError exception when trying to create a Vector layer without providing the format", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 expect(() => {
                     widget.addLayer({
@@ -612,7 +621,7 @@
 
             it("raises an EndpointValueError exception when trying to create a Vector layer without providing a layer url", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 expect(() => {
                     widget.addLayer({
@@ -625,7 +634,7 @@
 
             it("supports Vector layers (with format options)", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "Vector",
@@ -637,13 +646,13 @@
                     id: "LayerName"
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Vector));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.Vector));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Vector));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.Vector));
             });
 
             it("supports Vector layers (with GML format options)", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "Vector",
@@ -655,14 +664,14 @@
                     id: "LayerName"
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Vector));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.Vector));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Vector));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.Vector));
             });
 
 
             it("supports VectorTile layers", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "VectorTile",
@@ -675,26 +684,26 @@
                     id: "LayerName"
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.VectorTile));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Tile));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.VectorTile));
             });
 
             it("supports OSM layers", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "OSM",
                     id: "LayerName"
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.OSM));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Tile));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.OSM));
             });
 
             it("supports Tile WMS layers", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "TileWMS",
@@ -707,13 +716,13 @@
                     serverType: 'mapserver'
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.TileWMS));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Tile));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.TileWMS));
             });
 
             it("supports Tile WMS layers (provides a default params option)", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "TileWMS",
@@ -722,13 +731,13 @@
                     serverType: 'mapserver'
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.TileWMS));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Tile));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.TileWMS));
             });
 
             it("supports Tile WMS layers (uses layer id as default LAYERS parameter)", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "TileWMS",
@@ -740,13 +749,13 @@
                     serverType: 'mapserver'
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.TileWMS));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Tile));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.TileWMS));
             });
 
             it("supports Tile JSON layers", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "TileJSON",
@@ -755,13 +764,13 @@
                     crossOrigin: 'anonymous'
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.TileJSON));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Tile));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.TileJSON));
             });
 
             it("supports Tile UTF Grid layers", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "TileUTFGrid",
@@ -769,13 +778,13 @@
                     url: 'https://api.tiles.mapbox.com/v4/mapbox.geography-class.json?secure&access_token=XXX'
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.TileUTFGrid));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Tile));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.TileUTFGrid));
             });
 
             it("supports XYZ layers", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "XYZ",
@@ -783,13 +792,13 @@
                     id: "LayerName"
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.XYZ));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Tile));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.XYZ));
             });
 
             it("supports Stamen layers", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "Stamen",
@@ -797,13 +806,13 @@
                     id: "LayerName"
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.Stamen));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Tile));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.Stamen));
             });
 
             it("supports BingMaps layers", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "BingMaps",
@@ -811,13 +820,13 @@
                     id: "LayerName"
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.BingMaps));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Tile));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.BingMaps));
             });
 
             it("supports CartoDB layers", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "CartoDB",
@@ -835,13 +844,13 @@
                     id: "LayerName"
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.CartoDB));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Tile));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.CartoDB));
             });
 
             it("supports WMTS layers", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "WMTS",
@@ -849,13 +858,13 @@
                     id: "LayerName"
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.WMTS));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Tile));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.WMTS));
             });
 
             it("supports Zoomify layers", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "Zoomify",
@@ -864,13 +873,13 @@
                     id: "LayerName"
                 });
 
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Tile));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.Zoomify));
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Tile));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.Zoomify));
             });
 
             it("replaces layers with the same id", function () {
                 widget.init();
-                spyOn(widget.map, 'addLayer');
+                var layers_mock = mock_layers(widget);
                 spyOn(widget.map, 'removeLayer');
                 let layer_mock = jasmine.createSpy('layer_mock');
                 widget.layers["LayerName"] = layer_mock;
@@ -886,9 +895,9 @@
                 });
 
                 expect(widget.map.removeLayer).toHaveBeenCalledWith(layer_mock);
-                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Vector));
-                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.Vector));
-                expect(widget.layers.LayerName).toBe(widget.map.addLayer.calls.argsFor(0)[0]);
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Vector));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.Vector));
+                expect(widget.layers.LayerName).toBe(layers_mock.insertAt.calls.argsFor(0)[1]);
             });
 
         });

@@ -369,7 +369,8 @@
         this.removeLayer(layer_info);
 
         var layer = builder(layer_info);
-        this.map.addLayer(layer);
+        var layers = this.map.getLayers();
+        layers.insertAt(layers.getLength() - 1, layer);
 
         this.layers[layer_info.id] = layer;
     };
