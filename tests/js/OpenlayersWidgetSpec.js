@@ -868,6 +868,29 @@
                 expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.Zoomify));
             });
 
+            it("replaces layers with the same id", function () {
+                widget.init();
+                spyOn(widget.map, 'addLayer');
+                spyOn(widget.map, 'removeLayer');
+                let layer_mock = jasmine.createSpy('layer_mock');
+                widget.layers["LayerName"] = layer_mock;
+
+                widget.addLayer({
+                    type: "Vector",
+                    url: 'https://openlayers.org/en/v4.6.4/examples/data/kml/2012_Earthquakes_Mag5.kml',
+                    format: {
+                        type: "KML",
+                        extractStyles: false
+                    },
+                    id: "LayerName"
+                });
+
+                expect(widget.map.removeLayer).toHaveBeenCalledWith(layer_mock);
+                expect(widget.map.addLayer).toHaveBeenCalledWith(jasmine.any(ol.layer.Vector));
+                expect(widget.map.addLayer.calls.argsFor(0)[0].getSource()).toEqual(jasmine.any(ol.source.Vector));
+                expect(widget.layers.LayerName).toBe(widget.map.addLayer.calls.argsFor(0)[0]);
+            });
+
         });
 
         describe("removeLayer(options)", () => {

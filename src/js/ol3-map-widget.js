@@ -365,6 +365,9 @@
             throw new MashupPlatform.wiring.EndpointValueError("Invalid layer type: " + layer_info.type);
         }
 
+        // Remove any layer with the same id
+        this.removeLayer(layer_info);
+
         var layer = builder(layer_info);
         this.map.addLayer(layer);
 
