@@ -16,53 +16,89 @@ Map viewer widget using OpenLayers. It can receive Layers or Point of Interest d
 ### Input Endpoints
 
 
-- **Layer Info**: Add or remove layers to the map, in addition to changing its base layer. Currently only ImageWMS layers are supported.
+- **Layer Info**: Add or remove layers to the map, in addition to changing its
+  base layer.
   The Layer Info endpoint receives a JSON with two fields: `action` and `data`
-  - `action`: This field indicates the action to be executed with a layer. There are three available actions:
-    - `addLayer`: Adds a layer to the map. This action requires the `id` data field to be set.
-    - `removeLayer`: Removes a layer from the map. This action requires the `id` data field to be set.
-    - `setBaseLayer`: Change the base layer of the map. This action requires the `id` data field to be set.
+  - `action`: This field indicates the action to be executed with a layer. There
+    are three available actions:
+    - `addLayer`: Adds a layer to the map. This action requires the `id` data
+      field to be set.
+    - `removeLayer`: Removes a layer from the map. This action requires the `id`
+      data field to be set.
+    - `setBaseLayer`: Change the base layer of the map. This action requires the
+      `id` data field to be set.
+  - `data`: This field contains all the data needed to identify to which layer
+    the action will be performed, and, in the case of the addLayer action, to
+    define and configure the layer.
 
-  - `data`: This field contains all the data needed to identify to which layer the action will be performed, and, in the case of the addLayer action, to define and configure the layer.
+  In order to create the layer, a layer type must be defined, aside from the
+  desired settings for the layer source. E.g.:
 
-In order to create the layer, a layer type must be defined, aside from the desired settings for the layer source. E.g.:
+  ```json
+  {
+      "action": "addLayer",
+      "data": {
+          "id": "My Layer",
+          "type": "ImageWMS",
+          "url": "UrlToMyWMSService"
+      }
+  }
+  ```
 
-```JSON
-{
-    "action": "addLayer",
-    "data": {
-        "id": "My Layer",
-        "type": "ImageWMS",
-        "url": "UrlToMyWMSService"
-    }
-}
-```
-Refer to the [OpenLayers Documentation](http://openlayers.org/en/latest/apidoc/) to check available types and options
+  Refer to the [OpenLayers Documentation](http://openlayers.org/en/latest/apidoc/) to check available types and options
 
 - **Insert/Update PoI**: Insert or update a Point of Interest. This endpoint
   supports sending just a PoI or severals through an array. Each PoI is composed
   of the following fields:
     - **`id`** (required): id used for identifying this PoI. Used in the update
       and delete operations for locating the associated PoI.
-    - `location` (required if `currentLocation` not used): a GeoJSON geometry.
-      e.g. `{"type": "Point", "coordinates": [125.6, 10.1]}`
     - `currentLocation` (deprecated, required if `location` not used):
-        - **`longitude`** (required): Longitude.
-        - **`latitude`** (required): Latitude.
+        - `longitude` (required):
+		- `latitude` (required):
         - `system`: geodetic datum system (usually WGS84, it can be UTM)
-    - `title`: title associated to the PoI
-    - `subtitle`: subtitle associated to the PoI
-    - `infoWindow`: content (using HTML) associated with the PoI.
-    - `tooltip`: text to be displayed as tooltip when the mouse is over the PoI.
     - `data`: Data associated with the point of interest, used by the **PoI
       selected** output endpoint.
-    - `icon`: URL of the icon to use for the marker
+    - `icon`: URL of the icon to use for the marker or an object describing the
+        icon to use. Available options:
+        - `anchor`: Anchor position. Default value is `[0.5, 0.5]` (icon
+          center).
+        - `anchorXUnits`: Units in which the anchor x value is specified. A
+          value of `'fraction'` indicates the x value is a fraction of the
+          icon. A value of `'pixels'` indicates the x value in pixels. Default
+          is `'fraction'`.
+        - `anchorYUnits`: Units in which the anchor y value is specified. A
+          value of `'fraction'` indicates the y value is a fraction of the
+          icon. A value of `'pixels'` indicates the y value in pixels. Default
+          is `'fraction'`.
+        - `opacity`: Opacity of the icon (range from 0 to 1). Default is `1`.
+        - `scale`: Scale. Default is `1`.
+        - `src`: Image source URI.
+    - `infoWindow`: content (using HTML) associated with the PoI.
+    - `location` (required if `currentLocation` not used): a GeoJSON geometry.
+      e.g. `{"type": "Point", "coordinates": [125.6, 10.1]}`
+    - `style`: Style to use for rendering. Supported options:
+        - `fill`:
+            - `color`: fill color. CSS3 color, that is, an hexadecimal, `rgb` or
+            `rgba` color.
+        - `stroke`:
+            - `color`: stroke color. CSS3 color, that is, an hexadecimal, `rgb`
+            or `rgba` color.
+            - `width`: stroke width in pixels.
+    - `subtitle`: subtitle associated to the PoI
+    - `title`: title associated to the PoI
+    - `tooltip`: text to be displayed as tooltip when the mouse is over the PoI.
+- **Insert/Update Centered PoI**: Insert or update a PoI and change the viewport
+  centering the map on it. Uses the same format used by the **Insert/Update PoI**
+  endpoint.
+- **Delete PoI**: Removes a point or more point of interests from the map.
 - **Replace PoIs**: Replace all the rendered PoIs by the ones provided in the
-  event.
+  event. Uses the same format used by the **Insert/Update PoI**
+  endpoint.
+
 
 ### Output Endpoints
 
-- This widget has no outputs
+- **PoI selected**: A PoI has been selected on the map.
 
 ## Usage
 
