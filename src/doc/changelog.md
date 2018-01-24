@@ -1,3 +1,9 @@
+## v1.0.2 (2018-01-24)
+
+- Fix some problems managing PoI input events
+- Fix some problems clicking outside PoI markers
+
+
 ## v1.0.1 (2018-01-24)
 
 - Updated OpenLayers to version 4.3.1
