@@ -20,6 +20,25 @@
         }
     };
 
+    var deepFreeze = function deepFreeze(obj) {
+
+        // Retrieve the property names defined on obj
+        var propNames = Object.getOwnPropertyNames(obj);
+
+        // Freeze properties before freezing self
+        propNames.forEach(function(name) {
+            var prop = obj[name];
+
+            // Freeze prop if it is an object
+            if (typeof prop == 'object' && prop !== null) {
+                deepFreeze(prop);
+            }
+        });
+
+        // Freeze self (no-op if already frozen)
+        return Object.freeze(obj);
+    };
+
     describe("ol3-map", function () {
 
         var widget;
@@ -276,14 +295,14 @@
             it("supports adding PoIs", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
-                widget.registerPoI({
+                widget.registerPoI(deepFreeze({
                     id: '1',
                     data: {},
                     location: {
                         type: 'Point',
                         coordinates: [0, 0]
                     }
-                });
+                }));
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
             });
@@ -291,14 +310,14 @@
             it("supports adding PoIs using the deprecated currentLocation option", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
-                widget.registerPoI({
+                widget.registerPoI(deepFreeze({
                     id: '1',
                     data: {},
                     currentLocation: {
                         lat: 0,
                         lng: 0
                     }
-                });
+                }));
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
             });
@@ -312,14 +331,14 @@
 
                 spyOn(widget.vector_source, 'addFeature');
                 spyOn(widget.vector_source, 'getFeatureById').and.returnValue(feature_mock);
-                let poi_info = {
+                let poi_info = deepFreeze({
                     id: '1',
                     data: {},
                     location: {
                         type: 'Point',
                         coordinates: [0, 0]
                     }
-                };
+                });
                 widget.registerPoI(poi_info);
 
                 expect(feature_mock.set).toHaveBeenCalledWith('data', poi_info);
@@ -337,7 +356,7 @@
                     return () => {
                         widget.init();
                         spyOn(widget.vector_source, 'addFeature');
-                        widget.registerPoI({
+                        widget.registerPoI(deepFreeze({
                             id: '1',
                             data: {},
                             location: {
@@ -345,7 +364,7 @@
                                 coordinates: [0, 0]
                             },
                             style: style
-                        });
+                        }));
                         expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                         expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
                         let fstyle = widget.vector_source.addFeature.calls.argsFor(0)[0].getStyle();
@@ -383,7 +402,7 @@
                     return () => {
                         widget.init();
                         spyOn(widget.vector_source, 'addFeature');
-                        widget.registerPoI({
+                        widget.registerPoI(deepFreeze({
                             id: '1',
                             data: {},
                             location: {
@@ -391,7 +410,7 @@
                                 coordinates: [0, 0]
                             },
                             icon: icon
-                        });
+                        }));
                         expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                         expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
                         let fimage = widget.vector_source.addFeature.calls.argsFor(0)[0].getStyle().getImage();
@@ -437,14 +456,14 @@
                 widget.init();
                 spyOn(widget.map.getView(), 'fit').and.callThrough();
                 // TODO
-                let poi_info = {
+                let poi_info = deepFreeze({
                     id: '1',
                     data: {},
                     location: {
                         type: 'Point',
                         coordinates: [0, 0]
                     }
-                };
+                });
                 widget.registerPoI(poi_info);
 
                 widget.centerPoI([{id: '1'}]);
@@ -457,22 +476,22 @@
                 widget.init();
                 spyOn(widget.map.getView(), 'fit').and.callThrough();
                 // TODO
-                widget.registerPoI({
+                widget.registerPoI(deepFreeze({
                     id: '1',
                     data: {},
                     location: {
                         type: 'Point',
                         coordinates: [0, 0]
                     }
-                });
-                widget.registerPoI({
+                }));
+                widget.registerPoI(deepFreeze({
                     id: '2',
                     data: {},
                     location: {
                         type: 'Point',
                         coordinates: [1, 0]
                     }
-                });
+                }));
 
                 widget.centerPoI([{id: '1'}, {id: '2'}]);
 

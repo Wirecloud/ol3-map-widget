@@ -101,36 +101,38 @@
             options.style = {};
         }
 
-        if (options.style.stroke == null) {
-            options.style.stroke = {
+        let stroke = options.style.stroke;
+        if (stroke == null) {
+            stroke = {
                 color: 'blue',
                 width: 3
             };
-        } else if (typeof options.style.stroke === "string") {
-            options.style.stroke = {
-                color: options.style.stroke,
+        } else if (typeof stroke === "string") {
+            stroke = {
+                color: stroke,
                 width: 3
             };
         }
 
-        if (options.style.fill == null) {
-            options.style.fill = {
+        let fill = options.style.fill;
+        if (fill == null) {
+            fill = {
                 color: 'rgba(0, 0, 255, 0.1)'
             };
-        } else if (typeof options.style.fill === "string") {
-            options.style.fill = {
-                color: options.style.fill
+        } else if (typeof fill === "string") {
+            fill = {
+                color: fill
             };
         }
 
         return new ol.style.Style({
             image: options.image,
             stroke: new ol.style.Stroke({
-                color: options.style.stroke.color,
-                width: options.style.stroke.width
+                color: stroke.color,
+                width: stroke.width
             }),
             fill: new ol.style.Fill({
-                color: options.style.fill.color
+                color: fill.color
             })
         });
     };
@@ -261,33 +263,36 @@
             );
         }
 
+        let icon = null;
         if (typeof poi_info.icon === 'string') {
-            poi_info.icon = {
+            icon = {
                 src: poi_info.icon
             };
+        } else if (poi_info.icon != null && typeof poi_info.icon === 'object') {
+            icon = Object.assign({}, poi_info.icon);
         }
 
-        if (poi_info.icon != null && typeof poi_info.icon === 'object' && poi_info.icon.src != null) {
-            if (!Array.isArray(poi_info.icon.anchor)) {
-                poi_info.icon.anchor = [0.5, 0.5];
+        if (icon != null && typeof icon === 'object' && icon.src != null) {
+            if (!Array.isArray(icon.anchor)) {
+                icon.anchor = [0.5, 0.5];
             }
 
-            if (poi_info.icon.opacity == null || typeof poi_info.icon.opacity !== "number") {
-                poi_info.icon.opacity = 1;
+            if (icon.opacity == null || typeof icon.opacity !== "number") {
+                icon.opacity = 1;
             }
 
-            if (poi_info.icon.scale == null || typeof poi_info.icon.scale !== "number") {
-                poi_info.icon.scale = 1;
+            if (icon.scale == null || typeof icon.scale !== "number") {
+                icon.scale = 1;
             }
 
             style = build_basic_style({
                 image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
-                    anchor: poi_info.icon.anchor,
-                    anchorXUnits: poi_info.icon.anchorXUnits,
-                    anchorYUnits: poi_info.icon.anchorYUnits,
-                    opacity: poi_info.icon.opacity,
-                    src: poi_info.icon.src,
-                    scale: poi_info.icon.scale
+                    anchor: icon.anchor,
+                    anchorXUnits: icon.anchorXUnits,
+                    anchorYUnits: icon.anchorYUnits,
+                    opacity: icon.opacity,
+                    src: icon.src,
+                    scale: icon.scale
                 })),
                 style: poi_info.style
             });
