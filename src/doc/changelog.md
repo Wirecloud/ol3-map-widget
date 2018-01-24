@@ -1,4 +1,4 @@
-## v1.0.1 (2017-01-24)
+## v1.0.1 (2018-01-24)
 
 - Updated OpenLayers to version 4.3.1
 - Add an input endpoint to delete PoIs
