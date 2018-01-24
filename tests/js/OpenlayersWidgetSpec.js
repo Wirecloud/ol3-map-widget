@@ -166,7 +166,7 @@
                     spyOn(widget, "select_feature");
                     spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
                         expect(pixel).toBe(pixel_mock);
-                        return null;
+                        return undefined;
                     });
 
                     widget.map.dispatchEvent({
@@ -194,7 +194,7 @@
 
                     spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
                         expect(pixel).toBe(pixel_mock);
-                        return null;
+                        return undefined;
                     });
 
                     widget.map.dispatchEvent({

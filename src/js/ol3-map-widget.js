@@ -201,6 +201,9 @@
                     return feature;
                 });
 
+            // Normalize return value, undefined should be treated as null
+            feature = feature != null ? feature : null;
+
             if (feature != null && feature !== this.selected_feature) {
                 this.select_feature(feature);
             } else if (feature !== this.selected_feature) {
