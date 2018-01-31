@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2017 CoNWeT Lab., Universidad Politécnica de Madrid
+ * Copyright (c) 2014-2018 CoNWeT Lab., Universidad Politécnica de Madrid
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,10 @@
             try {
                 data = JSON.parse(data);
             } catch (e) {
-                throw new MashupPlatform.wiring.EndpointTypeValue();
+                throw new MashupPlatform.wiring.EndpointTypeError();
             }
         } else if (data == null || typeof data !== "object") {
-            throw new MashupPlatform.wiring.EndpointTypeValue();
+            throw new MashupPlatform.wiring.EndpointTypeError();
         }
         return data;
     };
