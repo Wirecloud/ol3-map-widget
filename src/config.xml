@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<widget xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="CoNWeT" name="ol3-map" version="1.0.2">
+<widget xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="CoNWeT" name="ol3-map" version="1.0.3">
     <details>
         <title>OpenLayers Map</title>
         <email>wirecloud@conwet.com</email>
