@@ -178,7 +178,44 @@
                     expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).not.toHaveBeenCalled();
                 });
 
-                it("outside any feature (but while there is a selected feature)", () => {
+                it("outside any feature (but while there is a selected feature)", (done) => {
+                    let pixel_mock = jasmine.createSpy('pixel');
+                    let feature_mock = new ol.Feature();
+                    feature_mock.setGeometry(new ol.geom.Point([0, 0]));
+                    feature_mock.setStyle(new ol.style.Style());
+
+                    widget.init();
+                    widget.select_feature(feature_mock);
+                    widget.popover.on('show', () => {
+                        MashupPlatform.widget.outputs.poiOutput.reset();
+                        let popover = widget.popover;
+                        // TODO, the following line is required as the CSS
+                        // animation is not processed
+                        popover.element.classList.remove('in');
+                        spyOn(popover, "on");
+                        spyOn(popover, "hide").and.callThrough();
+                        spyOn(widget, "select_feature");
+
+                        spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
+                            expect(pixel).toBe(pixel_mock);
+                            return undefined;
+                        });
+
+                        widget.map.dispatchEvent({
+                            type: "click",
+                            pixel: pixel_mock
+                        });
+
+                        expect(widget.popover).toBe(null)
+                        expect(widget.selected_feature).toBe(null);
+                        expect(popover.hide).toHaveBeenCalled();
+                        expect(widget.select_feature).not.toHaveBeenCalled();
+                        expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(null);
+                        done();
+                    });
+                });
+
+                it("outside the widget (but while there is a selected feature)", () => {
                     let pixel_mock = jasmine.createSpy('pixel');
                     let feature_mock = new ol.Feature();
                     feature_mock.setGeometry(new ol.geom.Point([0, 0]));
@@ -189,26 +226,15 @@
                     MashupPlatform.widget.outputs.poiOutput.reset();
                     let popover = widget.popover;
                     spyOn(popover, "on");
-                    spyOn(popover, "hide").and.callThrough();
                     spyOn(widget, "select_feature");
 
-                    spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
-                        expect(pixel).toBe(pixel_mock);
-                        return undefined;
-                    });
-
-                    widget.map.dispatchEvent({
-                        type: "click",
-                        pixel: pixel_mock
-                    });
+                    // Simulate the popover has been hidden by a third party code
+                    widget.popover.dispatchEvent("hide");
 
                     expect(widget.popover).toBe(null)
                     expect(widget.selected_feature).toBe(null);
-                    expect(popover.hide).toHaveBeenCalled();
-                    expect(widget.select_feature).not.toHaveBeenCalled();
                     expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(null);
                 });
-
             });
 
             describe("pointermove", () => {
@@ -262,7 +288,6 @@
                     });
 
                     expect(popover_mock.hide).toHaveBeenCalled();
-                    expect(widget.popover).toBe(null);
                 });
 
             });

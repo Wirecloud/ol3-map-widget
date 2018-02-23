@@ -208,8 +208,6 @@
                 this.select_feature(feature);
             } else if (feature !== this.selected_feature) {
                 this.popover.hide();
-                this.popover = null;
-                update_selected_feature.call(this, null);
             }
         }.bind(this));
 
@@ -218,7 +216,6 @@
             if (event.dragging) {
                 if (this.popover != null) {
                     this.popover.hide();
-                    this.popover = null;
                 }
                 update_selected_feature.call(this, null);
                 return;
@@ -708,6 +705,11 @@
         });
         popover.on('show', function () {
             update_selected_feature.call(this, feature);
+        }.bind(this));
+        popover.on('hide', function () {
+            // The popover can be hidden by clicking outside the widget. Manage also this case
+            this.popover = null;
+            update_selected_feature.call(this, null);
         }.bind(this));
 
         // Delay popover show action
