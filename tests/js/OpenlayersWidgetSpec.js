@@ -68,6 +68,62 @@
             }
         });
 
+        describe("prefs", () => {
+
+            describe("initialCenter", () => {
+
+                it("empty", () => {
+                    MashupPlatform.prefs.set("initialCenter", "");
+
+                    widget.init();
+
+                    expect(widget.map.getView().getCenter()).toEqual(ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'));
+                });
+
+                it("missing longitude", () => {
+                    MashupPlatform.prefs.set("initialCenter", "-4.4212964");
+
+                    widget.init();
+
+                    expect(widget.map.getView().getCenter()).toEqual(ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'));
+                });
+
+                it("invalid latitude", () => {
+                    MashupPlatform.prefs.set("initialCenter", "a, 36.7212828");
+
+                    widget.init();
+
+                    expect(widget.map.getView().getCenter()).toEqual(ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'));
+                });
+
+                it("invalid longitude", () => {
+                    MashupPlatform.prefs.set("initialCenter", "-4.4212964, a");
+
+                    widget.init();
+
+                    expect(widget.map.getView().getCenter()).toEqual(ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'));
+                });
+
+                it("extra data", () => {
+                    MashupPlatform.prefs.set("initialCenter", "-4.4212964, 36.7212828, 1");
+
+                    widget.init();
+
+                    expect(widget.map.getView().getCenter()).toEqual(ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'));
+                });
+
+                it("valid coordinate", () => {
+                    MashupPlatform.prefs.set("initialCenter", "-4.4212964, 36.7212828");
+
+                    widget.init();
+
+                    expect(widget.map.getView().getCenter()).toEqual(ol.proj.transform([-4.4212964, 36.7212828], 'EPSG:4326', 'EPSG:3857'));
+                });
+
+            });
+
+        });
+
         describe("events", () => {
 
             describe("click", () => {
