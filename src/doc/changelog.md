@@ -1,6 +1,7 @@
 ## v1.0.x
 
 - Allow to indicate if the PoI is selectable or not. See #5
+- Update OpenLayers to version 4.6.5
 
 
 ## v1.0.3 (2018-02-23)

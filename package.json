@@ -22,7 +22,7 @@
     "karma-jasmine": "^1.0.2",
     "karma-junit-reporter": "^1.2.0",
     "mock-applicationmashup": "^1.0.0-e",
-    "openlayers": "4.3.1",
+    "openlayers": "4.6.5",
     "wirecloud-config-parser": "^0.2.0"
   },
   "private": true
