@@ -1,3 +1,8 @@
+## v1.0.x
+
+- Allow to indicate if the PoI is selectable or not. See #5
+
+
 ## v1.0.3 (2018-02-23)
 
 - Improve `Initial Location` preference parsing

@@ -76,6 +76,8 @@ Map viewer widget using OpenLayers. It can receive Layers or Point of Interest d
     - `infoWindow`: content (using HTML) associated with the PoI.
     - `location` (required if `currentLocation` not used): a GeoJSON geometry.
       e.g. `{"type": "Point", "coordinates": [125.6, 10.1]}`
+    - `selectable` (boolean): `true` if the user should be able to select this
+      PoI (default behaviour).
     - `style`: Style to use for rendering. Supported options:
         - `fill`:
             - `color`: fill color. CSS3 color, that is, an hexadecimal, `rgb` or

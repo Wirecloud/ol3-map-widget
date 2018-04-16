@@ -196,10 +196,14 @@
 
         // display popup on click
         this.map.on('click', function (event) {
-            var feature = this.map.forEachFeatureAtPixel(event.pixel,
-                function (feature, layer) {
-                    return feature;
-                });
+            var feature = this.map.forEachFeatureAtPixel(
+                event.pixel,
+                (feature, layer) => {
+                    if (feature.get('selectable')) {
+                        return feature;
+                    }
+                }
+            );
 
             // Normalize return value, undefined should be treated as null
             feature = feature != null ? feature : null;
@@ -251,10 +255,27 @@
         iconFeature.set('data', poi_info);
         iconFeature.set('title', poi_info.title);
         iconFeature.set('content', poi_info.infoWindow);
+        // PoI are selectable by default
+        iconFeature.set('selectable', poi_info.selectable == null || !!poi_info.selectable);
+
         if ('location' in poi_info) {
             var geometry = this.geojsonparser.readGeometry(poi_info.location).transform('EPSG:4326', 'EPSG:3857');
-            var marker = new ol.geom.Point(ol.extent.getCenter(geometry.getExtent()));
-            iconFeature.setGeometry(new ol.geom.GeometryCollection([geometry, marker]));
+            if (iconFeature.get('selectable')) {
+                let marker;
+                switch (geometry.getType()) {
+                case "polygon":
+                    marker = new ol.geom.Point(geometry.getInteriorPoint());
+                    iconFeature.setGeometry(new ol.geom.GeometryCollection([geometry, marker]));
+                    break;
+                case "lineString":
+                    marker = new ol.geom.Point(geometry.getCoordinateAt(0.5));
+                    iconFeature.setGeometry(new ol.geom.GeometryCollection([geometry, marker]));
+                default:
+                    iconFeature.setGeometry(geometry);
+                }
+            } else {
+                iconFeature.setGeometry(geometry);
+            }
         } else {
             iconFeature.setGeometry(
                 new ol.geom.Point(

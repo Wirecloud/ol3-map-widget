@@ -131,6 +131,7 @@
                 it("on a not selected feature", () => {
                     let pixel_mock = jasmine.createSpy('pixel');
                     let feature_mock = new ol.Feature();
+                    feature_mock.set('selectable', true);
                     widget.init();
                     spyOn(widget, "select_feature");
                     spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
@@ -149,6 +150,7 @@
                 it("on a not selected feature (with a marker)", () => {
                     let pixel_mock = jasmine.createSpy('pixel');
                     let feature_mock = new ol.Feature();
+                    feature_mock.set('selectable', true);
                     feature_mock.setGeometry(new ol.geom.Point([0, 0]));
                     let style_mock = new ol.style.Style();
                     feature_mock.setStyle(style_mock);
@@ -176,6 +178,7 @@
                 it("on the selected feature", () => {
                     let pixel_mock = jasmine.createSpy('pixel');
                     let feature_mock = new ol.Feature();
+                    feature_mock.set('selectable', true);
                     widget.init();
                     widget.selected_feature = feature_mock;
                     spyOn(widget, "select_feature");
@@ -195,7 +198,9 @@
                 it("on a not selected feature (but while there is a selected feature)", () => {
                     let pixel_mock = jasmine.createSpy('pixel');
                     let feature_mock1 = new ol.Feature();
+                    feature_mock1.set('selectable', true);
                     let feature_mock2 = new ol.Feature();
+                    feature_mock2.set('selectable', true);
                     widget.init();
                     widget.selected_feature = feature_mock1;
                     widget.popover = {
@@ -237,6 +242,7 @@
                 it("outside any feature (but while there is a selected feature)", (done) => {
                     let pixel_mock = jasmine.createSpy('pixel');
                     let feature_mock = new ol.Feature();
+                    feature_mock.set('selectable', true);
                     feature_mock.setGeometry(new ol.geom.Point([0, 0]));
                     feature_mock.setStyle(new ol.style.Style());
 
@@ -274,6 +280,7 @@
                 it("outside the widget (but while there is a selected feature)", () => {
                     let pixel_mock = jasmine.createSpy('pixel');
                     let feature_mock = new ol.Feature();
+                    feature_mock.set('selectable', true);
                     feature_mock.setGeometry(new ol.geom.Point([0, 0]));
                     feature_mock.setStyle(new ol.style.Style());
 
