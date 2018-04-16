@@ -48,5 +48,6 @@ available on Read the Docs.
 
 ## Copyright and License
 
-Copyright (c) 2016 CoNWeT
+Copyright (c) 2016-2017 CoNWeT Lab., Universidad Politecnica de Madrid
+Copyright (c) 2017-2018 Future Internet Consulting and Development Solutions S.L.
 Licensed under the MIT license.
