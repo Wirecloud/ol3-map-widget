@@ -439,6 +439,31 @@
                 expect(feature_mock.setStyle).toHaveBeenCalledWith(jasmine.any(Object));
             });
 
+            it("sends update events when updating the selected PoI", () => {
+                var feature_mock = new ol.Feature();
+                widget.init();
+                widget.selected_feature = feature_mock;
+                spyOn(feature_mock, 'set');
+                spyOn(feature_mock, 'setGeometry');
+                spyOn(feature_mock, 'setStyle');
+
+                spyOn(widget.vector_source, 'addFeature');
+                spyOn(widget.vector_source, 'getFeatureById').and.returnValue(feature_mock);
+                let poi_info = deepFreeze({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                spyOn(feature_mock, 'get').and.returnValue(poi_info);
+                MashupPlatform.widget.outputs.poiOutput.reset();
+                widget.registerPoI(poi_info);
+
+                expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info);
+            });
+
             describe("handles the style option:", () => {
                 const test = function (style, expected) {
                     return () => {

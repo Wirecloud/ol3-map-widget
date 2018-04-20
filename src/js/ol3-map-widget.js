@@ -323,6 +323,10 @@
             style = DEFAULT_MARKER;
         }
         iconFeature.setStyle(style);
+
+        if (this.selected_feature === iconFeature) {
+            MashupPlatform.widget.outputs.poiOutput.pushEvent(iconFeature.get('data'));
+        }
     };
 
     /**
