@@ -592,6 +592,80 @@
 
         });
 
+        describe("replacePoIs(poi_info)", () => {
+
+            it("supports cleaning current PoIs", () => {
+                widget.init();
+                spyOn(widget, 'registerPoI');
+                spyOn(widget.vector_source, 'clear');
+
+                widget.replacePoIs([]);
+
+                expect(widget.registerPoI).not.toHaveBeenCalled();
+                expect(widget.selected_feature).toBe(null);
+            });
+
+            it("should maintain current selection if it exists on the new status", () => {
+                let poi_info = deepFreeze({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                widget.init();
+                let initial_feature_mock = new ol.Feature();
+                initial_feature_mock.setId("1");
+                widget.selected_feature = initial_feature_mock;
+                widget.popover = {
+                    hide: jasmine.createSpy('hide')
+                };
+                let new_feature_mock = new ol.Feature();
+                spyOn(new_feature_mock, "get").and.returnValue(poi_info);
+                spyOn(widget, "registerPoI");
+                spyOn(widget, "select_feature");
+                spyOn(widget.vector_source, 'clear');
+                spyOn(widget.vector_source, 'getFeatureById').and.returnValue(new_feature_mock);
+
+                widget.replacePoIs([poi_info]);
+
+                expect(widget.registerPoI).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.getFeatureById).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.getFeatureById).toHaveBeenCalledWith("1");
+                expect(widget.select_feature).toHaveBeenCalledWith(new_feature_mock);
+            });
+
+            it("should clean current selection if it does not exist on the new status", () => {
+                let poi_info = deepFreeze({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                widget.init();
+                let initial_feature_mock = new ol.Feature();
+                initial_feature_mock.setId("5");
+                widget.selected_feature = initial_feature_mock;
+                let popover = widget.popover = {
+                    hide: jasmine.createSpy('hide')
+                };
+                spyOn(widget, 'registerPoI');
+                spyOn(widget.vector_source, 'clear');
+                spyOn(widget.vector_source, 'getFeatureById').and.returnValue(null);
+
+                widget.replacePoIs([poi_info]);
+
+                expect(widget.registerPoI).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.getFeatureById).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.getFeatureById).toHaveBeenCalledWith("5");
+                expect(popover.hide).toHaveBeenCalledTimes(1);
+            });
+
+        });
+
         describe("centerPoI(poi_list)", () => {
 
             it("should work with one Poi", () => {
