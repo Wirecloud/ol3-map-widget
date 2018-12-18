@@ -125,7 +125,7 @@
             };
         }
 
-        return new ol.style.Style({
+        let style = new ol.style.Style({
             image: options.image,
             stroke: new ol.style.Stroke({
                 color: stroke.color,
@@ -135,6 +135,20 @@
                 color: fill.color
             })
         });
+
+        return (feature, resolution) => {
+            if (this.selected_feature === feature) {
+                return style;
+            }
+
+            var minzoom = feature.get('minzoom');
+
+            if (minzoom != null && resolution > minzoom) {
+                return null;
+            }
+
+            return style;
+        };
     };
 
     var send_visible_pois = function send_visible_pois() {
@@ -156,7 +170,7 @@
     };
 
     // Create the default Marker style
-    var DEFAULT_MARKER = build_basic_style();
+    var DEFAULT_MARKER = null;
 
     var Widget = function Widget() {
         this.selected_feature = null;
@@ -174,6 +188,7 @@
             }
         });
 
+        DEFAULT_MARKER = build_basic_style.call(this);
         this.base_layer = CORE_LAYERS.WIKIMEDIA;
         var initialCenter = MashupPlatform.prefs.get("initialCenter").split(",").map(Number);
         if (initialCenter.length != 2 || !Number.isFinite(initialCenter[0]) || !Number.isFinite(initialCenter[1])) {
@@ -255,6 +270,8 @@
         iconFeature.set('data', poi_info);
         iconFeature.set('title', poi_info.title);
         iconFeature.set('content', poi_info.infoWindow);
+        let minzoom = poi_info.minzoom != null ? 156543.03390625 * Math.pow(2, -poi_info.minzoom) : null;
+        iconFeature.set('minzoom', minzoom);
         // PoI are selectable by default
         iconFeature.set('selectable', poi_info.selectable == null || !!poi_info.selectable);
 
@@ -306,7 +323,7 @@
                 icon.scale = 1;
             }
 
-            style = build_basic_style({
+            style = build_basic_style.call(this, {
                 image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
                     anchor: icon.anchor,
                     anchorXUnits: icon.anchorXUnits,
@@ -318,7 +335,7 @@
                 style: poi_info.style
             });
         } else if (poi_info.style != null) {
-            style = build_basic_style({style: poi_info.style});
+            style = build_basic_style.call(this, {style: poi_info.style});
         } else {
             style = DEFAULT_MARKER;
         }
@@ -748,7 +765,7 @@
 
             marker_coordinates = ol.extent.getCenter(feature.getGeometry().getExtent());
             marker_position = this.map.getPixelFromCoordinate(marker_coordinates);
-            marker_style = feature.getStyle();
+            marker_style = feature.getStyle()(feature);
             marker_image = marker_style.getImage();
             if (marker_image != null && (marker_size = marker_image.getSize()) != null) {
                 var marker_scale = marker_image.getScale();
