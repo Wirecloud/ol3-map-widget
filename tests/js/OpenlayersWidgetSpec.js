@@ -153,7 +153,7 @@
                     feature_mock.set('selectable', true);
                     feature_mock.setGeometry(new ol.geom.Point([0, 0]));
                     let style_mock = new ol.style.Style();
-                    feature_mock.setStyle(style_mock);
+                    feature_mock.setStyle(() => {return style_mock});
                     style_mock.getImage = function () {
                         return {
                             getScale: () => {return 0.5;},
@@ -244,7 +244,7 @@
                     let feature_mock = new ol.Feature();
                     feature_mock.set('selectable', true);
                     feature_mock.setGeometry(new ol.geom.Point([0, 0]));
-                    feature_mock.setStyle(new ol.style.Style());
+                    feature_mock.setStyle(() => {return new ol.style.Style()});
 
                     widget.init();
                     widget.select_feature(feature_mock);
@@ -282,7 +282,7 @@
                     let feature_mock = new ol.Feature();
                     feature_mock.set('selectable', true);
                     feature_mock.setGeometry(new ol.geom.Point([0, 0]));
-                    feature_mock.setStyle(new ol.style.Style());
+                    feature_mock.setStyle(() => {return new ol.style.Style()});
 
                     widget.init();
                     widget.select_feature(feature_mock);
@@ -436,7 +436,7 @@
                 expect(feature_mock.setStyle).toHaveBeenCalledTimes(1);
 
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(0);
-                expect(feature_mock.setStyle).toHaveBeenCalledWith(jasmine.any(Object));
+                expect(feature_mock.setStyle).toHaveBeenCalledWith(jasmine.any(Function));
             });
 
             it("sends update events when updating the selected PoI", () => {
@@ -480,7 +480,8 @@
                         }));
                         expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                         expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
-                        let fstyle = widget.vector_source.addFeature.calls.argsFor(0)[0].getStyle();
+                        let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                        let fstyle = feature.getStyle()(feature);
                         expect(fstyle.getStroke().getColor()).toEqual(expected.stroke.color);
                         expect(fstyle.getStroke().getWidth()).toEqual(expected.stroke.width);
                         expect(fstyle.getFill().getColor()).toEqual(expected.fill.color);
@@ -526,7 +527,8 @@
                         }));
                         expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                         expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
-                        let fimage = widget.vector_source.addFeature.calls.argsFor(0)[0].getStyle().getImage();
+                        let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                        let fimage = feature.getStyle()(feature).getImage();
                         // TODO anchor can only be tested if anchorXUnits and anchorYUnits are both set to pixels
                         if (expected.anchor != null) {
                             expect(fimage.getAnchor()).toEqual(expected.anchor);
@@ -558,6 +560,33 @@
                     {anchor: [40, 50], anchorXUnits: 'pixels', anchorYUnits: 'pixels', opacity: 0.2, src: "https://www.example.com/image.png", scale: 0.1},
                     {anchor: [40, 50], opacity: 0.2, src: "https://www.example.com/image.png", scale: 0.1}
                 ));
+
+            });
+
+            describe("handles the minzoom option:", () => {
+                const test = function (resolution, displayed) {
+                    return () => {
+                        widget.init();
+                        spyOn(widget.vector_source, 'addFeature');
+                        widget.registerPoI(deepFreeze({
+                            id: '1',
+                            data: {},
+                            location: {
+                                type: 'Point',
+                                coordinates: [0, 0]
+                            },
+                            minzoom: 13
+                        }));
+                        expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                        expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+                        let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                        let fstyle = feature.getStyle()(feature, resolution);
+                        expect(fstyle).toEqual(displayed ? jasmine.any(ol.style.Style) : null);
+                    };
+                };
+
+                it("displays the PoI if the zoom level is greather than the configured one", test(2.388657133911758, true));
+                it("hides the PoI if the zoom level is lower than the configured one", test(152.8740565703525, false));
 
             });
 
