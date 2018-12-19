@@ -67,11 +67,10 @@
     MashupPlatform.wiring.registerCallback('replacePoIs', (poi_info) => {
         poi_info = parseInputEndpointData(poi_info);
 
-        widget.vector_source.clear();
         if (!Array.isArray(poi_info)) {
             poi_info = [poi_info];
         }
-        poi_info.forEach(widget.registerPoI, widget);
+        widget.replacePoIs(poi_info);
     });
 
     MashupPlatform.wiring.registerCallback('poiInputCenter', (poi_info) => {

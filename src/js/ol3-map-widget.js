@@ -347,6 +347,25 @@
     };
 
     /**
+     * Replace all the PoIs currently displayed on the map with the ones provided as parameters.
+     *
+     * @param poi_info
+     */
+    Widget.prototype.replacePoIs = function replacePoIs(poi_info) {
+        this.vector_source.clear();
+        poi_info.forEach(this.registerPoI, this);
+        if (this.selected_feature != null) {
+            if (this.popover != null) {
+                this.popover.hide();
+            }
+            let new_selected_feature = this.vector_source.getFeatureById(this.selected_feature.getId());
+            if (new_selected_feature != null) {
+                this.select_feature(new_selected_feature);
+            }
+        }
+    };
+
+    /**
      * Centers map view on the provided PoIs.
      *
      * @param poi_info
