@@ -4,6 +4,8 @@
 - Update OpenLayers to version 4.6.5
 - Add a new option: minzoom. This option allows to configure the minimum zoom
     level at which the PoI will be displayed.
+- Fix selection handling when receiving data through the replacePoIs input
+    endpoint. See #8
 
 
 ## v1.0.3 (2018-02-23)
