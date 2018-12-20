@@ -414,7 +414,7 @@
                 widget.init();
                 var feature_mock = new ol.Feature();
                 spyOn(feature_mock, 'set');
-                spyOn(feature_mock, 'setGeometry');
+                spyOn(feature_mock, 'setProperties');
                 spyOn(feature_mock, 'setStyle');
 
                 spyOn(widget.vector_source, 'addFeature');
@@ -429,10 +429,15 @@
                 });
                 widget.registerPoI(poi_info);
 
-                expect(feature_mock.set).toHaveBeenCalledWith('data', poi_info);
-                expect(feature_mock.set).toHaveBeenCalledWith('title', undefined);
-                expect(feature_mock.set).toHaveBeenCalledWith('content', undefined);
-                expect(feature_mock.setGeometry).toHaveBeenCalledTimes(1);
+                expect(feature_mock.setProperties).toHaveBeenCalledWith({
+                    'geometry': jasmine.anything(),
+                    'point': jasmine.anything(),
+                    'data': poi_info,
+                    'title': undefined,
+                    'content': undefined,
+                    'selectable': true,
+                    'minzoom': null
+                });
                 expect(feature_mock.setStyle).toHaveBeenCalledTimes(1);
 
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(0);
