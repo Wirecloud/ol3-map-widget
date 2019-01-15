@@ -311,11 +311,11 @@
             if (poi_info.selectable) {
                 let marker;
                 switch (geometry.getType()) {
-                case "polygon":
+                case "Polygon":
                     marker = new ol.geom.Point(geometry.getInteriorPoint());
                     geometry = new ol.geom.GeometryCollection([geometry, marker]);
                     break;
-                case "lineString":
+                case "LineString":
                     marker = new ol.geom.Point(geometry.getCoordinateAt(0.5));
                     geometry = new ol.geom.GeometryCollection([geometry, marker]);
                     break;

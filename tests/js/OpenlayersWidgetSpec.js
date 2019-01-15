@@ -147,6 +147,25 @@
                     expect(widget.select_feature).toHaveBeenCalledWith(feature_mock);
                 });
 
+                it("on a not selectable feature", () => {
+                    let pixel_mock = jasmine.createSpy('pixel');
+                    let feature_mock = new ol.Feature();
+                    feature_mock.set('selectable', false);
+                    widget.init();
+                    spyOn(widget, "select_feature");
+                    spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
+                        expect(pixel).toBe(pixel_mock);
+                        return listener(feature_mock);
+                    });
+
+                    widget.map.dispatchEvent({
+                        type: "click",
+                        pixel: pixel_mock
+                    });
+
+                    expect(widget.select_feature).not.toHaveBeenCalled();
+                });
+
                 it("on a not selected feature (with a marker)", () => {
                     let pixel_mock = jasmine.createSpy('pixel');
                     let feature_mock = new ol.Feature();
@@ -393,6 +412,44 @@
                 }));
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+            });
+
+            it("supports adding selectable PoIs (polygon)", () => {
+                widget.init();
+                spyOn(widget.vector_source, 'addFeature');
+                widget.registerPoI(deepFreeze({
+                    id: '1',
+                    data: {},
+                    selectable: true,
+                    location: {
+                        type: 'Polygon',
+                        coordinates: [[0, 0], [1, 1], [2, 0], [0, 0]]
+                    }
+                }));
+                expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+                let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                // Widget should add a marker point
+                expect(feature.getGeometry().getType()).toBe("GeometryCollection");
+            });
+
+            it("supports adding selectable PoIs (linestring)", () => {
+                widget.init();
+                spyOn(widget.vector_source, 'addFeature');
+                widget.registerPoI(deepFreeze({
+                    id: '1',
+                    data: {},
+                    selectable: true,
+                    location: {
+                        type: 'LineString',
+                        coordinates: [[0, 0], [1, 1], [2, 0]]
+                    }
+                }));
+                expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+                let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                // Widget should add a marker point
+                expect(feature.getGeometry().getType()).toBe("GeometryCollection");
             });
 
             it("supports adding PoIs using the deprecated currentLocation option", () => {
