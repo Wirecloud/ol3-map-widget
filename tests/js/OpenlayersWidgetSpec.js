@@ -566,6 +566,45 @@
                     {anchor: [40, 50], opacity: 0.2, src: "https://www.example.com/image.png", scale: 0.1}
                 ));
 
+                it("Should support caching styles", () => {
+                    const hash = "vendor:domain:id";
+                    const expected = {opacity: 0.75, src: "http://localhost:9876/images/icon.png", scale: 1};
+                    const iconStyle = {
+                        anchor: [40, 50],
+                        anchorXUnits: 'pixels',
+                        anchorYUnits: 'pixels',
+                        hash: hash,
+                        src: "https://www.example.com/image.png",
+                        opacity: 0.2,
+                        scale: 0.1
+                    };
+                    widget.init();
+                    spyOn(widget.vector_source, 'addFeature');
+                    // First element, will add style to cache
+                    widget.registerPoI(deepFreeze({
+                        id: '1',
+                        data: {},
+                        location: {
+                            type: 'Point',
+                            coordinates: [0, 0]
+                        },
+                        icon: iconStyle,
+                    }));
+                    // Second PoI, will use cached style
+                    widget.registerPoI(deepFreeze({
+                        id: '1',
+                        data: {},
+                        location: {
+                            type: 'Point',
+                            coordinates: [0, 0]
+                        },
+                        icon: iconStyle,
+                    }));
+                    let feature1 = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                    let feature2 = widget.vector_source.addFeature.calls.argsFor(1)[0];
+                    expect(feature1.getStyle()).toBe(feature2.getStyle());
+                });
+
             });
 
             describe("handles the minzoom option:", () => {

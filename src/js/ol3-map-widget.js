@@ -152,7 +152,9 @@
     };
 
     var parse_marker_definition = function parse_marker_definition(icon, vector_style) {
-        if (icon == null) {
+        if (icon == null && vector_style == null) {
+            return DEFAULT_MARKER;
+        } else if (icon == null) {
             icon = {};
         }
 
@@ -363,13 +365,7 @@
             icon = Object.assign({}, poi_info.icon);
         }
 
-        if (icon != null && typeof icon === 'object' && icon.src != null) {
-            style = parse_marker_definition.call(this, icon, poi_info.style);
-        } else if (poi_info.style != null) {
-            style = build_basic_style.call(this, {style: poi_info.style});
-        } else {
-            style = DEFAULT_MARKER;
-        }
+        style = parse_marker_definition.call(this, icon, poi_info.style);
         iconFeature.setStyle(style);
 
         if (this.selected_feature === iconFeature) {
