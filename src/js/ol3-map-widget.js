@@ -151,6 +151,51 @@
         };
     };
 
+    var parse_marker_definition = function parse_marker_definition(icon, vector_style) {
+        if (icon == null && vector_style == null) {
+            return DEFAULT_MARKER;
+        } else if (icon == null) {
+            icon = {};
+        }
+
+        if (icon.hash != null && icon.hash in this.marker_cache) {
+            return this.marker_cache[icon.hash];
+        }
+
+        if (!Array.isArray(icon.anchor)) {
+            icon.anchor = [0.5, 0.5];
+        }
+
+        if (icon.opacity == null || typeof icon.opacity !== "number") {
+            icon.opacity = 1;
+        }
+
+        if (icon.scale == null || typeof icon.scale !== "number") {
+            icon.scale = 1;
+        }
+
+        if (icon.src != null) {
+            var image = new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+                anchor: icon.anchor,
+                anchorXUnits: icon.anchorXUnits,
+                anchorYUnits: icon.anchorYUnits,
+                opacity: icon.opacity,
+                src: icon.src,
+                scale: icon.scale
+            }));
+        }
+        let marker_style = build_basic_style.call(this, {
+            image: image,
+            style: vector_style
+        });
+
+        if (icon.hash != null) {
+            this.marker_cache[icon.hash] = marker_style;
+        }
+
+        return marker_style;
+    };
+
     var send_visible_pois = function send_visible_pois() {
 
         if (this.visiblePoisTimeout != null) {
@@ -196,6 +241,7 @@
         }
 
         this.vector_source = new ol.source.Vector({});
+        this.marker_cache = {};
         this.vector_layer = new ol.layer.Vector({source: this.vector_source, style: DEFAULT_MARKER});
         this.map = new ol.Map({
             target: document.getElementById('map'),
@@ -246,60 +292,69 @@
 
         // send poi updates on changes
         this.send_visible_pois_bound = send_visible_pois.bind(this);
-        this.vector_source.on("change", function () {
+        this.vector_source.on("change", () => {
             if (this.visiblePoisTimeout != null) {
                 clearTimeout(this.visiblePoisTimeout);
             }
             this.visiblePoisTimeout = setTimeout(this.send_visible_pois_bound, 50);
-        }.bind(this));
+        });
         this.map.on('moveend', this.send_visible_pois_bound);
 
         this.geojsonparser = new ol.format.GeoJSON();
     };
 
     Widget.prototype.registerPoI = function registerPoI(poi_info) {
-        var iconFeature, style;
-        iconFeature = this.vector_source.getFeatureById(poi_info.id);
-
-        if (iconFeature == null) {
-            iconFeature = new ol.Feature();
-            iconFeature.setId(poi_info.id);
-            this.vector_source.addFeature(iconFeature);
-        }
-
-        iconFeature.set('data', poi_info);
-        iconFeature.set('title', poi_info.title);
-        iconFeature.set('content', poi_info.infoWindow);
-        let minzoom = poi_info.minzoom != null ? 156543.03390625 * Math.pow(2, -poi_info.minzoom) : null;
-        iconFeature.set('minzoom', minzoom);
-        // PoI are selectable by default
-        iconFeature.set('selectable', poi_info.selectable == null || !!poi_info.selectable);
+        var iconFeature, style, geometry, marker, minzoom;
 
         if ('location' in poi_info) {
-            var geometry = this.geojsonparser.readGeometry(poi_info.location).transform('EPSG:4326', 'EPSG:3857');
-            if (iconFeature.get('selectable')) {
+            geometry = this.geojsonparser.readGeometry(poi_info.location).transform('EPSG:4326', 'EPSG:3857');
+            if (poi_info.selectable) {
                 let marker;
                 switch (geometry.getType()) {
-                case "polygon":
+                case "Polygon":
                     marker = new ol.geom.Point(geometry.getInteriorPoint());
-                    iconFeature.setGeometry(new ol.geom.GeometryCollection([geometry, marker]));
+                    geometry = new ol.geom.GeometryCollection([geometry, marker]);
                     break;
-                case "lineString":
+                case "LineString":
                     marker = new ol.geom.Point(geometry.getCoordinateAt(0.5));
-                    iconFeature.setGeometry(new ol.geom.GeometryCollection([geometry, marker]));
-                default:
-                    iconFeature.setGeometry(geometry);
+                    geometry = new ol.geom.GeometryCollection([geometry, marker]);
+                    break;
                 }
-            } else {
-                iconFeature.setGeometry(geometry);
             }
         } else {
-            iconFeature.setGeometry(
-                new ol.geom.Point(
-                    ol.proj.transform([poi_info.currentLocation.lng, poi_info.currentLocation.lat], 'EPSG:4326', 'EPSG:3857')
-                )
+            geometry = new ol.geom.Point(
+                ol.proj.transform([poi_info.currentLocation.lng, poi_info.currentLocation.lat], 'EPSG:4326', 'EPSG:3857')
             );
         }
+
+        iconFeature = this.vector_source.getFeatureById(poi_info.id);
+        minzoom = poi_info.minzoom != null ? 156543.03390625 * Math.pow(2, -poi_info.minzoom) : null;
+        if (iconFeature == null) {
+            iconFeature = new ol.Feature({
+                geometry: geometry,
+                point: marker || geometry,
+                data: poi_info,
+                title: poi_info.title,
+                content: poi_info.infoWindow,
+                // PoI are selectable by default
+                selectable: poi_info.selectable == null || !!poi_info.selectable,
+                minzoom: minzoom
+            });
+            iconFeature.setId(poi_info.id);
+            this.vector_source.addFeature(iconFeature);
+        } else {
+            iconFeature.setProperties({
+                geometry: geometry,
+                point: marker || geometry,
+                data: poi_info,
+                title: poi_info.title,
+                content: poi_info.infoWindow,
+                // PoI are selectable by default
+                selectable: poi_info.selectable == null || !!poi_info.selectable,
+                minzoom: minzoom
+            });
+        }
+
 
         let icon = null;
         if (typeof poi_info.icon === 'string') {
@@ -310,35 +365,7 @@
             icon = Object.assign({}, poi_info.icon);
         }
 
-        if (icon != null && typeof icon === 'object' && icon.src != null) {
-            if (!Array.isArray(icon.anchor)) {
-                icon.anchor = [0.5, 0.5];
-            }
-
-            if (icon.opacity == null || typeof icon.opacity !== "number") {
-                icon.opacity = 1;
-            }
-
-            if (icon.scale == null || typeof icon.scale !== "number") {
-                icon.scale = 1;
-            }
-
-            style = build_basic_style.call(this, {
-                image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
-                    anchor: icon.anchor,
-                    anchorXUnits: icon.anchorXUnits,
-                    anchorYUnits: icon.anchorYUnits,
-                    opacity: icon.opacity,
-                    src: icon.src,
-                    scale: icon.scale
-                })),
-                style: poi_info.style
-            });
-        } else if (poi_info.style != null) {
-            style = build_basic_style.call(this, {style: poi_info.style});
-        } else {
-            style = DEFAULT_MARKER;
-        }
+        style = parse_marker_definition.call(this, icon, poi_info.style);
         iconFeature.setStyle(style);
 
         if (this.selected_feature === iconFeature) {

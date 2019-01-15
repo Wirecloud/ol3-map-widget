@@ -147,6 +147,25 @@
                     expect(widget.select_feature).toHaveBeenCalledWith(feature_mock);
                 });
 
+                it("on a not selectable feature", () => {
+                    let pixel_mock = jasmine.createSpy('pixel');
+                    let feature_mock = new ol.Feature();
+                    feature_mock.set('selectable', false);
+                    widget.init();
+                    spyOn(widget, "select_feature");
+                    spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
+                        expect(pixel).toBe(pixel_mock);
+                        return listener(feature_mock);
+                    });
+
+                    widget.map.dispatchEvent({
+                        type: "click",
+                        pixel: pixel_mock
+                    });
+
+                    expect(widget.select_feature).not.toHaveBeenCalled();
+                });
+
                 it("on a not selected feature (with a marker)", () => {
                     let pixel_mock = jasmine.createSpy('pixel');
                     let feature_mock = new ol.Feature();
@@ -395,6 +414,44 @@
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
             });
 
+            it("supports adding selectable PoIs (polygon)", () => {
+                widget.init();
+                spyOn(widget.vector_source, 'addFeature');
+                widget.registerPoI(deepFreeze({
+                    id: '1',
+                    data: {},
+                    selectable: true,
+                    location: {
+                        type: 'Polygon',
+                        coordinates: [[0, 0], [1, 1], [2, 0], [0, 0]]
+                    }
+                }));
+                expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+                let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                // Widget should add a marker point
+                expect(feature.getGeometry().getType()).toBe("GeometryCollection");
+            });
+
+            it("supports adding selectable PoIs (linestring)", () => {
+                widget.init();
+                spyOn(widget.vector_source, 'addFeature');
+                widget.registerPoI(deepFreeze({
+                    id: '1',
+                    data: {},
+                    selectable: true,
+                    location: {
+                        type: 'LineString',
+                        coordinates: [[0, 0], [1, 1], [2, 0]]
+                    }
+                }));
+                expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+                let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                // Widget should add a marker point
+                expect(feature.getGeometry().getType()).toBe("GeometryCollection");
+            });
+
             it("supports adding PoIs using the deprecated currentLocation option", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
@@ -414,7 +471,7 @@
                 widget.init();
                 var feature_mock = new ol.Feature();
                 spyOn(feature_mock, 'set');
-                spyOn(feature_mock, 'setGeometry');
+                spyOn(feature_mock, 'setProperties');
                 spyOn(feature_mock, 'setStyle');
 
                 spyOn(widget.vector_source, 'addFeature');
@@ -429,10 +486,15 @@
                 });
                 widget.registerPoI(poi_info);
 
-                expect(feature_mock.set).toHaveBeenCalledWith('data', poi_info);
-                expect(feature_mock.set).toHaveBeenCalledWith('title', undefined);
-                expect(feature_mock.set).toHaveBeenCalledWith('content', undefined);
-                expect(feature_mock.setGeometry).toHaveBeenCalledTimes(1);
+                expect(feature_mock.setProperties).toHaveBeenCalledWith({
+                    'geometry': jasmine.anything(),
+                    'point': jasmine.anything(),
+                    'data': poi_info,
+                    'title': undefined,
+                    'content': undefined,
+                    'selectable': true,
+                    'minzoom': null
+                });
                 expect(feature_mock.setStyle).toHaveBeenCalledTimes(1);
 
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(0);
@@ -560,6 +622,45 @@
                     {anchor: [40, 50], anchorXUnits: 'pixels', anchorYUnits: 'pixels', opacity: 0.2, src: "https://www.example.com/image.png", scale: 0.1},
                     {anchor: [40, 50], opacity: 0.2, src: "https://www.example.com/image.png", scale: 0.1}
                 ));
+
+                it("Should support caching styles", () => {
+                    const hash = "vendor:domain:id";
+                    const expected = {opacity: 0.75, src: "http://localhost:9876/images/icon.png", scale: 1};
+                    const iconStyle = {
+                        anchor: [40, 50],
+                        anchorXUnits: 'pixels',
+                        anchorYUnits: 'pixels',
+                        hash: hash,
+                        src: "https://www.example.com/image.png",
+                        opacity: 0.2,
+                        scale: 0.1
+                    };
+                    widget.init();
+                    spyOn(widget.vector_source, 'addFeature');
+                    // First element, will add style to cache
+                    widget.registerPoI(deepFreeze({
+                        id: '1',
+                        data: {},
+                        location: {
+                            type: 'Point',
+                            coordinates: [0, 0]
+                        },
+                        icon: iconStyle,
+                    }));
+                    // Second PoI, will use cached style
+                    widget.registerPoI(deepFreeze({
+                        id: '1',
+                        data: {},
+                        location: {
+                            type: 'Point',
+                            coordinates: [0, 0]
+                        },
+                        icon: iconStyle,
+                    }));
+                    let feature1 = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                    let feature2 = widget.vector_source.addFeature.calls.argsFor(1)[0];
+                    expect(feature1.getStyle()).toBe(feature2.getStyle());
+                });
 
             });
 
