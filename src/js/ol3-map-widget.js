@@ -271,7 +271,10 @@
 
             if (feature != null && feature !== this.selected_feature) {
                 this.select_feature(feature);
-            } else if (feature !== this.selected_feature) {
+            } else if (this.selected_feature != null && this.selected_feature.get('content') == null) {
+                unselect.call(this, this.selected_feature);
+                update_selected_feature.call(this, null);
+            } else if (feature !== this.selected_feature && this.popover != null) {
                 this.popover.hide();
             }
         }.bind(this));
@@ -783,58 +786,77 @@
         }
     };
 
+    var unselect = function unselect(feature) {
+        if (feature == null) {
+            return;
+        }
+
+        var poi_info = feature.get('data');
+        var style = parse_marker_definition.call(this, poi_info.icon, poi_info.style);
+        feature.setStyle(style);
+    };
+
     Widget.prototype.select_feature = function select_feature(feature) {
 
+        unselect.call(this, this.selected_feature);
+
         update_selected_feature.call(this, feature);
-        let popover = this.popover = new StyledElements.Popover({
-            placement: ['top', 'bottom', 'right', 'left'],
-            title: feature.get('title'),
-            content: new StyledElements.Fragment(feature.get('content'))
-        });
-        popover.on('show', function () {
-            update_selected_feature.call(this, feature);
-        }.bind(this));
-        popover.on('hide', function () {
-            // The popover can be hidden by clicking outside the widget. Manage also this case
-            this.popover = null;
-            update_selected_feature.call(this, null);
-        }.bind(this));
+        if (feature.get('content') != null) {
+            // The feature has content to be used on a popover
+            let popover = this.popover = new StyledElements.Popover({
+                placement: ['top', 'bottom', 'right', 'left'],
+                title: feature.get('title'),
+                content: new StyledElements.Fragment(feature.get('content'))
+            });
+            popover.on('show', function () {
+                update_selected_feature.call(this, feature);
+            }.bind(this));
+            popover.on('hide', function () {
+                // The popover can be hidden by clicking outside the widget. Manage also this case
+                this.popover = null;
+                update_selected_feature.call(this, null);
+            }.bind(this));
 
-        // Delay popover show action
-        setTimeout(function () {
-            var marker_coordinates, marker_position, marker_image, marker_size, marker_style, refpos;
+            // Delay popover show action
+            setTimeout(function () {
+                var marker_coordinates, marker_position, marker_image, marker_size, marker_style, refpos;
 
-            if (this.popover !== popover) {
-                // Selection has changed in the middle
-                return;
-            }
+                if (this.popover !== popover) {
+                    // Selection has changed in the middle
+                    return;
+                }
 
-            marker_coordinates = ol.extent.getCenter(feature.getGeometry().getExtent());
-            marker_position = this.map.getPixelFromCoordinate(marker_coordinates);
-            marker_style = feature.getStyle()(feature);
-            marker_image = marker_style.getImage();
-            if (marker_image != null && (marker_size = marker_image.getSize()) != null) {
-                var marker_scale = marker_image.getScale();
-                marker_size = marker_size.map(function (value) {
-                    return value * marker_scale;
-                });
-                refpos = {
-                    top: marker_position[1] - marker_size[1],
-                    left: marker_position[0] - (marker_size[0] / 2),
-                    width: marker_size[0],
-                    height: marker_size[1]
-                };
-            } else {
-                refpos = {
-                    top: marker_position[1],
-                    left: marker_position[0],
-                    width: 0,
-                    height: 0
-                };
-            }
-            update_selected_feature.call(this, feature);
-            this.popover.show(refpos);
-        }.bind(this), 100);
+                marker_coordinates = ol.extent.getCenter(feature.getGeometry().getExtent());
+                marker_position = this.map.getPixelFromCoordinate(marker_coordinates);
+                marker_style = feature.getStyle()(feature);
+                marker_image = marker_style.getImage();
+                if (marker_image != null && (marker_size = marker_image.getSize()) != null) {
+                    var marker_scale = marker_image.getScale();
+                    marker_size = marker_size.map(function (value) {
+                        return value * marker_scale;
+                    });
+                    refpos = {
+                        top: marker_position[1] - marker_size[1],
+                        left: marker_position[0] - (marker_size[0] / 2),
+                        width: marker_size[0],
+                        height: marker_size[1]
+                    };
+                } else {
+                    refpos = {
+                        top: marker_position[1],
+                        left: marker_position[0],
+                        width: 0,
+                        height: 0
+                    };
+                }
+                update_selected_feature.call(this, feature);
+                this.popover.show(refpos);
+            }.bind(this), 100);
+        } else {
+            var poi_info = feature.get('data');
+            var style = parse_marker_definition.call(this, poi_info.iconHighlighted, poi_info.style || poi_info.styleHighlighted);
+            feature.setStyle(style);
+        }
     };
 
     var layer_builders = {

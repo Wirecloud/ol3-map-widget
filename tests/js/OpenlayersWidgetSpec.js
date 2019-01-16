@@ -170,6 +170,8 @@
                     let pixel_mock = jasmine.createSpy('pixel');
                     let feature_mock = new ol.Feature();
                     feature_mock.set('selectable', true);
+                    feature_mock.set("content", "mycontent");
+                    feature_mock.set("data", {});
                     feature_mock.setGeometry(new ol.geom.Point([0, 0]));
                     let style_mock = new ol.style.Style();
                     feature_mock.setStyle(() => {return style_mock});
@@ -197,6 +199,7 @@
                 it("on the selected feature", () => {
                     let pixel_mock = jasmine.createSpy('pixel');
                     let feature_mock = new ol.Feature();
+                    feature_mock.set("data", {});
                     feature_mock.set('selectable', true);
                     widget.init();
                     widget.selected_feature = feature_mock;
@@ -262,6 +265,8 @@
                     let pixel_mock = jasmine.createSpy('pixel');
                     let feature_mock = new ol.Feature();
                     feature_mock.set('selectable', true);
+                    feature_mock.set("content", "my content");
+                    feature_mock.set("data", {});
                     feature_mock.setGeometry(new ol.geom.Point([0, 0]));
                     feature_mock.setStyle(() => {return new ol.style.Style()});
 
@@ -302,6 +307,8 @@
                     feature_mock.set('selectable', true);
                     feature_mock.setGeometry(new ol.geom.Point([0, 0]));
                     feature_mock.setStyle(() => {return new ol.style.Style()});
+                    feature_mock.set("content", "my text");
+                    feature_mock.set("data", {});
 
                     widget.init();
                     widget.select_feature(feature_mock);
@@ -508,7 +515,6 @@
                 spyOn(feature_mock, 'set');
                 spyOn(feature_mock, 'setGeometry');
                 spyOn(feature_mock, 'setStyle');
-
                 spyOn(widget.vector_source, 'addFeature');
                 spyOn(widget.vector_source, 'getFeatureById').and.returnValue(feature_mock);
                 let poi_info = deepFreeze({
@@ -524,6 +530,7 @@
                 widget.registerPoI(poi_info);
 
                 expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info);
+                expect(widget.selected_feature).toBe(feature_mock);
             });
 
             describe("handles the style option:", () => {
@@ -769,22 +776,32 @@
 
         describe("centerPoI(poi_list)", () => {
 
-            it("should work with one Poi", () => {
+            it("should work with one Poi on a PoI with iconHighlighted details", () => {
                 widget.init();
+                spyOn(widget.vector_source, 'addFeature').and.callThrough();
                 spyOn(widget.map.getView(), 'fit').and.callThrough();
                 // TODO
                 let poi_info = deepFreeze({
                     id: '1',
-                    data: {},
+                    data: {
+                        iconHighlighted: {
+                            src: "https://www.example.com/image.png",
+                            opacity: 0.2,
+                            scale: 0.1
+                        }
+                    },
                     location: {
                         type: 'Point',
                         coordinates: [0, 0]
                     }
                 });
                 widget.registerPoI(poi_info);
+                let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                spyOn(feature, "setStyle");
 
                 widget.centerPoI([{id: '1'}]);
 
+                expect(feature.setStyle).toHaveBeenCalledTimes(1);
                 expect(widget.map.getView().fit).toHaveBeenCalledTimes(1);
                 expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info);
             });
