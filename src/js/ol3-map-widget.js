@@ -403,6 +403,12 @@
     Widget.prototype.centerPoI = function centerPoI(poi_info) {
         var geometry, zoom;
 
+        if (poi_info.length === 0) {
+            // Just empty current selection
+            unselect.call(this, this.selected_feature);
+            return update_selected_feature.call(this, null);
+        }
+
         geometry = new ol.geom.GeometryCollection(poi_info.map((poi) => {
             var feature = this.vector_source.getFeatureById(poi.id);
             return feature.getGeometry();
