@@ -73,6 +73,8 @@ Map viewer widget using OpenLayers. It can receive Layers or Point of Interest d
         - `opacity`: Opacity of the icon (range from 0 to 1). Default is `1`.
         - `scale`: Scale. Default is `1`.
         - `src`: Image source URI.
+    - `iconHighlighted`: icon configuration to use when the PoI is selected.
+        Works in the same way than the `icon` field.
     - `infoWindow`: content (using HTML) associated with the PoI.
     - `location` (required if `currentLocation` not used): a GeoJSON geometry.
       e.g. `{"type": "Point", "coordinates": [125.6, 10.1]}`
@@ -88,6 +90,9 @@ Map viewer widget using OpenLayers. It can receive Layers or Point of Interest d
             - `color`: stroke color. CSS3 color, that is, an hexadecimal, `rgb`
             or `rgba` color.
             - `width`: stroke width in pixels.
+    - `iconHighlighted`: Style to use for rendering the PoI when it is selected.
+        Works in the same way than the `style` field. The configuration from
+        `style` will be used if not provided.
     - `subtitle`: subtitle associated to the PoI
     - `title`: title associated to the PoI
     - `tooltip`: text to be displayed as tooltip when the mouse is over the PoI.
