@@ -776,6 +776,15 @@
 
         describe("centerPoI(poi_list)", () => {
 
+            it("should work with an empty list of PoIs", () => {
+                widget.init();
+                spyOn(widget.map.getView(), 'fit').and.callThrough();
+                widget.centerPoI([]);
+
+                expect(widget.map.getView().fit).not.toHaveBeenCalled();
+                expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).not.toHaveBeenCalled();
+            });
+
             it("should work with one Poi on a PoI with iconHighlighted details", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature').and.callThrough();
@@ -801,9 +810,40 @@
 
                 widget.centerPoI([{id: '1'}]);
 
+                expect(widget.selected_feature).toBe(feature);
                 expect(feature.setStyle).toHaveBeenCalledTimes(1);
                 expect(widget.map.getView().fit).toHaveBeenCalledTimes(1);
                 expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info);
+            });
+
+            it("should empty current selection when passing an empty list of PoIs", () => {
+                widget.init();
+                spyOn(widget.map.getView(), 'fit').and.callThrough();
+                // TODO
+                let poi_info = deepFreeze({
+                    id: '1',
+                    data: {
+                        iconHighlighted: {
+                            src: "https://www.example.com/image.png",
+                            opacity: 0.2,
+                            scale: 0.1
+                        }
+                    },
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                widget.registerPoI(poi_info);
+                widget.centerPoI([{id: '1'}]);
+                widget.map.getView().fit.calls.reset();
+                MashupPlatform.widget.outputs.poiOutput.pushEvent.calls.reset();
+
+                widget.centerPoI([]);
+
+                expect(widget.map.getView().fit).not.toHaveBeenCalled();
+                expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(null);
+                expect(widget.selected_feature).toBe(null);
             });
 
             it("should work with multiple Poi", () => {
