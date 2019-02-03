@@ -152,14 +152,23 @@
     };
 
     var parse_marker_definition = function parse_marker_definition(icon, vector_style) {
+        let clone = false;
         if (icon == null && vector_style == null) {
             return DEFAULT_MARKER;
         } else if (icon == null) {
             icon = {};
+        } else if (typeof icon === 'string') {
+            icon = {
+                src: icon
+            };
+        } else {
+            clone = true;
         }
 
         if (icon.hash != null && icon.hash in this.marker_cache) {
             return this.marker_cache[icon.hash];
+        } else if (clone) {
+            icon = Object.assign({}, icon);
         }
 
         if (!Array.isArray(icon.anchor)) {
@@ -359,17 +368,11 @@
             });
         }
 
-
-        let icon = null;
-        if (typeof poi_info.icon === 'string') {
-            icon = {
-                src: poi_info.icon
-            };
-        } else if (poi_info.icon != null && typeof poi_info.icon === 'object') {
-            icon = Object.assign({}, poi_info.icon);
+        if (this.selected_feature === iconFeature) {
+            style = parse_marker_definition.call(this, poi_info.iconHighlighted || poi_info.icon, poi_info.styleHighlighted || poi_info.style);
+        } else {
+            style = parse_marker_definition.call(this, poi_info.icon, poi_info.style);
         }
-
-        style = parse_marker_definition.call(this, icon, poi_info.style);
         iconFeature.setStyle(style);
 
         if (this.selected_feature === iconFeature) {
@@ -878,7 +881,7 @@
             }.bind(this), 100);
         } else {
             var poi_info = feature.get('data');
-            var style = parse_marker_definition.call(this, poi_info.iconHighlighted, poi_info.styleHighlighted || poi_info.style);
+            var style = parse_marker_definition.call(this, poi_info.iconHighlighted || poi_info.icon, poi_info.styleHighlighted || poi_info.style);
             feature.setStyle(style);
         }
     };

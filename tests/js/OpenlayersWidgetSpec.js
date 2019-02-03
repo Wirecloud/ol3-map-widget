@@ -510,6 +510,46 @@
                 expect(feature_mock.setStyle).toHaveBeenCalledWith(jasmine.any(Function));
             });
 
+            it("supports updating selected PoIs", () => {
+                widget.init();
+                var feature_mock = new ol.Feature();
+                spyOn(feature_mock, 'set');
+                spyOn(feature_mock, 'setProperties');
+                spyOn(feature_mock, 'setStyle');
+
+                spyOn(widget.vector_source, 'addFeature');
+                spyOn(widget.vector_source, 'getFeatureById').and.returnValue(feature_mock);
+                let poi_info = deepFreeze({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    },
+                    icon: {
+                        hash: "hash1",
+                        src: "https://www.example.com/image.png",
+                    },
+                    iconHighlighted: {
+                        hash: "hash2",
+                        src: "https://www.example.com/image.png",
+                    }
+                });
+                widget.registerPoI(poi_info);
+                widget.selected_feature = feature_mock;
+                widget.registerPoI(poi_info);
+                widget.selected_feature = null;
+                widget.registerPoI(poi_info);
+
+                expect(feature_mock.setStyle).toHaveBeenCalledTimes(3);
+                let style1 = feature_mock.setStyle.calls.argsFor(0)[0];
+                let style2 = feature_mock.setStyle.calls.argsFor(1)[0];
+                let style3 = feature_mock.setStyle.calls.argsFor(2)[0];
+
+                expect(style1).not.toBe(style2);
+                expect(style1).toBe(style3);
+            });
+
             it("sends update events when updating the selected PoI", () => {
                 var feature_mock = new ol.Feature();
                 widget.init();
@@ -658,7 +698,7 @@
                     }));
                     // Second PoI, will use cached style
                     widget.registerPoI(deepFreeze({
-                        id: '1',
+                        id: '2',
                         data: {},
                         location: {
                             type: 'Point',
