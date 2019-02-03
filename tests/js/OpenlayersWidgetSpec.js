@@ -182,6 +182,7 @@
                         };
                     };
                     widget.init();
+                    spyOn(window, "setTimeout");
                     spyOn(widget, "select_feature").and.callThrough();
                     spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
                         expect(pixel).toBe(pixel_mock);
@@ -228,6 +229,7 @@
                     widget.popover = {
                         hide: jasmine.createSpy('hide')
                     };
+                    spyOn(window, "setTimeout");
                     spyOn(widget, "select_feature");
                     spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
                         expect(pixel).toBe(pixel_mock);
@@ -789,6 +791,8 @@
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature').and.callThrough();
                 spyOn(widget.map.getView(), 'fit').and.callThrough();
+                spyOn(widget.map.getView(), 'getZoom').and.returnValue(11);
+                spyOn(ol.extent, 'containsExtent').and.returnValue(true);
                 // TODO
                 let poi_info = deepFreeze({
                     id: '1',
@@ -812,7 +816,7 @@
 
                 expect(widget.selected_feature).toBe(feature);
                 expect(feature.setStyle).toHaveBeenCalledTimes(1);
-                expect(widget.map.getView().fit).toHaveBeenCalledTimes(1);
+                expect(widget.map.getView().fit).not.toHaveBeenCalled();
                 expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info);
             });
 
@@ -846,9 +850,50 @@
                 expect(widget.selected_feature).toBe(null);
             });
 
-            it("should work with multiple Poi", () => {
+            it("should work with multiple Pois (zoom no changed)", () => {
                 widget.init();
                 spyOn(widget.map.getView(), 'fit').and.callThrough();
+                spyOn(widget.map.getView(), 'setCenter').and.callThrough();
+                spyOn(widget.map.getView(), 'getZoom').and.returnValue(15);
+                spyOn(ol.extent, 'containsExtent').and.returnValue(false);
+                spyOn(ol.extent, 'getSize').and.returnValues(
+                    [100, 100],  // view size
+                    [5, 5]       // selection size
+                );
+                // TODO
+                widget.registerPoI(deepFreeze({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                }));
+                widget.registerPoI(deepFreeze({
+                    id: '2',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [1, 0]
+                    }
+                }));
+
+                widget.centerPoI([{id: '1'}, {id: '2'}]);
+
+                expect(widget.map.getView().fit).not.toHaveBeenCalled();
+                expect(widget.map.getView().setCenter).toHaveBeenCalledTimes(1);
+            });
+
+            it("should work with multiple Pois (zoom out to fit)", () => {
+                widget.init();
+                spyOn(widget.map.getView(), 'fit');
+                spyOn(widget.map.getView(), 'setCenter');
+                spyOn(widget.map.getView(), 'getZoom').and.returnValue(17);
+                spyOn(ol.extent, 'containsExtent').and.returnValue(false);
+                spyOn(ol.extent, 'getSize').and.returnValues(
+                    [10, 10],  // view size
+                    [50, 50]   // selection size
+                );
                 // TODO
                 widget.registerPoI(deepFreeze({
                     id: '1',
@@ -870,6 +915,7 @@
                 widget.centerPoI([{id: '1'}, {id: '2'}]);
 
                 expect(widget.map.getView().fit).toHaveBeenCalledTimes(1);
+                expect(widget.map.getView().setCenter).not.toHaveBeenCalled();
             });
 
         });
