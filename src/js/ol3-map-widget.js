@@ -827,7 +827,12 @@
 
         unselect.call(this, this.selected_feature);
 
+        var poi_info = feature.get('data');
+        var style = parse_marker_definition.call(this, poi_info.iconHighlighted || poi_info.icon, poi_info.styleHighlighted || poi_info.style);
+        feature.setStyle(style);
+
         update_selected_feature.call(this, feature);
+
         if (feature.get('content') != null) {
             // The feature has content to be used on a popover
             let popover = this.popover = new StyledElements.Popover({
@@ -879,10 +884,6 @@
                 update_selected_feature.call(this, feature);
                 this.popover.show(refpos);
             }.bind(this), 100);
-        } else {
-            var poi_info = feature.get('data');
-            var style = parse_marker_definition.call(this, poi_info.iconHighlighted || poi_info.icon, poi_info.styleHighlighted || poi_info.style);
-            feature.setStyle(style);
         }
     };
 
