@@ -235,12 +235,20 @@
     };
 
     Widget.prototype.init = function init() {
-        document.getElementById('button').addEventListener('click', function (event) {
+
+        let layers_button = document.getElementById('button');
+        layers_button.addEventListener('click', (event) => {
             if (this.layers_widget == null) {
-                this.layers_widget = MashupPlatform.mashup.addWidget('CoNWeT/layer-selector/0.4', {refposition: event.target.getBoundingClientRect()});
+                this.layers_widget = MashupPlatform.mashup.addWidget(MashupPlatform.prefs.get('layerswidget').trim(), {refposition: event.target.getBoundingClientRect()});
                 this.layers_widget.outputs.layerInfoOutput.connect(MashupPlatform.widget.inputs.layerInfo);
             }
         });
+        let layers_widget_ref = MashupPlatform.prefs.get('layerswidget').trim();
+        if (layers_widget_ref === "") {
+            layers_button.classList.add('hidden');
+        } else {
+            layers_button.classList.remove('hidden');
+        }
 
         DEFAULT_MARKER = build_basic_style.call(this);
         this.base_layer = CORE_LAYERS.WIKIMEDIA;

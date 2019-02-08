@@ -49,8 +49,10 @@
                 prefs: {
                     'initialCenter': '',
                     'initialZoom': '',
-                    'poiZoom': 10
+                    'poiZoom': 10,
+                    'layerswidget': ''
                 },
+                inputs: ['layerInfo'],
                 outputs: ['poiListOutput', 'poiOutput']
             });
         });
@@ -120,6 +122,64 @@
                     expect(widget.map.getView().getCenter()).toEqual(ol.proj.transform([-4.4212964, 36.7212828], 'EPSG:4326', 'EPSG:3857'));
                 });
 
+            });
+
+            describe("layerswidget", () => {
+
+                it("empty", () => {
+                    MashupPlatform.prefs.set("layerswidget", "");
+
+                    widget.init();
+
+                    let layers_button = document.getElementById('button');
+                    expect(layers_button.className).toBe('se-btn hidden');
+                });
+
+                it("widget ref", () => {
+                    MashupPlatform.prefs.set("layerswidget", "CoNWeT/layer-selector/0.4");
+
+                    widget.init();
+
+                    let layers_button = document.getElementById('button');
+                    expect(layers_button.className).toBe('se-btn');
+                });
+
+                it("widget ref (click)", () => {
+                    let ref = "CoNWeT/layer-selector/0.4";
+                    MashupPlatform.prefs.set("layerswidget", ref);
+                    widget.init();
+                    MashupPlatform.mashup.addWidget.and.returnValue({
+                        outputs: {
+                            layerInfoOutput: {
+                                connect: jasmine.createSpy("connect")
+                            }
+                        }
+                    });
+
+                    let layers_button = document.getElementById('button');
+                    layers_button.click();
+                    expect(MashupPlatform.mashup.addWidget).toHaveBeenCalledWith(ref, jasmine.any(Object));
+                    expect(MashupPlatform.mashup.addWidget().outputs.layerInfoOutput.connect).toHaveBeenCalledWith(MashupPlatform.widget.inputs.layerInfo);
+                });
+
+                it("widget ref (creation is cached)", () => {
+                    let ref = "CoNWeT/layer-selector/0.4";
+                    MashupPlatform.prefs.set("layerswidget", ref);
+                    widget.init();
+                    MashupPlatform.mashup.addWidget.and.returnValue({
+                        outputs: {
+                            layerInfoOutput: {
+                                connect: jasmine.createSpy("connect")
+                            }
+                        }
+                    });
+
+                    let layers_button = document.getElementById('button');
+                    layers_button.click();
+                    MashupPlatform.mashup.addWidget.calls.reset();
+                    layers_button.click();
+                    expect(MashupPlatform.mashup.addWidget).not.toHaveBeenCalled();
+                });
             });
 
         });
