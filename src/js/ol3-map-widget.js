@@ -378,7 +378,7 @@
         }
 
         iconFeature = this.vector_source.getFeatureById(poi_info.id);
-        minzoom = poi_info.minzoom != null ? 156543.03390625 * Math.pow(2, -poi_info.minzoom) : null;
+        minzoom = poi_info.minzoom != null ? this.map.getView().getResolutionForZoom(poi_info.minzoom) : null;
         if (iconFeature == null) {
             iconFeature = new ol.Feature({
                 geometry: geometry,
