@@ -1,11 +1,14 @@
-## v1.0.x
+## v1.1.0 (2019-02-08)
 
+- Add a new preference for configuring the widget to be used for switching
+    between layers. Also allow to disable this feature by providing an empty
+    widget reference. See #14.
 - Allow to indicate if the PoI is selectable or not. See #5
 - Update OpenLayers to version 4.6.5
 - Add a new option: minzoom. This option allows to configure the minimum zoom
     level at which the PoI will be displayed.
-- Fix selection handling when receiving data through the replacePoIs input
-    endpoint. See #8
+- Fix some problems managing current selected PoIs. See #8 and #13.
+- Other small fixes: #11
 
 
 ## v1.0.3 (2018-02-23)
