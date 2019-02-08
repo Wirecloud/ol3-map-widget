@@ -294,7 +294,7 @@
                     update_selected_feature.call(this, null);
                 } else {
                     var popup_menu = new StyledElements.PopupMenu();
-                    features.forEach(function (feature) {
+                    features.forEach((feature) => {
                         popup_menu.append(new StyledElements.MenuItem(feature.get('title'), null, feature));
                     });
                     popup_menu.addEventListener("click", (menu, item) => {
