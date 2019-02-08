@@ -207,6 +207,34 @@
                     expect(widget.select_feature).toHaveBeenCalledWith(feature_mock);
                 });
 
+                it("on a not selected feature (through selection menu)", () => {
+                    let pixel_mock = jasmine.createSpy('pixel');
+                    let feature1_mock = new ol.Feature();
+                    feature1_mock.set('selectable', true);
+                    let feature2_mock = new ol.Feature();
+                    feature2_mock.set('selectable', true);
+                    let feature3_mock = new ol.Feature();
+                    feature3_mock.set('selectable', true);
+                    widget.init();
+                    spyOn(widget, "select_feature");
+                    spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
+                        expect(pixel).toBe(pixel_mock);
+                        listener(feature1_mock);
+                        listener(feature2_mock);
+                        listener(feature3_mock);
+                    });
+                    spyOn(StyledElements.PopupMenu.prototype, "addEventListener").and.callThrough();
+
+                    widget.map.dispatchEvent({
+                        type: "click",
+                        pixel: pixel_mock
+                    });
+
+                    StyledElements.PopupMenu.prototype.addEventListener.calls.argsFor(0)[1](null, {context: feature3_mock});
+
+                    expect(widget.select_feature).toHaveBeenCalledWith(feature3_mock);
+                });
+
                 it("on a not selectable feature", () => {
                     let pixel_mock = jasmine.createSpy('pixel');
                     let feature_mock = new ol.Feature();
@@ -279,6 +307,33 @@
                     });
 
                     expect(widget.select_feature).not.toHaveBeenCalled();
+                });
+
+                it("on the selected feature (through selection menu)", () => {
+                    let pixel_mock = jasmine.createSpy('pixel');
+                    let feature1_mock = new ol.Feature();
+                    feature1_mock.set('selectable', true);
+                    let feature2_mock = new ol.Feature();
+                    feature2_mock.set('selectable', true);
+                    feature2_mock.set('data', {});
+                    let feature3_mock = new ol.Feature();
+                    feature3_mock.set('selectable', true);
+                    widget.init();
+                    widget.selected_feature = feature2_mock;
+                    spyOn(widget, "select_feature");
+                    spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
+                        expect(pixel).toBe(pixel_mock);
+                        listener(feature1_mock);
+                        listener(feature2_mock);
+                        listener(feature3_mock);
+                    });
+
+                    widget.map.dispatchEvent({
+                        type: "click",
+                        pixel: pixel_mock
+                    });
+
+                    expect(widget.selected_feature).toBe(null);
                 });
 
                 it("on a not selected feature (but while there is a selected feature)", () => {
