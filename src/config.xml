@@ -20,6 +20,7 @@
         <preference name="initialZoom" type="text" label="Initial Zoom Level" description="Initial zoom level. From 1 to 22, where '1' represents the furthest level and '22' the maximum zoom level." default="3" />
         <preference name="minzoom" label="Min Zoom" type="text" description="" default="4" />
         <preference name="poiZoom" label="PoI Zoom" type="text" description="Zoom level applied when centering a PoI" default="17" />
+        <preference name="layerswidget" label="Layers Widget" type="text" description="Widget to use for allowing user to switch between layers" default="" />
     </preferences>
 
     <wiring>

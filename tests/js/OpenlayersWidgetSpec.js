@@ -49,7 +49,8 @@
                 prefs: {
                     'initialCenter': '',
                     'initialZoom': '',
-                    'poiZoom': 10
+                    'poiZoom': 10,
+                    'layerswidget': ''
                 },
                 outputs: ['poiListOutput', 'poiOutput']
             });
