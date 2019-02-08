@@ -274,17 +274,46 @@
 
         // display popup on click
         this.map.on('click', function (event) {
-            var feature = this.map.forEachFeatureAtPixel(
+            var features = [];
+            this.map.forEachFeatureAtPixel(
                 event.pixel,
                 (feature, layer) => {
                     if (feature.get('selectable')) {
-                        return feature;
+                        features.push(feature);
                     }
+                },
+                {
+                    hitTolerance: 2
                 }
             );
 
             // Normalize return value, undefined should be treated as null
-            feature = feature != null ? feature : null;
+            if (features.length > 1) {
+                if (this.selected_feature != null && features.indexOf(this.selected_feature) !== -1) {
+                    unselect.call(this, this.selected_feature);
+                    update_selected_feature.call(this, null);
+                } else {
+                    var popup_menu = new StyledElements.PopupMenu();
+                    features.forEach(function (feature) {
+                        popup_menu.append(new StyledElements.MenuItem(feature.get('title'), null, feature));
+                    });
+                    popup_menu.addEventListener("click", (menu, item) => {
+                        this.select_feature(item.context);
+                    });
+                    setTimeout(function () {
+                        popup_menu.show({
+                            top: event.pixel[1],
+                            bottom: event.pixel[1],
+                            left: event.pixel[0],
+                            right: event.pixel[0]
+                        });
+                    }, 0);
+                }
+
+                return;
+            }
+
+            var feature = features[0];
 
             if (feature != null && feature !== this.selected_feature) {
                 this.select_feature(feature);
