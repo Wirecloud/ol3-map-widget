@@ -166,7 +166,7 @@
                     expect(widget.select_feature).not.toHaveBeenCalled();
                 });
 
-                it("on a not selected feature (with a marker)", () => {
+                it("on a not selected feature (with a marker)", (done) => {
                     let pixel_mock = jasmine.createSpy('pixel');
                     let feature_mock = new ol.Feature();
                     feature_mock.set('selectable', true);
@@ -174,16 +174,14 @@
                     feature_mock.set("data", {});
                     feature_mock.setGeometry(new ol.geom.Point([0, 0]));
                     let style_mock = new ol.style.Style();
-                    feature_mock.setStyle(() => {return style_mock});
-                    style_mock.getImage = function () {
-                        return {
-                            getScale: () => {return 0.5;},
-                            getSize: () => {return [1, 2];}
-                        };
-                    };
+                    spyOn(feature_mock, "getStyle").and.callFake(() => {return () => {return style_mock};});
+                    spyOn(style_mock, 'getImage').and.returnValue({
+                        getScale: () => {return 0.5;},
+                        getSize: jasmine.createSpy().and.callFake(() => {return [1, 2];})
+                    });
                     widget.init();
-                    spyOn(window, "setTimeout");
                     spyOn(widget, "select_feature").and.callThrough();
+                    spyOn(widget.map, 'getPixelFromCoordinate').and.returnValue([0, 0]);
                     spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
                         expect(pixel).toBe(pixel_mock);
                         return listener(feature_mock);
@@ -194,7 +192,12 @@
                         pixel: pixel_mock
                     });
 
-                    expect(widget.select_feature).toHaveBeenCalledWith(feature_mock);
+                    setTimeout(() => {
+                        // Check popover is placed taking into account the poi marker position
+                        expect(style_mock.getImage().getSize).toHaveBeenCalledTimes(1);
+                        expect(widget.select_feature).toHaveBeenCalledWith(feature_mock);
+                        done();
+                    }, 150);
                 });
 
                 it("on the selected feature", () => {
