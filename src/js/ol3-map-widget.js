@@ -152,14 +152,23 @@
     };
 
     var parse_marker_definition = function parse_marker_definition(icon, vector_style) {
+        let clone = false;
         if (icon == null && vector_style == null) {
             return DEFAULT_MARKER;
         } else if (icon == null) {
             icon = {};
+        } else if (typeof icon === 'string') {
+            icon = {
+                src: icon
+            };
+        } else {
+            clone = true;
         }
 
         if (icon.hash != null && icon.hash in this.marker_cache) {
             return this.marker_cache[icon.hash];
+        } else if (clone) {
+            icon = Object.assign({}, icon);
         }
 
         if (!Array.isArray(icon.anchor)) {
@@ -276,6 +285,7 @@
                 update_selected_feature.call(this, null);
             } else if (feature !== this.selected_feature && this.popover != null) {
                 this.popover.hide();
+                update_selected_feature.call(this, null);
             }
         }.bind(this));
 
@@ -284,8 +294,8 @@
             if (event.dragging) {
                 if (this.popover != null) {
                     this.popover.hide();
+                    update_selected_feature.call(this, null);
                 }
-                update_selected_feature.call(this, null);
                 return;
             }
             var pixel = this.map.getEventPixel(event.originalEvent);
@@ -358,17 +368,11 @@
             });
         }
 
-
-        let icon = null;
-        if (typeof poi_info.icon === 'string') {
-            icon = {
-                src: poi_info.icon
-            };
-        } else if (poi_info.icon != null && typeof poi_info.icon === 'object') {
-            icon = Object.assign({}, poi_info.icon);
+        if (this.selected_feature === iconFeature) {
+            style = parse_marker_definition.call(this, poi_info.iconHighlighted || poi_info.icon, poi_info.styleHighlighted || poi_info.style);
+        } else {
+            style = parse_marker_definition.call(this, poi_info.icon, poi_info.style);
         }
-
-        style = parse_marker_definition.call(this, icon, poi_info.style);
         iconFeature.setStyle(style);
 
         if (this.selected_feature === iconFeature) {
@@ -401,24 +405,41 @@
      * @param poi_info
      */
     Widget.prototype.centerPoI = function centerPoI(poi_info) {
-        var geometry, zoom;
-
         if (poi_info.length === 0) {
             // Just empty current selection
             unselect.call(this, this.selected_feature);
             return update_selected_feature.call(this, null);
         }
 
-        geometry = new ol.geom.GeometryCollection(poi_info.map((poi) => {
+        let geometry = new ol.geom.GeometryCollection(poi_info.map((poi) => {
             var feature = this.vector_source.getFeatureById(poi.id);
             return feature.getGeometry();
         }));
 
         // Update map view
-        zoom = parseInt(MashupPlatform.prefs.get('poiZoom'), 10);
-        this.map.getView().fit(geometry.getExtent(), {
-            maxZoom: zoom
-        });
+        let zoom = parseInt(MashupPlatform.prefs.get('poiZoom'), 10);
+        let currentZoom = this.map.getView().getZoom();
+        if (currentZoom < zoom) {
+            this.map.getView().fit(geometry.getExtent(), {
+                maxZoom: zoom
+            });
+        } else {
+            let view_extent = this.map.getView().calculateExtent(this.map.getSize());
+            let geometry_extent = geometry.getExtent();
+            if (!ol.extent.containsExtent(view_extent, geometry_extent)) {
+                let view_size = ol.extent.getSize(view_extent);
+                let geometry_size = ol.extent.getSize(geometry_extent);
+
+                if (view_size[0] < geometry_size[0] && view_size[1] < geometry_size[1]) {
+                    this.map.getView().fit(geometry.getExtent(), {
+                        maxZoom: zoom
+                    });
+                } else {
+                    let center = ol.extent.getCenter(geometry_extent);
+                    this.map.getView().setCenter(center);
+                }
+            }
+        }
 
         if (poi_info.length == 1) {
             this.select_feature(this.vector_source.getFeatureById(poi_info[0].id));
@@ -806,7 +827,12 @@
 
         unselect.call(this, this.selected_feature);
 
+        var poi_info = feature.get('data');
+        var style = parse_marker_definition.call(this, poi_info.iconHighlighted || poi_info.icon, poi_info.styleHighlighted || poi_info.style);
+        feature.setStyle(style);
+
         update_selected_feature.call(this, feature);
+
         if (feature.get('content') != null) {
             // The feature has content to be used on a popover
             let popover = this.popover = new StyledElements.Popover({
@@ -858,10 +884,6 @@
                 update_selected_feature.call(this, feature);
                 this.popover.show(refpos);
             }.bind(this), 100);
-        } else {
-            var poi_info = feature.get('data');
-            var style = parse_marker_definition.call(this, poi_info.iconHighlighted, poi_info.style || poi_info.styleHighlighted);
-            feature.setStyle(style);
         }
     };
 
