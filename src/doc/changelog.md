@@ -1,3 +1,8 @@
+## v1.1.1 (2019-02-28)
+
+- Fix proj4.js not being packaged into the widget. See #16.
+
+
 ## v1.1.0 (2019-02-08)
 
 - Add a new preference for configuring the widget to be used for switching
