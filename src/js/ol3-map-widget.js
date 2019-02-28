@@ -359,10 +359,9 @@
         if ('location' in poi_info) {
             geometry = this.geojsonparser.readGeometry(poi_info.location).transform('EPSG:4326', 'EPSG:3857');
             if (poi_info.selectable) {
-                let marker;
                 switch (geometry.getType()) {
                 case "Polygon":
-                    marker = new ol.geom.Point(geometry.getInteriorPoint());
+                    marker = new ol.geom.Point(geometry.getInteriorPoint().getCoordinates());
                     geometry = new ol.geom.GeometryCollection([geometry, marker]);
                     break;
                 case "LineString":
