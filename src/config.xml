@@ -1,8 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<widget xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="CoNWeT" name="ol3-map" version="1.1.2-dev">
+<widget xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="CoNWeT" name="ol3-map" version="1.1.2">
     <details>
         <title>OpenLayers Map</title>
         <email>wirecloud@conwet.com</email>
+        <homepage>https://github.com/Wirecloud/ol3-map-widget</homepage>
         <image>images/catalogue.png</image>
         <description>Map viewer widget using OpenLayers.</description>
         <doc>doc/userguide.md</doc>
@@ -10,6 +11,7 @@
         <authors>Álvaro Arranz &lt;aarranz@ficodes.com&gt;</authors>
         <license>Apache License 2.0</license>
         <licenseurl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseurl>
+        <issuetracker>https://github.com/Wirecloud/ol3-map-widget/issues</issuetracker>
     </details>
 
     <requirements>

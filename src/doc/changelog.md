@@ -1,3 +1,9 @@
+## v1.1.2 (2019-04-04)
+
+- Bundle the LICENSE file with the widget
+- Improve widget metadata
+
+
 ## v1.1.1 (2019-02-28)
 
 - Fix proj4.js not being packaged into the widget. See #16.
