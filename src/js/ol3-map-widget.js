@@ -252,6 +252,7 @@
         layers_button.addEventListener('click', (event) => {
             if (this.layers_widget == null) {
                 this.layers_widget = MashupPlatform.mashup.addWidget(MashupPlatform.prefs.get('layerswidget').trim(), {refposition: event.target.getBoundingClientRect()});
+                this.layers_widget.addEventListener('remove', () => this.layers_widget = null);
                 this.layers_widget.outputs.layerInfoOutput.connect(MashupPlatform.widget.inputs.layerInfo);
             }
         });
