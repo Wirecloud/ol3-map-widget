@@ -8,6 +8,8 @@
         <doc>doc/userguide.md</doc>
         <changelog>doc/changelog.md</changelog>
         <authors>Álvaro Arranz &lt;aarranz@ficodes.com&gt;</authors>
+        <license>Apache License 2.0</license>
+        <licenseurl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseurl>
     </details>
 
     <requirements>
