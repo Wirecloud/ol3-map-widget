@@ -9,10 +9,10 @@
 
     "use strict";
 
-    var HTML_FIXTURE = '<div id="map" class="map"></div>\n' +
+    const HTML_FIXTURE = '<div id="map" class="map"></div>\n' +
         '<div id="button" class="se-btn"><span>Capas</span></div>';
 
-    var clearDocument = function clearDocument() {
+    const clearDocument = function clearDocument() {
         var elements = document.querySelectorAll('body > *:not(.jasmine_html-reporter)');
 
         for (var i = 0; i < elements.length; i++) {
@@ -20,7 +20,7 @@
         }
     };
 
-    var deepFreeze = function deepFreeze(obj) {
+    const deepFreeze = function deepFreeze(obj) {
 
         // Retrieve the property names defined on obj
         var propNames = Object.getOwnPropertyNames(obj);
@@ -37,6 +37,17 @@
 
         // Freeze self (no-op if already frozen)
         return Object.freeze(obj);
+    };
+
+    const createAddWidgetMock = function createAddWidgetMock() {
+        MashupPlatform.mashup.addWidget.and.returnValue({
+            addEventListener: jasmine.createSpy("addEventListener"),
+            outputs: {
+                layerInfoOutput: {
+                    connect: jasmine.createSpy("connect")
+                }
+            }
+        });
     };
 
     describe("ol3-map", function () {
@@ -148,13 +159,7 @@
                     let ref = "CoNWeT/layer-selector/0.4";
                     MashupPlatform.prefs.set("layerswidget", ref);
                     widget.init();
-                    MashupPlatform.mashup.addWidget.and.returnValue({
-                        outputs: {
-                            layerInfoOutput: {
-                                connect: jasmine.createSpy("connect")
-                            }
-                        }
-                    });
+                    createAddWidgetMock();
 
                     let layers_button = document.getElementById('button');
                     layers_button.click();
@@ -166,13 +171,7 @@
                     let ref = "CoNWeT/layer-selector/0.4";
                     MashupPlatform.prefs.set("layerswidget", ref);
                     widget.init();
-                    MashupPlatform.mashup.addWidget.and.returnValue({
-                        outputs: {
-                            layerInfoOutput: {
-                                connect: jasmine.createSpy("connect")
-                            }
-                        }
-                    });
+                    createAddWidgetMock();
 
                     let layers_button = document.getElementById('button');
                     layers_button.click();
@@ -180,6 +179,40 @@
                     layers_button.click();
                     expect(MashupPlatform.mashup.addWidget).not.toHaveBeenCalled();
                 });
+
+                it("widget ref (listens close events)", () => {
+                    let ref = "CoNWeT/layer-selector/0.4";
+                    MashupPlatform.prefs.set("layerswidget", ref);
+                    widget.init();
+                    createAddWidgetMock();
+
+                    let layers_button = document.getElementById('button');
+                    layers_button.click();
+                    expect(MashupPlatform.mashup.addWidget().addEventListener).toHaveBeenCalledWith("remove", jasmine.any(Function));
+                    MashupPlatform.mashup.addWidget().addEventListener.calls.argsFor(0)[1]();
+                });
+
+                it("widget ref (creation after close)", () => {
+                    let ref = "CoNWeT/layer-selector/0.4";
+                    MashupPlatform.prefs.set("layerswidget", ref);
+                    widget.init();
+                    createAddWidgetMock();
+
+                    // Open layers widget
+                    let layers_button = document.getElementById('button');
+                    layers_button.click();
+                    // Close it
+                    MashupPlatform.mashup.addWidget().addEventListener.calls.argsFor(0)[1]();
+                    MashupPlatform.mashup.addWidget.calls.reset();
+                    MashupPlatform.mashup.addWidget().outputs.layerInfoOutput.connect.calls.reset();
+
+                    // Open again the layers widget
+                    layers_button.click();
+
+                    expect(MashupPlatform.mashup.addWidget).toHaveBeenCalledWith(ref, jasmine.any(Object));
+                    expect(MashupPlatform.mashup.addWidget().outputs.layerInfoOutput.connect).toHaveBeenCalledWith(MashupPlatform.widget.inputs.layerInfo);
+                });
+
             });
 
         });
