@@ -858,6 +858,10 @@
     var update_selected_feature = function update_selected_feature(feature) {
         if (this.selected_feature != feature) {
             this.selected_feature = feature;
+            if (this.popover != null) {
+                this.popover.hide();
+                this.popover = null;
+            }
             MashupPlatform.widget.outputs.poiOutput.pushEvent(feature != null ? feature.get('data') : null);
         }
     };
@@ -889,14 +893,17 @@
                 title: feature.get('title'),
                 content: new StyledElements.Fragment(feature.get('content'))
             });
-            popover.on('show', function () {
+            popover.on('show', () => {
                 update_selected_feature.call(this, feature);
-            }.bind(this));
-            popover.on('hide', function () {
-                // The popover can be hidden by clicking outside the widget. Manage also this case
-                this.popover = null;
-                update_selected_feature.call(this, null);
-            }.bind(this));
+            });
+            popover.on('hide', (popover) => {
+                // The popover can be hidden by clicking outside the widget. So we have to listen to this event
+                // On the other side, we have to detect if this popover is applying to current state
+                if (this.popover === popover) {
+                    this.popover = null;
+                    update_selected_feature.call(this, null);
+                }
+            });
 
             // Delay popover show action
             setTimeout(function () {

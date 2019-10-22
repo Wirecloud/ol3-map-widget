@@ -1,6 +1,6 @@
 /*
  *   Copyright (c) 2017 CoNWeT Lab., Universidad Politecnica de Madrid
- *   Copyright (c) 2017-2018 Future Internet Consulting and Development Solutions S.L.
+ *   Copyright (c) 2017-2019 Future Internet Consulting and Development Solutions S.L.
  */
 
 /* global MashupPlatform, MockMP, ol, Widget */
@@ -424,6 +424,7 @@
                     feature_mock.setStyle(() => {return new ol.style.Style()});
 
                     widget.init();
+                    spyOn(widget.map, 'getPixelFromCoordinate').and.returnValue([0, 0]);
                     widget.select_feature(feature_mock);
                     widget.popover.on('show', () => {
                         MashupPlatform.widget.outputs.poiOutput.reset();
@@ -1037,8 +1038,58 @@
                 widget.centerPoI([]);
 
                 expect(widget.map.getView().fit).not.toHaveBeenCalled();
+                expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledTimes(1);
                 expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(null);
                 expect(widget.selected_feature).toBe(null);
+            });
+
+            it("should manage selection changes", (done) => {
+                widget.init();
+                spyOn(widget.map.getView(), 'fit').and.callThrough();
+                let poi_info1 = deepFreeze({
+                    id: '1',
+                    infoWindow: "Hello world!",
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                widget.registerPoI(poi_info1);
+                spyOn(widget.vector_source, 'addFeature').and.callThrough();
+                let poi_info2 = deepFreeze({
+                    id: '2',
+                    data: {
+                        iconHighlighted: {
+                            src: "https://www.example.com/image.png",
+                            opacity: 0.2,
+                            scale: 0.1
+                        }
+                    },
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                widget.registerPoI(poi_info2);
+                let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                spyOn(widget.map, 'getPixelFromCoordinate').and.returnValue([0, 0]);
+                widget.centerPoI([{id: '1'}]);
+                widget.map.getView().fit.calls.reset();
+                MashupPlatform.widget.outputs.poiOutput.pushEvent.calls.reset();
+
+                setTimeout(() => {
+                    expect(widget.popover).not.toBe(null);
+                    widget.centerPoI([{id: '2'}]);
+
+                    setTimeout(() => {
+                        expect(widget.map.getView().fit).not.toHaveBeenCalled();
+                        expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledTimes(1);
+                        expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info2);
+                        expect(widget.popover).toBe(null);
+                        expect(widget.selected_feature).toBe(feature);
+                        done();
+                    });
+                }, 300);
             });
 
             it("should work with multiple Pois (zoom no changed)", () => {
