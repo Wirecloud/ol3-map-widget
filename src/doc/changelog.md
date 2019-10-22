@@ -1,3 +1,9 @@
+## v1.1.3 (2019-10-22)
+
+- Fix null event sent sometimes when changing the selected PoI when using the
+    endpoints.
+
+
 ## v1.1.2 (2019-04-04)
 
 - Bundle the LICENSE file with the widget
