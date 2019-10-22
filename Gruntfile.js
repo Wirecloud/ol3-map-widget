@@ -159,7 +159,7 @@ module.exports = function (grunt) {
                     'src/js/main.js'
                 ],
                 frameworks: ['jasmine'],
-                reporters: ['progress', 'coverage'],
+                reporters: ['progress'],
                 browsers: ['Chrome', 'Firefox'],
                 singleRun: true
             },
@@ -169,6 +169,7 @@ module.exports = function (grunt) {
                         type: 'html',
                         dir: 'build/coverage'
                     },
+                    reporters: ['progress', 'coverage'],
                     preprocessors: {
                         'src/js/*.js': ['coverage'],
                     }
@@ -190,6 +191,11 @@ module.exports = function (grunt) {
                     preprocessors: {
                         "src/js/*.js": ['coverage'],
                     }
+                }
+            },
+            widgetdebug: {
+                options: {
+                    singleRun: false
                 }
             }
         },
@@ -219,6 +225,12 @@ module.exports = function (grunt) {
         'bower:install',
         'eslint',
         'karma:widget'
+    ]);
+
+    grunt.registerTask('debug', [
+        'bower:install',
+        'eslint',
+        'karma:widgetdebug'
     ]);
 
     grunt.registerTask('ci', [
