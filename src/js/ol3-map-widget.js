@@ -916,6 +916,9 @@
 
                 marker_coordinates = ol.extent.getCenter(feature.getGeometry().getExtent());
                 marker_position = this.map.getPixelFromCoordinate(marker_coordinates);
+                var view = this.map.getView();
+                var width = ol.extent.getWidth(view.getProjection().getExtent()) / view.getResolution();
+                marker_position[0] = ((marker_position[0] % width) + width) % width;
                 marker_style = feature.getStyle()(feature);
                 marker_image = marker_style.getImage();
                 if (marker_image != null && (marker_size = marker_image.getSize()) != null) {
