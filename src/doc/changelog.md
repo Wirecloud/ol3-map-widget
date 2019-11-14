@@ -1,3 +1,8 @@
+## v1.1.4 (2019-XX-XX)
+
+- Fix getPixelFromCoordinate function. See #23 and #24.
+
+
 ## v1.1.3 (2019-10-22)
 
 - Fix null event sent sometimes when changing the selected PoI when using the
