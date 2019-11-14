@@ -916,7 +916,7 @@
 
                 marker_coordinates = ol.extent.getCenter(feature.getGeometry().getExtent());
                 marker_position = this.map.getPixelFromCoordinate(marker_coordinates);
-                var view = this.map.getView();
+                var view = this.map.getView(); // See https://github.com/openlayers/openlayers/issues/4713
                 var width = ol.extent.getWidth(view.getProjection().getExtent()) / view.getResolution();
                 marker_position[0] = ((marker_position[0] % width) + width) % width;
                 marker_style = feature.getStyle()(feature);
