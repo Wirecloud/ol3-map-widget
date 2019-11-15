@@ -1,6 +1,7 @@
 ## v1.1.4 (2019-XX-XX)
 
 - Fix getPixelFromCoordinate function. See #23 and #24.
+- Allow poiInputCenter endpoint receive null. See #25.
 
 
 ## v1.1.3 (2019-10-22)
