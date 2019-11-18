@@ -648,13 +648,14 @@
                 widget.registerPoI(poi_info);
 
                 expect(feature_mock.setProperties).toHaveBeenCalledWith({
-                    'geometry': jasmine.anything(),
-                    'point': jasmine.anything(),
-                    'data': poi_info,
-                    'title': undefined,
-                    'content': undefined,
-                    'selectable': true,
-                    'minzoom': null
+                    geometry: jasmine.anything(),
+                    point: jasmine.anything(),
+                    data: poi_info,
+                    title: undefined,
+                    content: undefined,
+                    selectable: true,
+                    minzoom: null,
+                    maxzoom: null
                 });
                 expect(feature_mock.setStyle).toHaveBeenCalledTimes(1);
 
@@ -889,6 +890,33 @@
 
                 it("displays the PoI if the zoom level is greather than the configured one", test(2.388657133911758, true));
                 it("hides the PoI if the zoom level is lower than the configured one", test(152.8740565703525, false));
+
+            });
+
+            describe("handles the maxzoom option:", () => {
+                const test = function (resolution, displayed) {
+                    return () => {
+                        widget.init();
+                        spyOn(widget.vector_source, 'addFeature');
+                        widget.registerPoI(deepFreeze({
+                            id: '1',
+                            data: {},
+                            location: {
+                                type: 'Point',
+                                coordinates: [0, 0]
+                            },
+                            maxzoom: 13
+                        }));
+                        expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                        expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+                        let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                        let fstyle = feature.getStyle()(feature, resolution);
+                        expect(fstyle).toEqual(displayed ? jasmine.any(ol.style.Style) : null);
+                    };
+                };
+
+                it("hides the PoI if the zoom level is greather than the configured one", test(2.388657133911758, false));
+                it("displays the PoI if the zoom level is lower than the configured one", test(152.8740565703525, true));
 
             });
 
