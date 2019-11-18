@@ -74,6 +74,10 @@
     });
 
     MashupPlatform.wiring.registerCallback('poiInputCenter', (poi_info) => {
+        if (poi_info == null) {
+            poi_info = [];
+        }
+
         poi_info = parseInputEndpointData(poi_info);
 
         if (!Array.isArray(poi_info)) {
