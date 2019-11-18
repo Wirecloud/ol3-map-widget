@@ -154,8 +154,11 @@
             }
 
             var minzoom = feature.get('minzoom');
+            var maxzoom = feature.get('maxzoom');
 
             if (minzoom != null && resolution > minzoom) {
+                return null;
+            } else if (maxzoom != null && resolution < maxzoom) {
                 return null;
             }
 
@@ -367,7 +370,7 @@
     };
 
     Widget.prototype.registerPoI = function registerPoI(poi_info) {
-        var iconFeature, style, geometry, marker, minzoom;
+        var iconFeature, style, geometry, marker, minzoom, maxzoom;
 
         if ('location' in poi_info) {
             geometry = this.geojsonparser.readGeometry(poi_info.location).transform('EPSG:4326', 'EPSG:3857');
@@ -391,6 +394,7 @@
 
         iconFeature = this.vector_source.getFeatureById(poi_info.id);
         minzoom = poi_info.minzoom != null ? this.map.getView().getResolutionForZoom(poi_info.minzoom) : null;
+        maxzoom = poi_info.maxzoom != null ? this.map.getView().getResolutionForZoom(poi_info.maxzoom) : null;
         if (iconFeature == null) {
             iconFeature = new ol.Feature({
                 geometry: geometry,
@@ -400,7 +404,8 @@
                 content: poi_info.infoWindow,
                 // PoI are selectable by default
                 selectable: poi_info.selectable == null || !!poi_info.selectable,
-                minzoom: minzoom
+                minzoom: minzoom,
+                maxzoom: maxzoom
             });
             iconFeature.setId(poi_info.id);
             this.vector_source.addFeature(iconFeature);
@@ -413,7 +418,8 @@
                 content: poi_info.infoWindow,
                 // PoI are selectable by default
                 selectable: poi_info.selectable == null || !!poi_info.selectable,
-                minzoom: minzoom
+                minzoom: minzoom,
+                maxzoom: maxzoom
             });
         }
 
