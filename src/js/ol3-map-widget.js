@@ -271,13 +271,54 @@
         }
 
         this.vector_source = new ol.source.Vector({});
+        this.cluster_source = new ol.source.Cluster({
+            distance: 30,
+            geometryFunction: function (feature) {
+                return feature.get("point");
+            },
+            source: this.vector_source
+        });
         this.marker_cache = {};
+        var styleCache = {};
         this.vector_layer = new ol.layer.Vector({source: this.vector_source, style: DEFAULT_MARKER});
+        this.cluster_layer = new ol.layer.Vector({
+            source: this.cluster_source,
+            style: function (feature, resolution) {
+                var features = feature.get('features');
+                var size = features.length;
+                if (size === 1) {
+                    return features[0].getStyle()(features[0], resolution);
+                }
+                var style = styleCache[size];
+                if (!style) {
+                    style = new ol.style.Style({
+                        image: new ol.style.Circle({
+                            radius: 12,
+                            stroke: new ol.style.Stroke({
+                                color: '#fff'
+                            }),
+                            fill: new ol.style.Fill({
+                                color: '#3399CC'
+                            })
+                        }),
+                        text: new ol.style.Text({
+                            text: size.toString(),
+                            fill: new ol.style.Fill({
+                                color: '#fff'
+                            })
+                        })
+                    });
+                    styleCache[size] = style;
+                }
+                return style;
+            }
+        });
+
         this.map = new ol.Map({
             target: document.getElementById('map'),
             layers: [
                 this.base_layer,
-                this.vector_layer
+                MashupPlatform.prefs.get("useclustering") ? this.cluster_layer : this.vector_layer
             ],
             view: new ol.View({
                 center: ol.proj.transform(initialCenter, 'EPSG:4326', 'EPSG:3857'),
@@ -290,11 +331,20 @@
             var features = [];
             this.map.forEachFeatureAtPixel(
                 event.pixel,
-                (feature, layer) => {
-                    if (feature.get('selectable')) {
-                        features.push(feature);
+                MashupPlatform.prefs.get('useclustering') ?
+                    (feature, layer) => {
+                        feature.get('features').forEach((feature) => {
+                            if (feature.get('selectable')) {
+                                features.push(feature);
+                            }
+                        });
+                    } :
+                    (feature, layer) => {
+                        if (feature.get('selectable')) {
+                            features.push(feature);
+                        }
                     }
-                },
+                ,
                 {
                     hitTolerance: 2
                 }
@@ -853,6 +903,11 @@
         this.map.removeLayer(this.base_layer);
         this.base_layer = CORE_LAYERS[layer_info.id];
         this.map.getLayers().insertAt(0, this.base_layer);
+    };
+
+    Widget.prototype.setClustering = function setClustering(enabled) {
+        this.map.removeLayer(enabled ? this.vector_layer : this.cluster_layer);
+        this.map.getLayers().insertAt(1, enabled ? this.cluster_layer : this.vector_layer);
     };
 
     var update_selected_feature = function update_selected_feature(feature) {

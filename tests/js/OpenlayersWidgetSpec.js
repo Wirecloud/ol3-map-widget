@@ -61,7 +61,8 @@
                     'initialCenter': '',
                     'initialZoom': '',
                     'poiZoom': 10,
-                    'layerswidget': ''
+                    'layerswidget': '',
+                    'useclustering': false
                 },
                 inputs: ['layerInfo'],
                 outputs: ['poiListOutput', 'poiOutput']
