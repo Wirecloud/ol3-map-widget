@@ -642,6 +642,9 @@
     };
 
     const build_layer = function build_layer(layer_class, options, layer_info) {
+        if (layer_info.extent) {
+            options.extent = ol.proj.transformExtent(layer_info.extent, 'EPSG:4326', 'EPSG:3857');
+        }
         if (typeof layer_info.viewMaxZoom === "number") {
             options.minResolution = this.map.getView().getResolutionForZoom(layer_info.viewMaxZoom);
         }
@@ -663,7 +666,6 @@
         }
 
         let options = {
-            extent: layer_info.extent,
             crossOrigin: 'anonymous',
             opacity: layer_info.opacity,
             source: new ol.source.ImageWMS({
@@ -684,7 +686,6 @@
 
     var addImageArcGISRestLayer = function addImageArcGISRestLayer(layer_info) {
         let options = {
-            extent: layer_info.extent,
             crossOrigin: 'anonymous',
             opacity: layer_info.opacity,
             source: new ol.source.ImageArcGISRest({
@@ -703,7 +704,6 @@
 
     var addImageMapGuideLayer = function addImageMapGuideLayer(layer_info) {
         let options = {
-            extent: layer_info.extent,
             crossOrigin: 'anonymous',
             opacity: layer_info.opacity,
             source: new ol.source.ImageMapGuide({
@@ -722,7 +722,6 @@
 
     var addImageStaticLayer = function addImageStaticLayer(layer_info) {
         let options = {
-            extent: layer_info.extent,
             crossOrigin: 'anonymous',
             opacity: layer_info.opacity,
             source: new ol.source.ImageStatic({
@@ -740,7 +739,6 @@
 
     var addVectorLayer = function addVectorLayer(layer_info) {
         let options = {
-            extent: layer_info.extent,
             crossOrigin: 'anonymous',
             opacity: layer_info.opacity,
             source: new ol.source.Vector({
@@ -765,7 +763,6 @@
 
     var addVectorTileLayer = function addVectorTileLayer(layer_info) {
         let options = {
-            extent: layer_info.extent,
             crossOrigin: 'anonymous',
             opacity: layer_info.opacity,
             source: new ol.source.VectorTile({
@@ -787,7 +784,6 @@
 
     var addOSMLayer = function addOSMLayer(layer_info) {
         let options = {
-            extent: layer_info.extent,
             opacity: layer_info.opacity,
             source: new ol.source.OSM({
                 wrapX: layer_info.wrapX,
@@ -815,7 +811,6 @@
         }
 
         let options = {
-            extent: layer_info.extent,
             opacity: layer_info.opacity,
             source: new ol.source.TileWMS({
                 cacheSize: layer_info.cacheSize,
@@ -835,7 +830,6 @@
 
     var addTileJSONLayer = function addTileJSONLayer(layer_info) {
         let options = {
-            extent: layer_info.extent,
             opacity: layer_info.opacity,
             source: new ol.source.TileJSON({
                 cacheSize: layer_info.cacheSize,
@@ -854,7 +848,6 @@
 
     var addTileUTFGridLayer = function addTileUTFGridLayer(layer_info) {
         let options = {
-            extent: layer_info.extent,
             opacity: layer_info.opacity,
             source: new ol.source.TileUTFGrid({
                 jsonp: layer_info.jsonp,
@@ -870,7 +863,6 @@
 
     var addXYZLayer = function addXYZLayer(layer_info) {
         const options = {
-            extent: layer_info.extent,
             opacity: layer_info.opacity,
             preload: layer_info.preload,
             source: new ol.source.XYZ({
@@ -892,7 +884,6 @@
 
     var addStamenLayer = function addStamenLayer(layer_info) {
         const options = {
-            extent: layer_info.extent,
             opacity: layer_info.opacity,
             source: new ol.source.Stamen({
                 layer: layer_info.layer,
@@ -909,7 +900,6 @@
 
     const addBingMapsLayer = function addBingMapsLayer(layer_info) {
         const options = {
-            extent: layer_info.extent,
             opacity: layer_info.opacity,
             source: new ol.source.BingMaps({
                 cacheSize: layer_info.cacheSize,
@@ -929,7 +919,6 @@
 
     var addCartoDBLayer = function addCartoDBLayer(layer_info) {
         const options = {
-            extent: layer_info.extent,
             opacity: layer_info.opacity,
             source: new ol.source.CartoDB({
                 attributions: layer_info.attributions,
@@ -952,7 +941,6 @@
 
     var addWMTSLayer = function addWMTSLayer(layer_info) {
         const options = {
-            extent: layer_info.extent,
             opacity: layer_info.opacity,
             source: new ol.source.WMTS({
                 cacheSize: layer_info.cacheSize,
@@ -977,7 +965,6 @@
 
     var addZoomifyLayer = function addZoomifyLayer(layer_info) {
         const options = {
-            extent: layer_info.extent,
             opacity: layer_info.opacity,
             source: new ol.source.Zoomify({
                 cacheSize: layer_info.cacheSize,
