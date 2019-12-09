@@ -597,10 +597,32 @@
         this.removeLayer(layer_info);
 
         var layer = builder(layer_info);
+        layer._layer_type = layer_info.type;
         var layers = this.map.getLayers();
         layers.insertAt(layers.getLength() - 1, layer);
 
         this.layers[layer_info.id] = layer;
+    };
+
+    Widget.prototype.updateLayer = function updateLayer(layer_info) {
+        var layer = this.layers[layer_info.id];
+        if (layer == null) {
+            throw new MashupPlatform.wiring.EndpointValueError("Layer not found: " + layer_info.id);
+        }
+
+        var updater = layer_updaters[layer._layer_type];
+        if (updater != null) {
+            updater(layer, layer_info);
+        }
+
+        // Update general options
+        if ("visible" in layer_info) {
+            layer.setVisible(layer_info.visible);
+        }
+
+        if ("opacity" in layer_info) {
+            layer.setOpacity(layer_info.opacity);
+        }
     };
 
     var build_compatible_url = function build_compatible_url(url, required) {
@@ -893,6 +915,13 @@
         });
     };
 
+    var updateURL = function updateURL(layer, layer_info) {
+        const source = layer.getSource();
+        if ("url" in layer_info) {
+            source.setUrl(layer_info.url);
+        }
+    };
+
     Widget.prototype.removeLayer = function removeLayer(layer_info) {
         var layer_id = layer_info.id;
         if (layer_id in this.layers) {
@@ -1025,6 +1054,22 @@
         "XYZ": addXYZLayer,
         "Zoomify": addZoomifyLayer
     }
+
+    const layer_updaters = {
+        "ImageWMS": updateURL,
+        "ImageArcGISRest": updateURL,
+        "ImageMapGuide": updateURL,
+        "ImageStatic": updateURL,
+        "Stamen": updateURL,
+        "TileJSON": updateURL,
+        "TileUTFGrid": updateURL,
+        "TileWMS": updateURL,
+        "Vector": updateURL,
+        "VectorTile": updateURL,
+        "WMTS": updateURL,
+        "XYZ": updateURL,
+        "Zoomify": updateURL
+    };
 
     window.Widget = Widget;
 

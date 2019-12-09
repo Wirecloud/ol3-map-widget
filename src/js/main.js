@@ -50,7 +50,7 @@
             commands = [commands];
         }
 
-        if (commands.some((command) => {return command == null || ["addLayer", "removeLayer", "setBaseLayer"].indexOf(command.action) === -1;})) {
+        if (commands.some((command) => {return command == null || ["addLayer", "updateLayer", "removeLayer", "setBaseLayer"].indexOf(command.action) === -1;})) {
             throw new MashupPlatform.wiring.EndpointValueError("Invalid command action");
         }
 
@@ -58,6 +58,9 @@
             switch (command.action) {
             case "addLayer":
                 widget.addLayer(command.data);
+                break;
+            case "updateLayer":
+                widget.updateLayer(command.data);
                 break;
             case "removeLayer":
                 widget.removeLayer(command.data);
