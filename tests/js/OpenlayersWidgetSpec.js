@@ -1307,6 +1307,62 @@
                 }).toThrowError(MashupPlatform.wiring.EndpointValueError);
             });
 
+            it("allows to configure general options", () => {
+                // current supported general options are:
+                // extent
+                // opacity
+                // viewMinZoom
+                // viewMaxZoom
+                // visible
+                widget.init();
+                var layers_mock = mock_layers(widget);
+
+                widget.addLayer({
+                    type: "ImageStatic",
+                    url: "http://www.example.com/map.png",
+                    id: "LayerName",
+                    opacity: 0.2,
+                    visible: false,
+                    viewMinZoom: 3,
+                    viewMaxZoom: 10,
+                    extent: [0, 0, 0, 0]
+                });
+
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Image));
+                const layer = layers_mock.insertAt.calls.argsFor(0)[1];
+                expect(layer.getSource()).toEqual(jasmine.any(ol.source.ImageStatic));
+                expect(layer.getOpacity()).toBe(0.2);
+                expect(layer.getVisible()).toBe(false);
+                expect(layer.getExtent()).toEqual([
+                    jasmine.any(Number),
+                    jasmine.any(Number),
+                    jasmine.any(Number),
+                    jasmine.any(Number)
+                ]);
+            });
+
+            it("transform extents from EPSG:4326 to current map projection by default", () => {
+                widget.init();
+                var layers_mock = mock_layers(widget);
+
+                widget.addLayer({
+                    type: "ImageStatic",
+                    url: "http://www.example.com/map.png",
+                    id: "LayerName",
+                    extent: [1, 1, 1, 1]
+                });
+
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Image));
+                const layer = layers_mock.insertAt.calls.argsFor(0)[1];
+                expect(layer.getExtent()).toEqual([
+                    jasmine.any(Number),
+                    jasmine.any(Number),
+                    jasmine.any(Number),
+                    jasmine.any(Number)
+                ]);
+                expect(layer.getExtent()).not.toEqual([1, 1, 1, 1]);
+            });
+
             it("supports Image WMS layers", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
@@ -1733,6 +1789,74 @@
 
                 expect(widget.map.removeLayer).toHaveBeenCalledWith(layer_mock);
                 expect(widget.layers.LayerName).toBe(undefined);
+            });
+
+        });
+
+        describe("updateLayer(options)", () => {
+
+            it("throws an EndpointValueError if the new layer is not available", () => {
+                widget.init();
+
+                expect(() => {
+                    widget.updateLayer({
+                        id: 'inexistent'
+                    });
+                }).toThrowError(MashupPlatform.wiring.EndpointValueError);
+            });
+
+            it("updates general layers", () => {
+                widget.init();
+                const layer_mock = {
+                    setOpacity: jasmine.createSpy("setOpacity"),
+                    setVisible: jasmine.createSpy("setVisible"),
+                    _layer_type: "ImageStatic"
+                };
+                widget.layers["LayerName"] = layer_mock;
+
+                const newurl = "https://newserver.example.com";
+                widget.updateLayer({
+                    id: "LayerName",
+                    visible: true,
+                    opacity: 0.5
+                });
+
+                expect(layer_mock.setOpacity).toHaveBeenCalledWith(0.5);
+                expect(layer_mock.setVisible).toHaveBeenCalledWith(true);
+            });
+
+            it("updates existing XYZ layers", () => {
+                widget.init();
+                const source_mock = {
+                    setUrl: jasmine.createSpy("setUrl")
+                };
+                const layer_mock = {
+                    getSource: jasmine.createSpy("getSource").and.returnValue(source_mock),
+                    _layer_type: "XYZ"
+                };
+                widget.layers["LayerName"] = layer_mock;
+
+                const newurl = "https://newserver.example.com";
+                widget.updateLayer({
+                    id: "LayerName",
+                    url: newurl
+                });
+
+                expect(source_mock.setUrl).toHaveBeenCalledWith(newurl);
+            });
+
+            it("support empty XYZ layer updates", () => {
+                widget.init();
+                const source_mock = {};
+                const layer_mock = {
+                    getSource: jasmine.createSpy("getSource").and.returnValue(source_mock),
+                    _layer_type: "XYZ"
+                };
+                widget.layers["LayerName"] = layer_mock;
+
+                widget.updateLayer({
+                    id: "LayerName"
+                });
             });
 
         });
