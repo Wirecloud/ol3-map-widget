@@ -43,22 +43,30 @@
         }
     });
 
-    MashupPlatform.wiring.registerCallback('layerInfo', (command_info) => {
-        command_info = parseInputEndpointData(command_info);
+    MashupPlatform.wiring.registerCallback('layerInfo', (commands) => {
+        commands = parseInputEndpointData(commands);
 
-        switch (command_info.action) {
-        case "addLayer":
-            widget.addLayer(command_info.data);
-            break;
-        case "removeLayer":
-            widget.removeLayer(command_info.data);
-            break;
-        case "setBaseLayer":
-            widget.setBaseLayer(command_info.data);
-            break;
-        default:
-            throw new MashupPlatform.wiring.EndpointValueError();
+        if (!Array.isArray(commands)) {
+            commands = [commands];
         }
+
+        if (commands.some((command) => {return command == null || ["addLayer", "removeLayer", "setBaseLayer"].indexOf(command.action) === -1;})) {
+            throw new MashupPlatform.wiring.EndpointValueError("Invalid command action");
+        }
+
+        commands.forEach((command) => {
+            switch (command.action) {
+            case "addLayer":
+                widget.addLayer(command.data);
+                break;
+            case "removeLayer":
+                widget.removeLayer(command.data);
+                break;
+            case "setBaseLayer":
+                widget.setBaseLayer(command.data);
+                break;
+            }
+        });
     });
 
     MashupPlatform.wiring.registerCallback('poiInput', (poi_info) => {
