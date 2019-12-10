@@ -669,7 +669,6 @@
         }
 
         const options = {
-            crossOrigin: 'anonymous',
             source: new ol.source.ImageWMS({
                 url: build_compatible_url(layer_info.url, true),
                 params: params,
@@ -687,7 +686,6 @@
 
     var addImageArcGISRestLayer = function addImageArcGISRestLayer(layer_info) {
         const options = {
-            crossOrigin: 'anonymous',
             source: new ol.source.ImageArcGISRest({
                 url: build_compatible_url(layer_info.url, true),
                 crossOrigin: layer_info.crossOrigin,
@@ -703,7 +701,6 @@
 
     var addImageMapGuideLayer = function addImageMapGuideLayer(layer_info) {
         const options = {
-            crossOrigin: 'anonymous',
             source: new ol.source.ImageMapGuide({
                 url: build_compatible_url(layer_info.url, true),
                 displayDpi: layer_info.displayDpi,
@@ -719,7 +716,6 @@
 
     var addImageStaticLayer = function addImageStaticLayer(layer_info) {
         const options = {
-            crossOrigin: 'anonymous',
             source: new ol.source.ImageStatic({
                 url: build_compatible_url(layer_info.url, true),
                 crossOrigin: layer_info.crossOrigin,
@@ -734,8 +730,8 @@
 
     var addVectorLayer = function addVectorLayer(layer_info) {
         const options = {
-            crossOrigin: 'anonymous',
             source: new ol.source.Vector({
+                crossOrigin: layer_info.crossOrigin,
                 format: addFormat(layer_info),
                 wrapX: layer_info.wrapX,
                 // Vector source does not require an url
@@ -756,9 +752,9 @@
 
     var addVectorTileLayer = function addVectorTileLayer(layer_info) {
         const options = {
-            crossOrigin: 'anonymous',
             source: new ol.source.VectorTile({
                 cacheSize: layer_info.cacheSize,
+                crossOrigin: layer_info.crossOrigin,
                 format: addFormat(layer_info),
                 logo: layer_info.logo,
                 overlaps: layer_info.overlaps,
