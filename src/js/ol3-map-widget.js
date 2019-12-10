@@ -864,10 +864,10 @@
         const options = {
             source: new ol.source.Stamen({
                 layer: layer_info.layer,
-                url: build_compatible_url(layer_info.url, false),
                 maxZoom: layer_info.maxZoom,
                 minZoom: layer_info.minZoom,
-                opaque: layer_info.opaque
+                opaque: layer_info.opaque,
+                url: build_compatible_url(layer_info.url, false)
             })
         };
 
@@ -878,10 +878,10 @@
         const options = {
             source: new ol.source.BingMaps({
                 cacheSize: layer_info.cacheSize,
-                hidpi: layer_info.hidpi,
                 culture: layer_info.culture,
-                key: layer_info.key,
+                hidpi: layer_info.hidpi,
                 imagerySet: layer_info.imagerySet,
+                key: layer_info.key,
                 maxZoom: layer_info.maxZoom,
                 reprojectionErrorThreshold: layer_info.reprojectionErrorThreshold,
                 wrapX: layer_info.wrapX
@@ -894,17 +894,17 @@
     var addCartoDBLayer = function addCartoDBLayer(layer_info) {
         const options = {
             source: new ol.source.CartoDB({
+                account: layer_info.account,
                 attributions: layer_info.attributions,
                 cacheSize: layer_info.cacheSize,
+                config: layer_info.config,
                 crossOrigin: layer_info.crossOrigin,
                 logo: layer_info.logo,
-                projection: layer_info.projection,
+                map: layer_info.map,
                 maxZoom: layer_info.maxZoom,
                 minZoom: layer_info.minZoom,
-                wrapX: layer_info.wrapX,
-                config: layer_info.config,
-                map: layer_info.map,
-                account: layer_info.account
+                projection: layer_info.projection,
+                wrapX: layer_info.wrapX
             })
         };
 
@@ -915,17 +915,18 @@
         const options = {
             source: new ol.source.WMTS({
                 cacheSize: layer_info.cacheSize,
+                format: layer_info.format,
                 logo: layer_info.logo,
+                matrixSet: layer_info.matrixSet,
                 projection: layer_info.projection,
                 reprojectionErrorThreshold: layer_info.reprojectionErrorThreshold,
                 requestEncoding: layer_info.requestEncoding,
                 layer: layer_info.layer,
                 style: layer_info.style,
                 tilePixelRatio: layer_info.tilePixelRatio,
-                version: layer_info.version,
-                format: layer_info.format,
-                matrixSet: layer_info.matrixSet,
+                transition: layer_info.transition,
                 url: build_compatible_url(layer_info.url, true),
+                version: layer_info.version,
                 wrapX: layer_info.wrapX
             })
         };
@@ -939,8 +940,9 @@
                 cacheSize: layer_info.cacheSize,
                 logo: layer_info.logo,
                 projection: layer_info.projection,
-                url: build_compatible_url(layer_info.url, false),
                 tierSizeCalculation: layer_info.tierSizeCalculation,
+                transition: layer_info.transition,
+                url: build_compatible_url(layer_info.url, false),
                 size: layer_info.size
             })
         };

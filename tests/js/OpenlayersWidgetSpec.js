@@ -1810,7 +1810,7 @@
                 const layer_mock = {
                     setOpacity: jasmine.createSpy("setOpacity"),
                     setVisible: jasmine.createSpy("setVisible"),
-                    _layer_type: "ImageStatic"
+                    _layer_type: "BingMaps"
                 };
                 widget.layers["LayerName"] = layer_mock;
 
