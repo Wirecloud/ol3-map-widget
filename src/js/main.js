@@ -37,6 +37,12 @@
     var widget = new Widget('body', '#incoming-modal');
     widget.init();
 
+    MashupPlatform.prefs.registerCallback((new_values) => {
+        if ("useclustering" in new_values) {
+            widget.setClustering(new_values.useclustering);
+        }
+    });
+
     MashupPlatform.wiring.registerCallback('layerInfo', (command_info) => {
         command_info = parseInputEndpointData(command_info);
 
