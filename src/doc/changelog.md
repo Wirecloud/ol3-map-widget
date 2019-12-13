@@ -1,7 +1,8 @@
-## v1.1.4 (2019-XX-XX)
+## v1.2.0 (2019-12-XX)
 
 - Fix getPixelFromCoordinate function. See #23 and #24.
 - Allow poiInputCenter endpoint receive null. See #25.
+- Add clustering support (enabled through a preference). See #27.
 
 
 ## v1.1.3 (2019-10-22)
