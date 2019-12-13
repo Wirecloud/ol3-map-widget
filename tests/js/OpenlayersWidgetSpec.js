@@ -216,6 +216,32 @@
 
             });
 
+            describe("useclustering", () => {
+
+                it("should switch to use a cluster source for the main vector layer", () => {
+                    MashupPlatform.prefs.set("useclustering", true);
+                    widget.init();
+                    expect(widget.map.getLayers().getArray()[1].getSource()).toEqual(jasmine.any(ol.source.Cluster));
+                });
+
+                it("should be possible to enabled after load", () => {
+                    MashupPlatform.prefs.set("useclustering", false);
+                    widget.init();
+
+                    widget.setClustering(true);
+                    expect(widget.map.getLayers().getArray()[1].getSource()).toEqual(jasmine.any(ol.source.Cluster));
+                });
+
+                it("should be possible to disabled after load", () => {
+                    MashupPlatform.prefs.set("useclustering", true);
+                    widget.init();
+
+                    widget.setClustering(false);
+                    expect(widget.map.getLayers().getArray()[1].getSource()).toEqual(jasmine.any(ol.source.Vector));
+                });
+
+            });
+
         });
 
         describe("events", () => {
@@ -267,6 +293,36 @@
                     StyledElements.PopupMenu.prototype.addEventListener.calls.argsFor(0)[1](null, {context: feature3_mock});
 
                     expect(widget.select_feature).toHaveBeenCalledWith(feature3_mock);
+                });
+
+                it("on a not selected feature (through selection menu of a cluster)", () => {
+                    MashupPlatform.prefs.set("useclustering", true);
+                    let pixel_mock = jasmine.createSpy('pixel');
+                    let feature1_mock = new ol.Feature();
+                    feature1_mock.set('selectable', true);
+                    let feature2_mock = new ol.Feature();
+                    let feature3_mock = new ol.Feature();
+                    feature3_mock.set('selectable', true);
+                    let cluster_feature_mock = new ol.Feature();
+                    spyOn(cluster_feature_mock, "get").and.returnValue([feature1_mock, feature2_mock, feature3_mock]);
+                    widget.init();
+                    spyOn(widget, "select_feature");
+                    spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
+                        expect(pixel).toBe(pixel_mock);
+                        listener(cluster_feature_mock);
+                    });
+                    spyOn(StyledElements.PopupMenu.prototype, "addEventListener").and.callThrough();
+                    spyOn(StyledElements.PopupMenu.prototype, "append").and.callThrough();
+
+                    widget.map.dispatchEvent({
+                        type: "click",
+                        pixel: pixel_mock
+                    });
+
+                    StyledElements.PopupMenu.prototype.addEventListener.calls.argsFor(0)[1](null, {context: cluster_feature_mock});
+
+                    expect(StyledElements.PopupMenu.prototype.append).toHaveBeenCalledTimes(2);
+                    expect(widget.select_feature).toHaveBeenCalledWith(cluster_feature_mock);
                 });
 
                 it("on a not selectable feature", () => {
@@ -574,6 +630,46 @@
                 }));
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+            });
+
+            it("supports adding PoIs (clustering)", () => {
+                MashupPlatform.prefs.set("useclustering", true);
+                widget.init();
+                spyOn(widget.vector_source, 'addFeature').and.callThrough();
+                widget.registerPoI(deepFreeze({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                }));
+                expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+            });
+
+            it("should cluster pois when using clustering", (done) => {
+                MashupPlatform.prefs.set("useclustering", true);
+                widget.init();
+                spyOn(widget.vector_source, 'addFeature').and.callThrough();
+                widget.registerPoI(deepFreeze({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                }));
+                widget.registerPoI(deepFreeze({
+                    id: '2',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0.1]
+                    }
+                }));
+                expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(2);
+                setTimeout(done, 200);
             });
 
             it("supports adding selectable PoIs (polygon)", () => {
