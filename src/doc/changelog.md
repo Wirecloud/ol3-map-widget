@@ -3,6 +3,12 @@
 - Fix getPixelFromCoordinate function. See #23 and #24.
 - Allow poiInputCenter endpoint receive null. See #25.
 - Add clustering support (enabled through a preference). See #27.
+- Improve layer configurability. See #28.
+    - Added support for the following general options: `opacity`, `visible`,
+      `viewMaxZoom` and `viewMinZoom`
+    - `extent` option is now transformed from `EPSG:4623`
+    - Added a new command for updating layer options. Current available options
+      for those updates are: `opacity`, `visible` and `url`.
 
 
 ## v1.1.3 (2019-10-22)

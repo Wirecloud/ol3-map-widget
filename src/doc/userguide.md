@@ -9,6 +9,8 @@ Map viewer widget using OpenLayers. It can receive Layers or Point of Interest d
 - **Initial Location**: Decimal coordinates where map will be centered on load (e.g. `52, 5`). Leave this setting empty if you don't want to center the map at init. Remember to change the initial zoom level if you provide an initial location.
 - **Initial Zoom Level**: Initial zoom level. From 1 to 22, where '1' represents the furthest level and '22' the maximum zoom level.
 - **Min Zoom**: Minimal zoom level.
+- **Layers Widget**: Widget to use for allowing user to switch between layers.
+- **Use Clustering**: Mark this option to use clustering for displaying map features.
 
 
 ## Wiring
@@ -20,13 +22,16 @@ Map viewer widget using OpenLayers. It can receive Layers or Point of Interest d
   base layer.
   The Layer Info endpoint receives a JSON with two fields: `action` and `data`
   - `action`: This field indicates the action to be executed with a layer. There
-    are three available actions:
+    are four available actions:
     - `addLayer`: Adds a layer to the map. This action requires the `id` data
       field to be set.
     - `removeLayer`: Removes a layer from the map. This action requires the `id`
       data field to be set.
     - `setBaseLayer`: Change the base layer of the map. This action requires the
       `id` data field to be set.
+    - `updateLayer`: Updates a layer from the map. This action requires the `id`
+      data field to be set. Current options available for updating are:
+      `opacity`, `visible` and `url`.
   - `data`: This field contains all the data needed to identify to which layer
     the action will be performed, and, in the case of the addLayer action, to
     define and configure the layer.
