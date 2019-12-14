@@ -596,11 +596,33 @@
         // Remove any layer with the same id
         this.removeLayer(layer_info);
 
-        var layer = builder(layer_info);
+        var layer = builder.call(this, layer_info);
+        layer._layer_type = layer_info.type;
         var layers = this.map.getLayers();
         layers.insertAt(layers.getLength() - 1, layer);
 
         this.layers[layer_info.id] = layer;
+    };
+
+    Widget.prototype.updateLayer = function updateLayer(layer_info) {
+        var layer = this.layers[layer_info.id];
+        if (layer == null) {
+            throw new MashupPlatform.wiring.EndpointValueError("Layer not found: " + layer_info.id);
+        }
+
+        var updater = layer_updaters[layer._layer_type];
+        if (updater != null) {
+            updater(layer, layer_info);
+        }
+
+        // Update general options
+        if ("visible" in layer_info) {
+            layer.setVisible(layer_info.visible);
+        }
+
+        if ("opacity" in layer_info) {
+            layer.setOpacity(layer_info.opacity);
+        }
     };
 
     var build_compatible_url = function build_compatible_url(url, required) {
@@ -619,7 +641,23 @@
         }
     };
 
-    var addImageWMSLayer = function addImageWMSLayer(layer_info) {
+    const build_layer = function build_layer(layer_class, options, layer_info) {
+        options.opacity = layer_info.opacity;
+        options.visible = layer_info.visible != null ? layer_info.visible : true;
+
+        if (layer_info.extent) {
+            options.extent = ol.proj.transformExtent(layer_info.extent, 'EPSG:4326', 'EPSG:3857');
+        }
+        if (typeof layer_info.viewMaxZoom === "number") {
+            options.minResolution = this.map.getView().getResolutionForZoom(layer_info.viewMaxZoom);
+        }
+        if (typeof layer_info.viewMinZoom === "number") {
+            options.maxResolution = this.map.getView().getResolutionForZoom(layer_info.viewMinZoom - 1);
+        }
+        return new ol.layer[layer_class](options);
+    };
+
+    const addImageWMSLayer = function addImageWMSLayer(layer_info) {
         var params = layer_info.params;
 
         if (params == null) {
@@ -630,9 +668,7 @@
             params.LAYERS = layer_info.id;
         }
 
-        return new ol.layer.Image({
-            extent: layer_info.extent,
-            crossOrigin: 'anonymous',
+        const options = {
             source: new ol.source.ImageWMS({
                 url: build_compatible_url(layer_info.url, true),
                 params: params,
@@ -643,13 +679,13 @@
                 logo: layer_info.logo,
                 ratio: layer_info.ratio
             })
-        });
+        };
+
+        return build_layer.call(this, "Image", options, layer_info);
     };
 
     var addImageArcGISRestLayer = function addImageArcGISRestLayer(layer_info) {
-        return new ol.layer.Image({
-            extent: layer_info.extent,
-            crossOrigin: 'anonymous',
+        const options = {
             source: new ol.source.ImageArcGISRest({
                 url: build_compatible_url(layer_info.url, true),
                 crossOrigin: layer_info.crossOrigin,
@@ -658,13 +694,13 @@
                 ratio: layer_info.ratio,
                 projection: layer_info.projection
             })
-        });
+        };
+
+        return build_layer.call(this, "Image", options, layer_info);
     };
 
     var addImageMapGuideLayer = function addImageMapGuideLayer(layer_info) {
-        return new ol.layer.Image({
-            extent: layer_info.extent,
-            crossOrigin: 'anonymous',
+        const options = {
             source: new ol.source.ImageMapGuide({
                 url: build_compatible_url(layer_info.url, true),
                 displayDpi: layer_info.displayDpi,
@@ -673,13 +709,13 @@
                 useOverlay: layer_info.useOverlay,
                 ratio: layer_info.ratio
             })
-        });
+        };
+
+        return build_layer.call(this, "Image", options, layer_info);
     };
 
     var addImageStaticLayer = function addImageStaticLayer(layer_info) {
-        return new ol.layer.Image({
-            extent: layer_info.extent,
-            crossOrigin: 'anonymous',
+        const options = {
             source: new ol.source.ImageStatic({
                 url: build_compatible_url(layer_info.url, true),
                 crossOrigin: layer_info.crossOrigin,
@@ -687,18 +723,20 @@
                 imageExtent: layer_info.imageExtent,
                 projection: layer_info.projection
             })
-        });
+        };
+
+        return build_layer.call(this, "Image", options, layer_info);
     };
 
     var addVectorLayer = function addVectorLayer(layer_info) {
-        return new ol.layer.Vector({
-            extent: layer_info.extent,
-            crossOrigin: 'anonymous',
+        const options = {
             source: new ol.source.Vector({
+                crossOrigin: layer_info.crossOrigin,
                 format: addFormat(layer_info),
                 wrapX: layer_info.wrapX,
                 // Vector source does not require an url
-                // But currently we do not provide any way to populate this layer
+                // But currently we do not provide support to populate this
+                // layer using any other way, so this parameter is required
                 url: build_compatible_url(layer_info.url, true),
             }),
             style: new ol.style.Style({
@@ -707,15 +745,16 @@
                     width: 2
                 })
             })
-        });
+        };
+
+        return build_layer.call(this, "Vector", options, layer_info);
     };
 
     var addVectorTileLayer = function addVectorTileLayer(layer_info) {
-        return new ol.layer.Tile({
-            extent: layer_info.extent,
-            crossOrigin: 'anonymous',
+        const options = {
             source: new ol.source.VectorTile({
                 cacheSize: layer_info.cacheSize,
+                crossOrigin: layer_info.crossOrigin,
                 format: addFormat(layer_info),
                 logo: layer_info.logo,
                 overlaps: layer_info.overlaps,
@@ -725,12 +764,14 @@
                 url: build_compatible_url(layer_info.url, true),
                 wrapX: layer_info.wrapX
             })
-        });
+        };
+
+        return build_layer.call(this, "Tile", options, layer_info);
     };
 
     var addOSMLayer = function addOSMLayer(layer_info) {
-        return new ol.layer.Tile({
-            extent: layer_info.extent,
+        const options = {
+            opacity: layer_info.opacity,
             source: new ol.source.OSM({
                 wrapX: layer_info.wrapX,
                 url: build_compatible_url(layer_info.url, false),
@@ -739,7 +780,9 @@
                 opaque: layer_info.opaque,
                 reprojectionErrorThreshold: layer_info.reprojectionErrorThreshold
             })
-        });
+        };
+
+        return build_layer.call(this, "Tile", options, layer_info);
     };
 
     var addTileWMSLayer = function addTileWMSLayer(layer_info) {
@@ -753,8 +796,7 @@
             params.LAYERS = layer_info.id;
         }
 
-        return new ol.layer.Tile({
-            extent: layer_info.extent,
+        const options = {
             source: new ol.source.TileWMS({
                 cacheSize: layer_info.cacheSize,
                 crossOrigin: layer_info.crossOrigin,
@@ -765,12 +807,13 @@
                 url: build_compatible_url(layer_info.url, true),
                 wrapX: layer_info.wrapX
             })
-        });
+        };
+
+        return build_layer.call(this, "Tile", options, layer_info);
     };
 
     var addTileJSONLayer = function addTileJSONLayer(layer_info) {
-        return new ol.layer.Tile({
-            extent: layer_info.extent,
+        const options = {
             source: new ol.source.TileJSON({
                 cacheSize: layer_info.cacheSize,
                 crossOrigin: layer_info.crossOrigin,
@@ -780,117 +823,138 @@
                 url: build_compatible_url(layer_info.url, true),
                 wrapX: layer_info.wrapX
             })
-        });
+        };
+
+        return build_layer.call(this, "Tile", options, layer_info);
     };
 
     var addTileUTFGridLayer = function addTileUTFGridLayer(layer_info) {
-        return new ol.layer.Tile({
-            extent: layer_info.extent,
+        const options = {
             source: new ol.source.TileUTFGrid({
                 jsonp: layer_info.jsonp,
                 preemptive: layer_info.preemptive,
                 tileJSON: layer_info.tileJSON,
                 url: build_compatible_url(layer_info.url, false),
             })
-        });
+        };
+
+        return build_layer.call(this, "Tile", options, layer_info);
     };
 
     var addXYZLayer = function addXYZLayer(layer_info) {
-        return new ol.layer.Tile({
-            extent: layer_info.extent,
+        const options = {
+            preload: layer_info.preload,
             source: new ol.source.XYZ({
+                cacheSize: layer_info.cacheSize,
                 wrapX: layer_info.wrapX,
                 url: build_compatible_url(layer_info.url, true),
                 logo: layer_info.logo,
                 maxZoom: layer_info.maxZoom,
                 minZoom: layer_info.minZoom,
                 tilePixelRatio: layer_info.tilePixelRatio,
-                tileSize: layer_info.tileSize
+                tileSize: layer_info.tileSize,
+                transition: layer_info.transition
             })
-        });
+        };
+
+        return build_layer.call(this, "Tile", options, layer_info);
     };
 
     var addStamenLayer = function addStamenLayer(layer_info) {
-        return new ol.layer.Tile({
-            extent: layer_info.extent,
+        const options = {
             source: new ol.source.Stamen({
                 layer: layer_info.layer,
-                url: build_compatible_url(layer_info.url, false),
                 maxZoom: layer_info.maxZoom,
                 minZoom: layer_info.minZoom,
-                opaque: layer_info.opaque
+                opaque: layer_info.opaque,
+                url: build_compatible_url(layer_info.url, false)
             })
-        });
+        };
+
+        return build_layer.call(this, "Tile", options, layer_info);
     };
 
-    var addBingMapsLayer = function addBingMapsLayer(layer_info) {
-        return new ol.layer.Tile({
-            extent: layer_info.extent,
+    const addBingMapsLayer = function addBingMapsLayer(layer_info) {
+        const options = {
             source: new ol.source.BingMaps({
                 cacheSize: layer_info.cacheSize,
-                hidpi: layer_info.hidpi,
                 culture: layer_info.culture,
-                key: layer_info.key,
+                hidpi: layer_info.hidpi,
                 imagerySet: layer_info.imagerySet,
+                key: layer_info.key,
                 maxZoom: layer_info.maxZoom,
                 reprojectionErrorThreshold: layer_info.reprojectionErrorThreshold,
                 wrapX: layer_info.wrapX
             })
-        });
+        };
+
+        return build_layer.call(this, "Tile", options, layer_info);
     };
 
     var addCartoDBLayer = function addCartoDBLayer(layer_info) {
-        return new ol.layer.Tile({
-            extent: layer_info.extent,
+        const options = {
             source: new ol.source.CartoDB({
+                account: layer_info.account,
                 attributions: layer_info.attributions,
                 cacheSize: layer_info.cacheSize,
+                config: layer_info.config,
                 crossOrigin: layer_info.crossOrigin,
                 logo: layer_info.logo,
-                projection: layer_info.projection,
+                map: layer_info.map,
                 maxZoom: layer_info.maxZoom,
                 minZoom: layer_info.minZoom,
-                wrapX: layer_info.wrapX,
-                config: layer_info.config,
-                map: layer_info.map,
-                account: layer_info.account
+                projection: layer_info.projection,
+                wrapX: layer_info.wrapX
             })
-        });
+        };
+
+        return build_layer.call(this, "Tile", options, layer_info);
     };
 
     var addWMTSLayer = function addWMTSLayer(layer_info) {
-        return new ol.layer.Tile({
-            extent: layer_info.extent,
+        const options = {
             source: new ol.source.WMTS({
                 cacheSize: layer_info.cacheSize,
+                format: layer_info.format,
                 logo: layer_info.logo,
+                matrixSet: layer_info.matrixSet,
                 projection: layer_info.projection,
                 reprojectionErrorThreshold: layer_info.reprojectionErrorThreshold,
                 requestEncoding: layer_info.requestEncoding,
                 layer: layer_info.layer,
                 style: layer_info.style,
                 tilePixelRatio: layer_info.tilePixelRatio,
-                version: layer_info.version,
-                format: layer_info.format,
-                matrixSet: layer_info.matrixSet,
+                transition: layer_info.transition,
                 url: build_compatible_url(layer_info.url, true),
+                version: layer_info.version,
                 wrapX: layer_info.wrapX
             })
-        });
+        };
+
+        return build_layer.call(this, "Tile", options, layer_info);
     };
 
     var addZoomifyLayer = function addZoomifyLayer(layer_info) {
-        return new ol.layer.Tile({
-            extent: layer_info.extent,
+        const options = {
             source: new ol.source.Zoomify({
                 cacheSize: layer_info.cacheSize,
                 logo: layer_info.logo,
                 projection: layer_info.projection,
-                url: build_compatible_url(layer_info.url, false),
                 tierSizeCalculation: layer_info.tierSizeCalculation,
+                transition: layer_info.transition,
+                url: build_compatible_url(layer_info.url, false),
                 size: layer_info.size
             })
-        });
+        };
+
+        return build_layer.call(this, "Tile", options, layer_info);
+    };
+
+    var updateURL = function updateURL(layer, layer_info) {
+        const source = layer.getSource();
+        if ("url" in layer_info) {
+            source.setUrl(layer_info.url);
+        }
     };
 
     Widget.prototype.removeLayer = function removeLayer(layer_info) {
@@ -1007,7 +1071,7 @@
         }
     };
 
-    var layer_builders = {
+    const layer_builders = {
         "BingMaps": addBingMapsLayer,
         "CartoDB": addCartoDBLayer,
         "ImageWMS": addImageWMSLayer,
@@ -1025,6 +1089,22 @@
         "XYZ": addXYZLayer,
         "Zoomify": addZoomifyLayer
     }
+
+    const layer_updaters = {
+        "ImageWMS": updateURL,
+        "ImageArcGISRest": updateURL,
+        "ImageMapGuide": updateURL,
+        "ImageStatic": updateURL,
+        "Stamen": updateURL,
+        "TileJSON": updateURL,
+        "TileUTFGrid": updateURL,
+        "TileWMS": updateURL,
+        "Vector": updateURL,
+        "VectorTile": updateURL,
+        "WMTS": updateURL,
+        "XYZ": updateURL,
+        "Zoomify": updateURL
+    };
 
     window.Widget = Widget;
 

@@ -50,11 +50,11 @@
         });
     };
 
-    describe("ol3-map", function () {
+    describe("ol3-map", () => {
 
         var widget;
 
-        beforeAll(function () {
+        beforeAll(() => {
             window.MashupPlatform = new MockMP({
                 type: 'widget',
                 prefs: {
@@ -69,14 +69,14 @@
             });
         });
 
-        beforeEach(function () {
+        beforeEach(() => {
             clearDocument();
             document.body.innerHTML += HTML_FIXTURE;
             MashupPlatform.reset();
             widget = new Widget();
         });
 
-        afterEach(function () {
+        afterEach(() => {
             if (widget && widget.visiblePoisTimeout) {
                 clearTimeout(widget.visiblePoisTimeout);
             }
@@ -1287,7 +1287,7 @@
 
         });
 
-        describe("addLayer(options)", function () {
+        describe("addLayer(options)", () => {
 
             var mock_layers = function mock_layers(widget) {
                 var layers_mock = {
@@ -1307,7 +1307,63 @@
                 }).toThrowError(MashupPlatform.wiring.EndpointValueError);
             });
 
-            it("supports Image WMS layers", function () {
+            it("allows to configure general options", () => {
+                // current supported general options are:
+                // extent
+                // opacity
+                // viewMinZoom
+                // viewMaxZoom
+                // visible
+                widget.init();
+                var layers_mock = mock_layers(widget);
+
+                widget.addLayer({
+                    type: "ImageStatic",
+                    url: "http://www.example.com/map.png",
+                    id: "LayerName",
+                    opacity: 0.2,
+                    visible: false,
+                    viewMinZoom: 3,
+                    viewMaxZoom: 10,
+                    extent: [0, 0, 0, 0]
+                });
+
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Image));
+                const layer = layers_mock.insertAt.calls.argsFor(0)[1];
+                expect(layer.getSource()).toEqual(jasmine.any(ol.source.ImageStatic));
+                expect(layer.getOpacity()).toBe(0.2);
+                expect(layer.getVisible()).toBe(false);
+                expect(layer.getExtent()).toEqual([
+                    jasmine.any(Number),
+                    jasmine.any(Number),
+                    jasmine.any(Number),
+                    jasmine.any(Number)
+                ]);
+            });
+
+            it("transform extents from EPSG:4326 to current map projection by default", () => {
+                widget.init();
+                var layers_mock = mock_layers(widget);
+
+                widget.addLayer({
+                    type: "ImageStatic",
+                    url: "http://www.example.com/map.png",
+                    id: "LayerName",
+                    extent: [1, 1, 1, 1]
+                });
+
+                expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Image));
+                const layer = layers_mock.insertAt.calls.argsFor(0)[1];
+                expect(layer.getExtent()).toEqual([
+                    jasmine.any(Number),
+                    jasmine.any(Number),
+                    jasmine.any(Number),
+                    jasmine.any(Number)
+                ]);
+                expect(layer.getExtent()).not.toEqual([1, 1, 1, 1]);
+            });
+
+            it("supports Image WMS layers", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1324,7 +1380,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.ImageWMS));
             });
 
-            it("supports Image WMS layers (provides a default params option)", function () {
+            it("supports Image WMS layers (provides a default params option)", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1338,7 +1394,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.ImageWMS));
             });
 
-            it("supports Image WMS layers (uses layer id as default LAYERS parameter)", function () {
+            it("supports Image WMS layers (uses layer id as default LAYERS parameter)", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1355,7 +1411,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.ImageWMS));
             });
 
-            it("supports ImageArcGISRest layers", function () {
+            it("supports ImageArcGISRest layers", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1369,7 +1425,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.ImageArcGISRest));
             });
 
-            it("supports ImageMapGuide layers", function () {
+            it("supports ImageMapGuide layers", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1383,7 +1439,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.ImageMapGuide));
             });
 
-            it("supports ImageStatic layers", function () {
+            it("supports ImageStatic layers", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1397,7 +1453,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.ImageStatic));
             });
 
-            it("supports Vector layers", function () {
+            it("supports Vector layers", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1412,7 +1468,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.Vector));
             });
 
-            it("raises an EndpointValueError exception when trying to create a Vector layer without providing the format", function () {
+            it("raises an EndpointValueError exception when trying to create a Vector layer without providing the format", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1425,7 +1481,7 @@
                 }).toThrowError(MashupPlatform.wiring.EndpointValueError);
             });
 
-            it("raises an EndpointValueError exception when trying to create a Vector layer without providing a layer url", function () {
+            it("raises an EndpointValueError exception when trying to create a Vector layer without providing a layer url", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1438,7 +1494,7 @@
                 }).toThrowError(MashupPlatform.wiring.EndpointValueError);
             });
 
-            it("supports Vector layers (with format options)", function () {
+            it("supports Vector layers (with format options)", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1456,7 +1512,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.Vector));
             });
 
-            it("supports Vector layers (with GML format options)", function () {
+            it("supports Vector layers (with GML format options)", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1475,7 +1531,7 @@
             });
 
 
-            it("supports VectorTile layers", function () {
+            it("supports VectorTile layers", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1494,7 +1550,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.VectorTile));
             });
 
-            it("supports OSM layers", function () {
+            it("supports OSM layers", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1507,7 +1563,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.OSM));
             });
 
-            it("supports Tile WMS layers", function () {
+            it("supports Tile WMS layers", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1526,7 +1582,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.TileWMS));
             });
 
-            it("supports Tile WMS layers (provides a default params option)", function () {
+            it("supports Tile WMS layers (provides a default params option)", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1541,7 +1597,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.TileWMS));
             });
 
-            it("supports Tile WMS layers (uses layer id as default LAYERS parameter)", function () {
+            it("supports Tile WMS layers (uses layer id as default LAYERS parameter)", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1559,7 +1615,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.TileWMS));
             });
 
-            it("supports Tile JSON layers", function () {
+            it("supports Tile JSON layers", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1574,7 +1630,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.TileJSON));
             });
 
-            it("supports Tile UTF Grid layers", function () {
+            it("supports Tile UTF Grid layers", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1588,7 +1644,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.TileUTFGrid));
             });
 
-            it("supports XYZ layers", function () {
+            it("supports XYZ layers", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1602,7 +1658,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.XYZ));
             });
 
-            it("supports Stamen layers", function () {
+            it("supports Stamen layers", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1616,7 +1672,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.Stamen));
             });
 
-            it("supports BingMaps layers", function () {
+            it("supports BingMaps layers", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1630,7 +1686,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.BingMaps));
             });
 
-            it("supports CartoDB layers", function () {
+            it("supports CartoDB layers", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1654,7 +1710,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.CartoDB));
             });
 
-            it("supports WMTS layers", function () {
+            it("supports WMTS layers", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1668,7 +1724,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.WMTS));
             });
 
-            it("supports Zoomify layers", function () {
+            it("supports Zoomify layers", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
 
@@ -1683,7 +1739,7 @@
                 expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.Zoomify));
             });
 
-            it("replaces layers with the same id", function () {
+            it("replaces layers with the same id", () => {
                 widget.init();
                 var layers_mock = mock_layers(widget);
                 spyOn(widget.map, 'removeLayer');
@@ -1733,6 +1789,74 @@
 
                 expect(widget.map.removeLayer).toHaveBeenCalledWith(layer_mock);
                 expect(widget.layers.LayerName).toBe(undefined);
+            });
+
+        });
+
+        describe("updateLayer(options)", () => {
+
+            it("throws an EndpointValueError if the new layer is not available", () => {
+                widget.init();
+
+                expect(() => {
+                    widget.updateLayer({
+                        id: 'inexistent'
+                    });
+                }).toThrowError(MashupPlatform.wiring.EndpointValueError);
+            });
+
+            it("updates general layers", () => {
+                widget.init();
+                const layer_mock = {
+                    setOpacity: jasmine.createSpy("setOpacity"),
+                    setVisible: jasmine.createSpy("setVisible"),
+                    _layer_type: "BingMaps"
+                };
+                widget.layers["LayerName"] = layer_mock;
+
+                const newurl = "https://newserver.example.com";
+                widget.updateLayer({
+                    id: "LayerName",
+                    visible: true,
+                    opacity: 0.5
+                });
+
+                expect(layer_mock.setOpacity).toHaveBeenCalledWith(0.5);
+                expect(layer_mock.setVisible).toHaveBeenCalledWith(true);
+            });
+
+            it("updates existing XYZ layers", () => {
+                widget.init();
+                const source_mock = {
+                    setUrl: jasmine.createSpy("setUrl")
+                };
+                const layer_mock = {
+                    getSource: jasmine.createSpy("getSource").and.returnValue(source_mock),
+                    _layer_type: "XYZ"
+                };
+                widget.layers["LayerName"] = layer_mock;
+
+                const newurl = "https://newserver.example.com";
+                widget.updateLayer({
+                    id: "LayerName",
+                    url: newurl
+                });
+
+                expect(source_mock.setUrl).toHaveBeenCalledWith(newurl);
+            });
+
+            it("support empty XYZ layer updates", () => {
+                widget.init();
+                const source_mock = {};
+                const layer_mock = {
+                    getSource: jasmine.createSpy("getSource").and.returnValue(source_mock),
+                    _layer_type: "XYZ"
+                };
+                widget.layers["LayerName"] = layer_mock;
+
+                widget.updateLayer({
+                    id: "LayerName"
+                });
             });
 
         });
