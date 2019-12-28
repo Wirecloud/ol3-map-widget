@@ -1,5 +1,6 @@
 ## v1.2.0 (2019-12-XX)
 
+- Update OpenLayers to v6.1.1.
 - Fix getPixelFromCoordinate function. See #23 and #24.
 - Allow poiInputCenter endpoint receive null. See #25.
 - Add clustering support (enabled through a preference). See #27.

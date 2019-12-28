@@ -26,18 +26,6 @@ module.exports = function (grunt) {
         isDev: grunt.option('dev') ? '-dev' : '',
         metadata: parser.getData(),
 
-        bower: {
-            install: {
-                options: {
-                    copy: true,
-                    layout: function (type, component, source) {
-                        return type;
-                    },
-                    targetDir: './build/lib/lib'
-                }
-            }
-        },
-
         eslint: {
             widget: {
                 src: 'src/js/**/*.js'
@@ -57,6 +45,11 @@ module.exports = function (grunt) {
         },
 
         copy: {
+            libs: {
+                files: [
+                    {expand: true, cwd: 'node_modules/proj4/dist', src: 'proj4.js', dest: 'build/lib/lib/js/'}
+                ]
+            },
             main: {
                 files: [
                     {expand: true, cwd: 'src/js', src: '**/*', dest: 'build/src/js'}
@@ -89,6 +82,7 @@ module.exports = function (grunt) {
                         src: [
                             'DESCRIPTION.md',
                             'css/**/*',
+                            'lib/**/*',
                             'doc/**/*',
                             'images/**/*',
                             'index.html',
@@ -99,19 +93,8 @@ module.exports = function (grunt) {
                         expand: true,
                         cwd: 'build/lib',
                         src: [
-                            'lib/**/*'
+                            'lib/js/proj4.js'
                         ]
-                    },
-                    {
-                        expand: true,
-                        cwd: 'node_modules/openlayers/dist',
-                        src: ['ol.js'],
-                        dest: "lib/js"
-                    }, {
-                        expand: true,
-                        cwd: 'node_modules/openlayers/dist',
-                        src: ['ol.css'],
-                        dest: "lib/css"
                     },
                     {
                         expand: true,
@@ -133,7 +116,7 @@ module.exports = function (grunt) {
 
         clean: {
             build: {
-                src: ['build', 'bower_components']
+                src: ['build']
             },
             temp: {
                 src: ['build/src']
@@ -150,13 +133,12 @@ module.exports = function (grunt) {
                 },
                 files: [
                     'node_modules/mock-applicationmashup/dist/MockMP.js',
-                    'node_modules/openlayers/dist/ol.js',
+                    'node_modules/proj4/dist/proj4.js',
+                    'src/lib/css/ol.css',
+                    'src/lib/js/ol.js',
                     'tests/helpers/StyledElements.min.js',
-                    'src/js/*.js',
+                    'src/js/ol3-map-widget.js',
                     'tests/js/*Spec.js'
-                ],
-                exclude: [
-                    'src/js/main.js'
                 ],
                 frameworks: ['jasmine'],
                 reporters: ['progress'],
@@ -211,7 +193,6 @@ module.exports = function (grunt) {
     });
 
     grunt.loadNpmTasks('grunt-wirecloud');
-    grunt.loadNpmTasks('grunt-bower-task');
     grunt.loadNpmTasks('grunt-karma');
     grunt.loadNpmTasks('gruntify-eslint');
     grunt.loadNpmTasks('grunt-contrib-compress');
@@ -222,19 +203,19 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-text-replace');
 
     grunt.registerTask('test', [
-        'bower:install',
+        'copy:libs',
         'eslint',
         'karma:widget'
     ]);
 
     grunt.registerTask('debug', [
-        'bower:install',
+        'copy:libs',
         'eslint',
         'karma:widgetdebug'
     ]);
 
     grunt.registerTask('ci', [
-        'bower:install',
+        'copy:libs',
         'eslint',
         'karma:widgetci',
         'coveralls'

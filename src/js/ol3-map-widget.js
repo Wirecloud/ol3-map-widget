@@ -830,7 +830,7 @@
 
     var addTileUTFGridLayer = function addTileUTFGridLayer(layer_info) {
         const options = {
-            source: new ol.source.TileUTFGrid({
+            source: new ol.source.UTFGrid({
                 jsonp: layer_info.jsonp,
                 preemptive: layer_info.preemptive,
                 tileJSON: layer_info.tileJSON,
