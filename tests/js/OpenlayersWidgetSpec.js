@@ -16,7 +16,7 @@
         var elements = document.querySelectorAll('body > *:not(.jasmine_html-reporter)');
 
         for (var i = 0; i < elements.length; i++) {
-            elements[i].parentElement.removeChild(elements[i]);
+            elements[i].remove();
         }
     };
 
@@ -59,7 +59,7 @@
                 type: 'widget',
                 prefs: {
                     'initialCenter': '',
-                    'initialZoom': '',
+                    'initialZoom': '10',
                     'poiZoom': 10,
                     'layerswidget': '',
                     'useclustering': false
@@ -86,12 +86,15 @@
 
             describe("initialCenter", () => {
 
-                it("empty", () => {
+                it("empty", (done) => {
                     MashupPlatform.prefs.set("initialCenter", "");
 
                     widget.init();
 
-                    expect(widget.map.getView().getCenter()).toEqual(ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'));
+                    setTimeout(() => {
+                        expect(widget.map.getView().getCenter()).toEqual(ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'));
+                        done();
+                    }, 200);
                 });
 
                 it("missing longitude", () => {
@@ -1641,7 +1644,7 @@
                 });
 
                 expect(layers_mock.insertAt).toHaveBeenCalledWith(1, jasmine.any(ol.layer.Tile));
-                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.TileUTFGrid));
+                expect(layers_mock.insertAt.calls.argsFor(0)[1].getSource()).toEqual(jasmine.any(ol.source.UTFGrid));
             });
 
             it("supports XYZ layers", () => {
