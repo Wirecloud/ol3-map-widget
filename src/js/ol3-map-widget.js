@@ -267,7 +267,7 @@
         }
 
         DEFAULT_MARKER = build_basic_style.call(this);
-        this.base_layer = CORE_LAYERS.WIKIMEDIA;
+        this.base_layer = CORE_LAYERS.OSM;
         var initialCenter = MashupPlatform.prefs.get("initialCenter").split(",").map(Number);
         if (initialCenter.length != 2 || !Number.isFinite(initialCenter[0]) || !Number.isFinite(initialCenter[1])) {
             initialCenter = [0, 0];
