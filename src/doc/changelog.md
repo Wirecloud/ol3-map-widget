@@ -1,3 +1,9 @@
+## v1.2.1 (2020-03-07)
+
+- Use OSM layer by default. Previous versions of the widget were using Wikimedia
+    maps by default.
+
+
 ## v1.2.0 (2019-12-29)
 
 - Update OpenLayers to v6.1.1. See #29.
