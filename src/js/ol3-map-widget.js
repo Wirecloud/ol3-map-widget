@@ -148,7 +148,16 @@
             })
         });
 
+        if (options.style.text != null) {
+            style.setText(options.style.text(ol, options.style));
+        }
+
         return (feature, resolution) => {
+            var data = feature.get('data');
+            if (data.style != null && data.style.context != null) {
+                data.style.context(ol, style, feature, resolution);
+            }
+
             if (this.selected_feature === feature) {
                 return style;
             }
@@ -207,6 +216,8 @@
                 src: icon.src,
                 scale: icon.scale
             }));
+        } else if (vector_style != null && vector_style.image != null) {
+            var image = vector_style.image(ol, vector_style, this.map.getView().getResolution());
         }
         let marker_style = build_basic_style.call(this, {
             image: image,

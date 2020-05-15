@@ -966,6 +966,119 @@
 
             });
 
+            describe("handles the custom styles:", () => {
+                it("Add custom style image", () => {
+                    widget.init();
+                    spyOn(widget.vector_source, 'addFeature');
+                    widget.registerPoI(deepFreeze({
+                        id: '1',
+                        data: {},
+                        location: {
+                            type: 'Point',
+                            coordinates: [0, 0]
+                        },
+                        style: {
+                            image: function (ol, style, resolution) {
+                                return new ol.style.Circle({
+                                    fill: new ol.style.Fill({
+                                        color: '#111111'
+                                    }),
+                                    radius: (1000 / resolution) * style.radius,
+                                    stroke: new ol.style.Stroke({
+                                        color: '#222222',
+                                        width: 1
+                                    })
+                                });
+                            },
+                            radius: 10,
+                        },
+                    }));
+                    expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                    expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+                    let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                    let fstyle = feature.getStyle()(feature);
+                    expect(fstyle.getImage().getFill().getColor()).toEqual('#111111');
+                    expect(fstyle.getImage().getRadius()).toEqual(65.41332273339661);
+                    expect(fstyle.getImage().getStroke().getColor()).toEqual('#222222');
+                    expect(fstyle.getImage().getStroke().getWidth()).toEqual(1);
+                });
+
+                it("Add custom style text", () => {
+                    widget.init();
+                    spyOn(widget.vector_source, 'addFeature');
+                    widget.registerPoI(deepFreeze({
+                        id: '1',
+                        data: {},
+                        location: {
+                            type: 'Point',
+                            coordinates: [0, 0]
+                        },
+                        style: {
+                            text: function (ol, style) {
+                                return new ol.style.Text({
+                                    font: '12px serif',
+                                    text: style.value.toString(),
+                                    fill: new ol.style.Fill({
+                                        color: '#333333'
+                                    })
+                                })
+                            },
+                            value: 'test',
+                        },
+                    }));
+                    expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                    expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+                    let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                    let fstyle = feature.getStyle()(feature);
+                    expect(fstyle.getText().getFont()).toEqual('12px serif');
+                    expect(fstyle.getText().getText()).toEqual('test');
+                    expect(fstyle.getText().getFill().getColor()).toEqual('#333333');
+                });
+
+                it("Add custom style image with maxzoom", () => {
+                    widget.init();
+                    spyOn(widget.vector_source, 'addFeature');
+                    widget.registerPoI(deepFreeze({
+                        id: '1',
+                        data: {},
+                        location: {
+                            type: 'Point',
+                            coordinates: [0, 0]
+                        },
+                        maxzoom: 13,
+                        style: {
+                            image: function (ol, style, resolution) {
+                                return new ol.style.Circle({
+                                    fill: new ol.style.Fill({
+                                        color: '#444444'
+                                    }),
+                                    radius: (1000 / resolution) * style.radius,
+                                    stroke: new ol.style.Stroke({
+                                        color: '#555555',
+                                        width: 2
+                                    })
+                                });
+                            },
+                            radius: 10,
+                            context: function (ol, style, feature, resolution) {
+                                style.getImage().setRadius(20);
+                            },
+                        },
+                    }));
+
+                    expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                    expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+                    let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                    let fstyle = feature.getStyle()(feature);
+                    expect(fstyle.getImage().getFill().getColor()).toEqual('#444444');
+                    expect(fstyle.getImage().getRadius()).toEqual(20);
+                    expect(fstyle.getImage().getStroke().getColor()).toEqual('#555555');
+                    expect(fstyle.getImage().getStroke().getWidth()).toEqual(2);
+
+                });
+
+            });
+
             describe("handles the minzoom option:", () => {
                 const test = function (resolution, displayed) {
                     return () => {
