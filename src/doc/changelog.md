@@ -1,3 +1,7 @@
+## v1.2.2 (2020-XX-XX)
+
+- Add custom style option with image or text
+
 ## v1.2.1 (2020-03-07)
 
 - Use OSM layer by default. Previous versions of the widget were using Wikimedia
