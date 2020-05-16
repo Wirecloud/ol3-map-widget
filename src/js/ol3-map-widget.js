@@ -137,6 +137,10 @@
             };
         }
 
+        if (options.style.zIndex == null) {
+            options.style.zIndex = 0;
+        }
+
         let style = new ol.style.Style({
             image: options.image,
             stroke: new ol.style.Stroke({
@@ -145,7 +149,8 @@
             }),
             fill: new ol.style.Fill({
                 color: fill.color
-            })
+            }),
+            zIndex: options.style.zIndex
         });
 
         return (feature, resolution) => {
@@ -352,9 +357,12 @@
                     hitTolerance: 2
                 }
             );
+            features.sort((a, b) => {
+                return b.get('index') - a.get('index');
+            });
 
             // Normalize return value, undefined should be treated as null
-            if (features.length > 1) {
+            if (features.length > 1 && (features[0].get('index') == features[1].get('index'))) {
                 if (this.selected_feature != null && features.indexOf(this.selected_feature) !== -1) {
                     unselect.call(this, this.selected_feature);
                     update_selected_feature.call(this, null);
@@ -364,7 +372,7 @@
                         popup_menu.append(new StyledElements.MenuItem(feature.get('title'), null, feature));
                     });
                     popup_menu.addEventListener("click", (menu, item) => {
-                        this.select_feature(item.context);
+                        this.centerPoI([item.context]);
                     });
                     setTimeout(function () {
                         popup_menu.show({
@@ -381,14 +389,10 @@
 
             var feature = features[0];
 
-            if (feature != null && feature !== this.selected_feature) {
-                this.select_feature(feature);
-            } else if (this.selected_feature != null && this.selected_feature.get('content') == null) {
-                unselect.call(this, this.selected_feature);
-                update_selected_feature.call(this, null);
-            } else if (feature !== this.selected_feature && this.popover != null) {
-                this.popover.hide();
-                update_selected_feature.call(this, null);
+            if (feature == null) {
+                this.centerPoI([]);
+            } else {
+                this.centerPoI([feature]);
             }
         }.bind(this));
 
@@ -449,7 +453,8 @@
             iconFeature = new ol.Feature({
                 geometry: geometry,
                 point: marker || geometry,
-                data: poi_info,
+                data: poi_info || 0,
+                index: poi_info.style != null ? poi_info.style.zIndex : 0,
                 title: poi_info.title,
                 content: poi_info.infoWindow,
                 // PoI are selectable by default
@@ -463,7 +468,8 @@
             iconFeature.setProperties({
                 geometry: geometry,
                 point: marker || geometry,
-                data: poi_info,
+                data: poi_info || 0,
+                index: poi_info.style != null ? poi_info.style.zIndex : 0,
                 title: poi_info.title,
                 content: poi_info.infoWindow,
                 // PoI are selectable by default
@@ -517,7 +523,7 @@
         }
 
         let geometry = new ol.geom.GeometryCollection(poi_info.map((poi) => {
-            var feature = this.vector_source.getFeatureById(poi.id);
+            var feature = poi instanceof ol.Feature ? poi : this.vector_source.getFeatureById(poi.id);
             return feature.getGeometry();
         }));
 
@@ -547,7 +553,7 @@
         }
 
         if (poi_info.length == 1) {
-            this.select_feature(this.vector_source.getFeatureById(poi_info[0].id));
+            this.select_feature(poi_info[0] instanceof ol.Feature ? poi_info[0] : this.vector_source.getFeatureById(poi_info[0].id));
         }
     };
 
