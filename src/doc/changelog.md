@@ -1,3 +1,9 @@
+## v1.2.2 (2021-03-XX)
+
+- Use PoI id for the selection popup menu if the PoI does not provide a title
+    attribute.
+
+
 ## v1.2.1 (2020-03-07)
 
 - Use OSM layer by default. Previous versions of the widget were using Wikimedia
