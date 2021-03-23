@@ -5,8 +5,12 @@ body, html, .map {
     margin: 0px;
 }
 
-#button {
+#buttons {
     position: absolute;
     top: 5px;
     right: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }

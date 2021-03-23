@@ -2,6 +2,8 @@
 
 - Use PoI id for the selection popup menu if the PoI does not provide a title
     attribute.
+- Added a button to set the Initial Location setting using the center of the
+    current displayed area.
 
 
 ## v1.2.1 (2020-03-07)
