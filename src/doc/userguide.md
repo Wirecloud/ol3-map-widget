@@ -6,7 +6,7 @@ Map viewer widget using OpenLayers. It can receive Layers or Point of Interest d
 ## Settings
 
 
-- **Initial Location**: Decimal coordinates where map will be centered on load (e.g. `52, 5`). Leave this setting empty if you don't want to center the map at init. Remember to change the initial zoom level if you provide an initial location.
+- **Initial Location**: Decimal coordinates where map will be centered on load (e.g. `52, 5`). Leave this setting empty if you don't want to center the map at init. Remember to change the initial zoom level if you provide an initial location. This setting can be configured using the <i class="fas fa-crosshairs"></i> button that is displayed inside the widget when in editing mode.
 - **Initial Zoom Level**: Initial zoom level. From 1 to 22, where '1' represents the furthest level and '22' the maximum zoom level.
 - **Min Zoom**: Minimal zoom level.
 - **Layers Widget**: Widget to use for allowing user to switch between layers.

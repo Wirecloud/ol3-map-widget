@@ -1,6 +1,6 @@
 /*
  *   Copyright (c) 2017 CoNWeT Lab., Universidad Politecnica de Madrid
- *   Copyright (c) 2017-2019 Future Internet Consulting and Development Solutions S.L.
+ *   Copyright (c) 2017-2021 Future Internet Consulting and Development Solutions S.L.
  */
 
 /* global MashupPlatform, MockMP, ol, Widget */
@@ -10,7 +10,7 @@
     "use strict";
 
     const HTML_FIXTURE = '<div id="map" class="map"></div>\n' +
-        '<div id="button" class="se-btn"><span>Capas</span></div>';
+        '<div id="button" class="se-btn fade"></div><div id="setcenter-button" class="se-btn"></div>';
 
     const clearDocument = function clearDocument() {
         var elements = document.querySelectorAll('body > *:not(.jasmine_html-reporter)');
@@ -147,7 +147,7 @@
                     widget.init();
 
                     let layers_button = document.getElementById('button');
-                    expect(layers_button.className).toBe('se-btn hidden');
+                    expect(layers_button.className).toBe('se-btn fade');
                 });
 
                 it("widget ref", () => {
@@ -156,7 +156,7 @@
                     widget.init();
 
                     let layers_button = document.getElementById('button');
-                    expect(layers_button.className).toBe('se-btn');
+                    expect(layers_button.className).toBe('se-btn fade in');
                 });
 
                 it("widget ref (click)", () => {
@@ -215,6 +215,48 @@
 
                     expect(MashupPlatform.mashup.addWidget).toHaveBeenCalledWith(ref, jasmine.any(Object));
                     expect(MashupPlatform.mashup.addWidget().outputs.layerInfoOutput.connect).toHaveBeenCalledWith(MashupPlatform.widget.inputs.layerInfo);
+                });
+
+            });
+
+            describe("setcenter button", () => {
+
+                it("hidden if not started editing", () => {
+                    MashupPlatform.mashup.context.setContext({editing: false});
+
+                    widget.init();
+
+                    const setcenter_button = document.getElementById('setcenter-button');
+                    expect(setcenter_button.className).toBe('se-btn hidden');
+                });
+
+                it("visible if started editing", () => {
+                    MashupPlatform.mashup.context.setContext({editing: true});
+
+                    widget.init();
+
+                    const setcenter_button = document.getElementById('setcenter-button');
+                    expect(setcenter_button.className).toBe('se-btn');
+                });
+
+                it("should update dynamically", () => {
+                    MashupPlatform.mashup.context.setContext({editing: false});
+                    widget.init();
+
+                    MashupPlatform.mashup.context.registerCallback.calls.argsFor(0)[0]({editing: true});
+
+                    const setcenter_button = document.getElementById('setcenter-button');
+                    expect(setcenter_button.className).toBe('se-btn');
+                });
+
+                it("should setup current center as the default value for the initialCenter setting", () => {
+                    MashupPlatform.mashup.context.setContext({editing: true});
+                    widget.init();
+                    const setcenter_button = document.getElementById('setcenter-button');
+
+                    setcenter_button.click();
+
+                    expect(MashupPlatform.prefs.set).toHaveBeenCalledWith("initialCenter", jasmine.any(String));
                 });
 
             });

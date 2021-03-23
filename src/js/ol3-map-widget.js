@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2017 CoNWeT Lab., Universidad Politecnica de Madrid
- * Copyright (c) 2017-2019 Future Internet Consulting and Development Solutions S.L.
+ * Copyright (c) 2017-2021 Future Internet Consulting and Development Solutions S.L.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -261,10 +261,32 @@
         });
         let layers_widget_ref = MashupPlatform.prefs.get('layerswidget').trim();
         if (layers_widget_ref === "") {
-            layers_button.classList.add('hidden');
+            layers_button.classList.remove('in');
         } else {
-            layers_button.classList.remove('hidden');
+            layers_button.classList.add('in');
         }
+
+        // Set position button
+        const setcenter_button = document.getElementById("setcenter-button");
+        setcenter_button.addEventListener('click', (event) => {
+            const currentCenter = this.map.getView().getCenter();
+            const newValue = ol.proj.transform(currentCenter, 'EPSG:3857', 'EPSG:4326');
+            MashupPlatform.prefs.set(
+                "initialCenter",
+                newValue.join(", ")
+            );
+        });
+        const update_ui_buttons = (changes) => {
+            // Use strict equality as changes can not contains changes on the
+            // editing parameter
+            if (changes.editing === true) {
+                setcenter_button.classList.remove("hidden");
+            } else if (changes.editing === false) {
+                setcenter_button.classList.add("hidden");
+            }
+        };
+        MashupPlatform.mashup.context.registerCallback(update_ui_buttons);
+        update_ui_buttons({editing: MashupPlatform.mashup.context.get("editing")});
 
         DEFAULT_MARKER = build_basic_style.call(this);
         this.base_layer = CORE_LAYERS.OSM;
