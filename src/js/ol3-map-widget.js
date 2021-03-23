@@ -361,7 +361,7 @@
                 } else {
                     var popup_menu = new StyledElements.PopupMenu();
                     features.forEach((feature) => {
-                        popup_menu.append(new StyledElements.MenuItem(feature.get('title'), null, feature));
+                        popup_menu.append(new StyledElements.MenuItem(feature.get('title') || feature.getId(), null, feature));
                     });
                     popup_menu.addEventListener("click", (menu, item) => {
                         this.select_feature(item.context);
