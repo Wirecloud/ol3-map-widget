@@ -12,7 +12,7 @@
     "grunt-wirecloud": "^0.9.6",
     "gruntify-eslint": "^5.0.0",
     "jasmine-core": "^2.99.1",
-    "karma": "^4.1.0",
+    "karma": "^6.2.0",
     "karma-chrome-launcher": "^1.0.1",
     "karma-coverage": "^2.0.1",
     "karma-firefox-launcher": "^1.0.0",
@@ -20,7 +20,8 @@
     "karma-junit-reporter": "^1.2.0",
     "mock-applicationmashup": "^1.0.0-e",
     "proj4": "^2.6.0",
-    "wirecloud-config-parser": "^0.2.2"
+    "wirecloud-config-parser": "^0.2.3"
   },
-  "private": true
+  "private": true,
+  "name": "ol3-map-widget"
 }
