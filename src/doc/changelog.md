@@ -1,3 +1,8 @@
+## v1.2.3 (2021-03-25)
+
+- Fix some problems rendering the layer/setcenter buttons
+
+
 ## v1.2.2 (2021-03-23)
 
 - Use PoI id for the selection popup menu if the PoI does not provide a title
