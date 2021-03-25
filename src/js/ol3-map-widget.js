@@ -266,7 +266,7 @@
             layers_button.classList.add('in');
         }
 
-        // Set position button
+        // Edit buttons
         const setcenter_button = document.getElementById("setcenter-button");
         setcenter_button.addEventListener('click', (event) => {
             const currentCenter = this.map.getView().getCenter();
@@ -276,13 +276,33 @@
                 newValue.join(", ")
             );
         });
+        const setzoom_button = document.getElementById("setzoom-button");
+        setzoom_button.addEventListener('click', (event) => {
+            MashupPlatform.prefs.set(
+                "initialZoom",
+                this.map.getView().getZoom()
+            );
+        });
+        const setcenterzoom_button = document.getElementById("setcenterzoom-button");
+        setcenterzoom_button.addEventListener('click', (event) => {
+            const currentCenter = this.map.getView().getCenter();
+            const newValue = ol.proj.transform(currentCenter, 'EPSG:3857', 'EPSG:4326');
+            MashupPlatform.prefs.set({
+                initialCenter: newValue.join(", "),
+                initialZoom: this.map.getView().getZoom()
+            });
+        });
         const update_ui_buttons = (changes) => {
             // Use strict equality as changes can not contains changes on the
             // editing parameter
             if (changes.editing === true) {
                 setcenter_button.classList.remove("hidden");
+                setzoom_button.classList.remove("hidden");
+                setcenterzoom_button.classList.remove("hidden");
             } else if (changes.editing === false) {
                 setcenter_button.classList.add("hidden");
+                setzoom_button.classList.add("hidden");
+                setcenterzoom_button.classList.add("hidden");
             }
         };
         MashupPlatform.mashup.context.registerCallback(update_ui_buttons);

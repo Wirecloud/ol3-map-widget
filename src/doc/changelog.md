@@ -1,14 +1,21 @@
 ## v1.2.3 (2021-03-25)
 
 - Fix some problems rendering the layer/setcenter buttons
+- Added a button for setting the current zoom level as the **Initial Zoom
+    Level** setting. This button is only available when using WireCloud v1.4 in
+    edit mode.
+- Added a button for setting both the **Initial Location** and the **Initial
+    Zoom Level** settings from the current displayed area. This button is only
+    available when using WireCloud v1.4 in edit mode.
 
 
 ## v1.2.2 (2021-03-23)
 
 - Use PoI id for the selection popup menu if the PoI does not provide a title
     attribute.
-- Added a button to set the Initial Location setting using the center of the
-    current displayed area.
+- Added a button to set the **Initial Location** setting using the center of the
+    current displayed area. This button is only available when using WireCloud
+    v1.4 in edit mode.
 
 
 ## v1.2.1 (2020-03-07)

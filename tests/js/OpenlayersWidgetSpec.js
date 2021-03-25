@@ -10,7 +10,8 @@
     "use strict";
 
     const HTML_FIXTURE = '<div id="map" class="map"></div>\n' +
-        '<div id="button" class="se-btn fade"></div><div id="setcenter-button" class="se-btn"></div>';
+        '<div id="button" class="se-btn fade"></div>\n' +
+        '<div id="setcenter-button" class="se-btn"/><div id="setzoom-button" class="se-btn"/><div id="setcenterzoom-button" class="se-btn"/>';
 
     const clearDocument = function clearDocument() {
         var elements = document.querySelectorAll('body > *:not(.jasmine_html-reporter)');
@@ -73,6 +74,7 @@
             clearDocument();
             document.body.innerHTML += HTML_FIXTURE;
             MashupPlatform.reset();
+            MashupPlatform.prefs.set.calls.reset();
             widget = new Widget();
         });
 
@@ -219,24 +221,32 @@
 
             });
 
-            describe("setcenter button", () => {
+            describe("edit buttons", () => {
 
-                it("hidden if not started editing", () => {
+                it("should be hidden if the widget was started in view mode", () => {
                     MashupPlatform.mashup.context.setContext({editing: false});
 
                     widget.init();
 
                     const setcenter_button = document.getElementById('setcenter-button');
                     expect(setcenter_button.className).toBe('se-btn hidden');
+                    const setzoom_button = document.getElementById('setzoom-button');
+                    expect(setzoom_button.className).toBe('se-btn hidden');
+                    const setcenterzoom_button = document.getElementById('setcenterzoom-button');
+                    expect(setcenterzoom_button.className).toBe('se-btn hidden');
                 });
 
-                it("visible if started editing", () => {
+                it("should be visible if the widget was started in edit mode", () => {
                     MashupPlatform.mashup.context.setContext({editing: true});
 
                     widget.init();
 
                     const setcenter_button = document.getElementById('setcenter-button');
                     expect(setcenter_button.className).toBe('se-btn');
+                    const setzoom_button = document.getElementById('setzoom-button');
+                    expect(setzoom_button.className).toBe('se-btn');
+                    const setcenterzoom_button = document.getElementById('setcenterzoom-button');
+                    expect(setcenterzoom_button.className).toBe('se-btn');
                 });
 
                 it("should update dynamically", () => {
@@ -247,9 +257,13 @@
 
                     const setcenter_button = document.getElementById('setcenter-button');
                     expect(setcenter_button.className).toBe('se-btn');
+                    const setzoom_button = document.getElementById('setzoom-button');
+                    expect(setzoom_button.className).toBe('se-btn');
+                    const setcenterzoom_button = document.getElementById('setcenterzoom-button');
+                    expect(setcenterzoom_button.className).toBe('se-btn');
                 });
 
-                it("should setup current center as the default value for the initialCenter setting", () => {
+                it("should allow to setup current center as the default value for the initialCenter setting", () => {
                     MashupPlatform.mashup.context.setContext({editing: true});
                     widget.init();
                     const setcenter_button = document.getElementById('setcenter-button');
@@ -259,6 +273,28 @@
                     expect(MashupPlatform.prefs.set).toHaveBeenCalledWith("initialCenter", jasmine.any(String));
                 });
 
+                it("should allow to setup current zoom level as the default value for the initialZoom setting", () => {
+                    MashupPlatform.mashup.context.setContext({editing: true});
+                    widget.init();
+                    const setzoom_button = document.getElementById('setzoom-button');
+
+                    setzoom_button.click();
+
+                    expect(MashupPlatform.prefs.set).toHaveBeenCalledWith("initialZoom", jasmine.any(Number));
+                });
+
+                it("should allow to setup current zoom level and center position as the default initial values", () => {
+                    MashupPlatform.mashup.context.setContext({editing: true});
+                    widget.init();
+                    const setcenterzoom_button = document.getElementById('setcenterzoom-button');
+
+                    setcenterzoom_button.click();
+
+                    expect(MashupPlatform.prefs.set).toHaveBeenCalledWith({
+                        initialCenter: jasmine.any(String),
+                        initialZoom: jasmine.any(Number)
+                    });
+                });
             });
 
             describe("useclustering", () => {
