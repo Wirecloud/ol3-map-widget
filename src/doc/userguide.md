@@ -78,6 +78,22 @@ Map viewer widget using OpenLayers. It can receive Layers or Point of Interest d
         - `opacity`: Opacity of the icon (range from 0 to 1). Default is `1`.
         - `scale`: Scale. Default is `1`.
         - `src`: Image source URI.
+        - `fontawesome`: Options of the Font Awesome icon to use for the marker.
+          Supported options:
+            - `glyph`: a glyph of the icon. Default is `fa-star`.
+            - `form`: icon form (icon, circle, box, marker). Default is
+              `marker`.
+            - `size`: pixel size of the icon. Default is `16` px.
+            - `color`: icon color. Default is same as the stroke color. CSS3
+              color, that is, an hexadecimal, `rgb` or `rgba` color. Default is
+              `white`.
+            - `fill`: fill color. CSS3 color, that is, an hexadecimal, `rgb` or
+            `rgba` color. Default is `blue`.
+            - `stroke`: stroke color. CSS3 color, that is, an hexadecimal, `rgb`
+              or `rgba` color. Default is `white`.
+            - `strokeWidth`: width of stroke. Default is `3`.
+            - `radius`: radius of marker.
+            - `margin`: margin between icon and marker.
     - `iconHighlighted`: icon configuration to use when the PoI is selected.
         Works in the same way than the `icon` field.
     - `infoWindow`: content (using HTML) associated with the PoI.
