@@ -247,7 +247,7 @@
                 for (let j = 0; j < sheet.cssRules.length; j++) {
                     const cssRule = sheet.cssRules[j];
                     if (cssRule.selectorText && cssRule.selectorText.startsWith('.fa') && cssRule.selectorText.endsWith(before)) {
-                        const ctx = cssRule.style.content.slice(1).slice(0, -1);
+                        const ctx = String.fromCodePoint(cssRule.style.content.replace(/'|"/g, '').charCodeAt(0));
                         this.fa_glyph_table[cssRule.selectorText.slice(1).slice(0, -1 * before.length)] = ctx;
                         found = true;
                     }
