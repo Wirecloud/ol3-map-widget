@@ -263,16 +263,15 @@
         if (!Object.keys(this.fa_glyph_table).length) {
             create_fa_glyph_table.call(this);
         }
-        const scale = window.devicePixelRatio;
         const glyph = fontSymbol.glyph || 'fa-star';
         let form = fontSymbol.form || 'marker';
-        const size = (fontSymbol.size || 16) * scale;
+        const size = fontSymbol.size || 16;
         const fill = fontSymbol.fill || 'blue';
         const stroke = fontSymbol.stroke || 'white';
         let color = fontSymbol.color || stroke;
-        const strokeWidth = (fontSymbol.strokeWidth || 3) * scale;
+        const strokeWidth = fontSymbol.strokeWidth || 3;
         const margin = fontSymbol.margin || 0.4;
-        const radius = (fontSymbol.radius * scale) || (size / 2) + strokeWidth + size * margin;
+        const radius = fontSymbol.radius || (size / 2) + strokeWidth + size * margin;
         const unicode = this.fa_glyph_table[glyph];
         if (typeof unicode === 'undefined') {
             return null;
