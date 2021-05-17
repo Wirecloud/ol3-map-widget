@@ -1967,6 +1967,171 @@
 
         });
 
+        describe("build marker with Font Awesome icon", () => {
+            it("build default marker", () => {
+                widget.init();
+                spyOn(widget.vector_source, 'addFeature');
+                spyOn(widget, 'get_styleSheets').and.returnValue([
+                  {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]},
+                  {cssRules: [{selectorText: '', style: {content: ''}}]}
+                ]);
+                widget.registerPoI(deepFreeze({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    },
+                    icon: {
+                        'fontawesome': ''
+                    }
+                }));
+                expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+            });
+            it("build marker with icon form", () => {
+                widget.init();
+                spyOn(widget.vector_source, 'addFeature');
+                spyOn(widget, 'get_styleSheets').and.returnValue([
+                  {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]}
+                ]);
+                widget.registerPoI(deepFreeze({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    },
+                    icon: {
+                        'fontawesome': {
+                            'glyph': 'fa-star',
+                            'form': 'icon'
+                        }
+                    }
+                }));
+                expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+            });
+            it("build red marker with icon form", () => {
+                widget.init();
+                spyOn(widget.vector_source, 'addFeature');
+                spyOn(widget, 'get_styleSheets').and.returnValue([
+                  {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]}
+                ]);
+                widget.registerPoI(deepFreeze({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    },
+                    icon: {
+                        'fontawesome': {
+                            'glyph': 'fa-star',
+                            'form': 'icon',
+                            'color': 'red'
+                        }
+                    }
+                }));
+                expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+            });
+            it("build marker with circle form", () => {
+                widget.init();
+                spyOn(widget.vector_source, 'addFeature');
+                spyOn(widget, 'get_styleSheets').and.returnValue([
+                  {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]}
+                ]);
+                widget.registerPoI(deepFreeze({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    },
+                    icon: {
+                        'fontawesome': {
+                            'glyph': 'fa-star',
+                            'form': 'circle'
+                        }
+                    }
+                }));
+                expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+            });
+            it("build marker with box form", () => {
+                widget.init();
+                spyOn(widget.vector_source, 'addFeature');
+                spyOn(widget, 'get_styleSheets').and.returnValue([
+                  {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]}
+                ]);
+                widget.registerPoI(deepFreeze({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    },
+                    icon: {
+                        'fontawesome': {
+                            'glyph': 'fa-star',
+                            'form': 'box'
+                        }
+                    }
+                }));
+                expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+            });
+            it("should use icon cache", () => {
+                widget.init();
+                spyOn(widget.vector_source, 'addFeature');
+                spyOn(widget, 'get_styleSheets').and.returnValue([
+                  {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]}
+                ]);
+                widget.registerPoI(deepFreeze({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    },
+                    icon: {
+                        'fontawesome': 'fa-star'
+                    }
+                }));
+                widget.registerPoI(deepFreeze({
+                    id: '2',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    },
+                    icon: {
+                        'fontawesome': 'fa-star'
+                    }
+                }));
+                expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(2);
+                expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+            });
+            it("fallback when glyph not found", () => {
+                widget.init();
+                spyOn(widget.vector_source, 'addFeature');
+                widget.registerPoI(deepFreeze({
+                    id: '1',
+                    data: {},
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    },
+                    icon: {
+                        'fontawesome': 'fa-star'
+                    }
+                }));
+                expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
+            });
+        });
+
     });
 
 })();

@@ -1,3 +1,7 @@
+## v1.2.x (2021-xx-xx)
+
+- Add a feature for building a marker with Font Awesome icon
+
 ## v1.2.3 (2021-03-25)
 
 - Fix some problems rendering the layer/setcenter buttons
