@@ -57,12 +57,6 @@ module.exports = function (grunt) {
             }
         },
 
-        coveralls: {
-            library: {
-                src: 'build/coverage/lcov/lcov.info',
-            }
-        },
-
         strip_code: {
             multiple_files: {
                 src: ['build/src/js/**/*.js']
@@ -198,7 +192,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-compress');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-coveralls');
     grunt.loadNpmTasks('grunt-strip-code');
     grunt.loadNpmTasks('grunt-text-replace');
 
@@ -217,8 +210,7 @@ module.exports = function (grunt) {
     grunt.registerTask('ci', [
         'copy:libs',
         'eslint',
-        'karma:widgetci',
-        'coveralls'
+        'karma:widgetci'
     ]);
 
     grunt.registerTask('build', [
