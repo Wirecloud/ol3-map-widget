@@ -57,12 +57,6 @@ module.exports = function (grunt) {
             }
         },
 
-        coveralls: {
-            library: {
-                src: 'build/coverage/lcov/lcov.info',
-            }
-        },
-
         strip_code: {
             multiple_files: {
                 src: ['build/src/js/**/*.js']
@@ -125,12 +119,6 @@ module.exports = function (grunt) {
 
         karma: {
             options: {
-                customLaunchers: {
-                    ChromeNoSandbox: {
-                        base: "Chrome",
-                        flags: ['--no-sandbox']
-                    }
-                },
                 files: [
                     'node_modules/mock-applicationmashup/dist/MockMP.js',
                     'node_modules/proj4/dist/proj4.js',
@@ -142,7 +130,7 @@ module.exports = function (grunt) {
                 ],
                 frameworks: ['jasmine'],
                 reporters: ['progress'],
-                browsers: ['Chrome', 'Firefox'],
+                browsers: ['ChromeHeadless', 'FirefoxHeadless'],
                 singleRun: true
             },
             widget: {
@@ -152,9 +140,6 @@ module.exports = function (grunt) {
                         dir: 'build/coverage'
                     },
                     reporters: ['progress', 'coverage'],
-                    preprocessors: {
-                        'src/js/*.js': ['coverage'],
-                    }
                 }
             },
             widgetci: {
@@ -163,7 +148,6 @@ module.exports = function (grunt) {
                         "outputDir": 'build/test-reports'
                     },
                     reporters: ['junit', 'coverage'],
-                    browsers: ['ChromeNoSandbox', 'Firefox'],
                     coverageReporter: {
                         reporters: [
                             {type: 'cobertura', dir: 'build/coverage', subdir: 'xml'},
@@ -177,6 +161,7 @@ module.exports = function (grunt) {
             },
             widgetdebug: {
                 options: {
+                    browsers: ['Chrome', 'Firefox'],
                     singleRun: false
                 }
             }
@@ -198,7 +183,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-compress');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-coveralls');
     grunt.loadNpmTasks('grunt-strip-code');
     grunt.loadNpmTasks('grunt-text-replace');
 
@@ -217,8 +201,7 @@ module.exports = function (grunt) {
     grunt.registerTask('ci', [
         'copy:libs',
         'eslint',
-        'karma:widgetci',
-        'coveralls'
+        'karma:widgetci'
     ]);
 
     grunt.registerTask('build', [
