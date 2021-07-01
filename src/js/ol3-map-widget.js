@@ -560,18 +560,17 @@
         }.bind(this));
 
         // change mouse cursor when over marker
-        this.map.on('pointermove', function (event) {
+        this.map.on('pointermove', (event) => {
             if (event.dragging) {
                 if (this.popover != null) {
-                    this.popover.hide();
-                    update_selected_feature.call(this, null);
+                    this.popover.repaint();
                 }
                 return;
             }
             var pixel = this.map.getEventPixel(event.originalEvent);
             var hit = this.map.hasFeatureAtPixel(pixel);
             this.map.getTarget().style.cursor = hit ? 'pointer' : '';
-        }.bind(this));
+        });
 
         // send poi updates on changes
         this.send_visible_pois_bound = send_visible_pois.bind(this);
@@ -581,7 +580,12 @@
             }
             this.visiblePoisTimeout = setTimeout(this.send_visible_pois_bound, 50);
         });
-        this.map.on('moveend', this.send_visible_pois_bound);
+        this.map.on("moveend", () => {
+            if (this.popover != null) {
+                this.popover.repaint();
+            }
+            send_visible_pois.call(this);
+        });
 
         this.geojsonparser = new ol.format.GeoJSON();
 
@@ -1189,7 +1193,8 @@
             let popover = this.popover = new StyledElements.Popover({
                 placement: ['top', 'bottom', 'right', 'left'],
                 title: feature.get('title'),
-                content: new StyledElements.Fragment(feature.get('content'))
+                content: new StyledElements.Fragment(feature.get('content')),
+                sticky: true
             });
             popover.on('show', () => {
                 update_selected_feature.call(this, feature);
@@ -1204,43 +1209,47 @@
             });
 
             // Delay popover show action
-            setTimeout(function () {
-                var marker_coordinates, marker_position, marker_image, marker_size, marker_style, refpos;
-
+            setTimeout(() => {
                 if (this.popover !== popover) {
                     // Selection has changed in the middle
                     return;
                 }
 
-                marker_coordinates = ol.extent.getCenter(feature.getGeometry().getExtent());
-                marker_position = this.map.getPixelFromCoordinate(marker_coordinates);
-                var view = this.map.getView(); // See https://github.com/openlayers/openlayers/issues/4713
-                var width = ol.extent.getWidth(view.getProjection().getExtent()) / view.getResolution();
-                marker_position[0] = ((marker_position[0] % width) + width) % width;
-                marker_style = feature.getStyle()(feature);
-                marker_image = marker_style.getImage();
-                if (marker_image != null && (marker_size = marker_image.getSize()) != null) {
-                    var marker_scale = marker_image.getScale();
-                    marker_size = marker_size.map(function (value) {
-                        return value * marker_scale;
-                    });
-                    refpos = {
-                        top: marker_position[1] - marker_size[1],
-                        left: marker_position[0] - (marker_size[0] / 2),
-                        width: marker_size[0],
-                        height: marker_size[1]
-                    };
-                } else {
-                    refpos = {
-                        top: marker_position[1],
-                        left: marker_position[0],
-                        width: 0,
-                        height: 0
-                    };
-                }
+                const refpos = {
+                    getBoundingClientRect: () => {
+                        const marker_coordinates = ol.extent.getCenter(feature.getGeometry().getExtent());
+                        const marker_position = this.map.getPixelFromCoordinate(marker_coordinates);
+                        const view = this.map.getView(); // See https://github.com/openlayers/openlayers/issues/4713
+                        const width = ol.extent.getWidth(view.getProjection().getExtent()) / view.getResolution();
+                        marker_position[0] = ((marker_position[0] % width) + width) % width;
+                        const marker_style = feature.getStyle()(feature);
+                        const marker_image = marker_style.getImage();
+                        let marker_size;
+                        if (marker_image != null && (marker_size = marker_image.getSize()) != null) {
+                            const marker_scale = marker_image.getScale();
+                            marker_size = marker_size.map(function (value) {
+                                return value * marker_scale;
+                            });
+                            return {
+                                top: marker_position[1] - marker_size[1],
+                                left: marker_position[0] - (marker_size[0] / 2),
+                                width: marker_size[0],
+                                height: marker_size[1]
+                            };
+                        } else {
+                            return {
+                                top: marker_position[1],
+                                left: marker_position[0],
+                                width: 0,
+                                height: 0
+                            };
+                        }
+                    }
+                };
+
                 update_selected_feature.call(this, feature);
                 this.popover.show(refpos);
-            }.bind(this), 100);
+            }, 100);
         }
     };
 

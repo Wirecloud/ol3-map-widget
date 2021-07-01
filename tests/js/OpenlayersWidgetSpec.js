@@ -564,12 +564,12 @@
                     widget.init();
                     spyOn(widget.map, 'getPixelFromCoordinate').and.returnValue([0, 0]);
                     widget.select_feature(feature_mock);
-                    widget.popover.on('show', () => {
+                    widget.popover.addEventListener('show', () => {
                         MashupPlatform.widget.outputs.poiOutput.reset();
                         let popover = widget.popover;
                         // TODO, the following line is required as the CSS
                         // animation is not processed
-                        popover.element.classList.remove('in');
+                        popover.wrapperElement.classList.remove('in');
                         spyOn(popover, "on");
                         spyOn(popover, "hide").and.callThrough();
                         spyOn(widget, "select_feature");
@@ -659,8 +659,8 @@
                     widget.init();
                     spyOn(widget.map, "getEventPixel");
                     spyOn(widget.map, "hasFeatureAtPixel").and.returnValue({});
-                    let popover_mock = widget.popover = {
-                        hide: jasmine.createSpy('hide')
+                    const popover_mock = widget.popover = {
+                        repaint: jasmine.createSpy('repaint')
                     };
 
                     widget.map.dispatchEvent({
@@ -668,7 +668,7 @@
                         dragging: true
                     });
 
-                    expect(popover_mock.hide).toHaveBeenCalled();
+                    expect(popover_mock.repaint).toHaveBeenCalled();
                 });
 
             });
