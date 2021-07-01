@@ -119,12 +119,6 @@ module.exports = function (grunt) {
 
         karma: {
             options: {
-                customLaunchers: {
-                    ChromeNoSandbox: {
-                        base: "Chrome",
-                        flags: ['--no-sandbox']
-                    }
-                },
                 files: [
                     'node_modules/mock-applicationmashup/dist/MockMP.js',
                     'node_modules/proj4/dist/proj4.js',
@@ -136,7 +130,7 @@ module.exports = function (grunt) {
                 ],
                 frameworks: ['jasmine'],
                 reporters: ['progress'],
-                browsers: ['Chrome', 'Firefox'],
+                browsers: ['ChromeHeadless', 'FirefoxHeadless'],
                 singleRun: true
             },
             widget: {
@@ -146,9 +140,6 @@ module.exports = function (grunt) {
                         dir: 'build/coverage'
                     },
                     reporters: ['progress', 'coverage'],
-                    preprocessors: {
-                        'src/js/*.js': ['coverage'],
-                    }
                 }
             },
             widgetci: {
@@ -157,7 +148,6 @@ module.exports = function (grunt) {
                         "outputDir": 'build/test-reports'
                     },
                     reporters: ['junit', 'coverage'],
-                    browsers: ['ChromeNoSandbox', 'Firefox'],
                     coverageReporter: {
                         reporters: [
                             {type: 'cobertura', dir: 'build/coverage', subdir: 'xml'},
@@ -171,6 +161,7 @@ module.exports = function (grunt) {
             },
             widgetdebug: {
                 options: {
+                    browsers: ['Chrome', 'Firefox'],
                     singleRun: false
                 }
             }
