@@ -580,8 +580,16 @@
             }
             this.visiblePoisTimeout = setTimeout(this.send_visible_pois_bound, 50);
         });
+        this.map.on("movestart", () => {
+            if (this.popover != null && "disablePointerEvents" in this.popover) {
+                this.popover.disablePointerEvents();
+            }
+        });
         this.map.on("moveend", () => {
             if (this.popover != null) {
+                if ("enablePointerEvents" in this.popover) {
+                    this.popover.enablePointerEvents();
+                }
                 this.popover.repaint();
             }
             send_visible_pois.call(this);

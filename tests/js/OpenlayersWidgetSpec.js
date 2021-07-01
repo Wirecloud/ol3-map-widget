@@ -566,10 +566,10 @@
                     widget.select_feature(feature_mock);
                     widget.popover.addEventListener('show', () => {
                         MashupPlatform.widget.outputs.poiOutput.reset();
-                        let popover = widget.popover;
+                        const popover = widget.popover;
                         // TODO, the following line is required as the CSS
                         // animation is not processed
-                        popover.wrapperElement.classList.remove('in');
+                        document.body.querySelector('.popover').classList.remove('in');
                         spyOn(popover, "on");
                         spyOn(popover, "hide").and.callThrough();
                         spyOn(widget, "select_feature");
