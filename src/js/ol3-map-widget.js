@@ -1227,30 +1227,19 @@
                     getBoundingClientRect: () => {
                         const marker_coordinates = ol.extent.getCenter(feature.getGeometry().getExtent());
                         const marker_position = this.map.getPixelFromCoordinate(marker_coordinates);
-                        const view = this.map.getView(); // See https://github.com/openlayers/openlayers/issues/4713
-                        const width = ol.extent.getWidth(view.getProjection().getExtent()) / view.getResolution();
-                        marker_position[0] = ((marker_position[0] % width) + width) % width;
                         const marker_style = feature.getStyle()(feature);
                         const marker_image = marker_style.getImage();
                         let marker_size;
                         if (marker_image != null && (marker_size = marker_image.getSize()) != null) {
                             const marker_scale = marker_image.getScale();
-                            marker_size = marker_size.map(function (value) {
-                                return value * marker_scale;
-                            });
-                            return {
-                                top: marker_position[1] - marker_size[1],
-                                left: marker_position[0] - (marker_size[0] / 2),
-                                width: marker_size[0],
-                                height: marker_size[1]
-                            };
+                            let marker_anchor = marker_image.getAnchor();
+                            marker_size = marker_size.map((value) => value * marker_scale);
+                            marker_anchor = marker_anchor.map((value) => value * marker_scale);
+                            const top = marker_position[1] - marker_anchor[1];
+                            const left = marker_position[0] - marker_anchor[0];
+                            return new DOMRect(left, top, marker_size[0], marker_size[1]);
                         } else {
-                            return {
-                                top: marker_position[1],
-                                left: marker_position[0],
-                                width: 0,
-                                height: 0
-                            };
+                            return new DOMRect(marker_position[0], marker_position[1], 0, 0);
                         }
                     }
                 };

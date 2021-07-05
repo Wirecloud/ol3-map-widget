@@ -436,6 +436,7 @@
                     spyOn(feature_mock, "getStyle").and.callFake(() => {return () => {return style_mock};});
                     spyOn(style_mock, 'getImage').and.returnValue({
                         getScale: () => {return 0.5;},
+                        getAnchor: jasmine.createSpy().and.callFake(() => {return [0.5, 2];}),
                         getSize: jasmine.createSpy().and.callFake(() => {return [1, 2];})
                     });
                     widget.init();
