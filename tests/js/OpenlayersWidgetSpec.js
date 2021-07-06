@@ -436,6 +436,7 @@
                     spyOn(feature_mock, "getStyle").and.callFake(() => {return () => {return style_mock};});
                     spyOn(style_mock, 'getImage').and.returnValue({
                         getScale: () => {return 0.5;},
+                        getAnchor: jasmine.createSpy().and.callFake(() => {return [0.5, 2];}),
                         getSize: jasmine.createSpy().and.callFake(() => {return [1, 2];})
                     });
                     widget.init();
@@ -564,12 +565,12 @@
                     widget.init();
                     spyOn(widget.map, 'getPixelFromCoordinate').and.returnValue([0, 0]);
                     widget.select_feature(feature_mock);
-                    widget.popover.on('show', () => {
+                    widget.popover.addEventListener('show', () => {
                         MashupPlatform.widget.outputs.poiOutput.reset();
-                        let popover = widget.popover;
+                        const popover = widget.popover;
                         // TODO, the following line is required as the CSS
                         // animation is not processed
-                        popover.element.classList.remove('in');
+                        document.body.querySelector('.popover').classList.remove('in');
                         spyOn(popover, "on");
                         spyOn(popover, "hide").and.callThrough();
                         spyOn(widget, "select_feature");
@@ -618,6 +619,76 @@
                 });
             });
 
+            describe("moveend", () => {
+
+                it("wirecloud 1.3 and below", () => {
+                    widget.init();
+                    widget.popover = {
+                        repaint: jasmine.createSpy("repaint")
+                    };
+
+                    widget.map.dispatchEvent({
+                        type: "moveend"
+                    });
+
+                    expect(widget.popover.repaint).toHaveBeenCalledWith();
+                });
+
+                it("wirecloud 1.4+", () => {
+                    widget.init();
+                    widget.popover = {
+                        enablePointerEvents: jasmine.createSpy("enablePointerEvents"),
+                        repaint: jasmine.createSpy("repaint")
+                    };
+
+                    widget.map.dispatchEvent({
+                        type: "moveend"
+                    });
+
+                    expect(widget.popover.enablePointerEvents).toHaveBeenCalledWith();
+                    expect(widget.popover.repaint).toHaveBeenCalledWith();
+                });
+
+            });
+
+            describe("movestart", () => {
+
+                it("without popover", () => {
+                    widget.init();
+
+                    widget.map.dispatchEvent({
+                        type: "movestart"
+                    });
+                });
+
+                it("wirecloud 1.3 and below", () => {
+                    widget.init();
+                    widget.popover = {
+                        hide: jasmine.createSpy('hide')
+                    };
+
+                    widget.map.dispatchEvent({
+                        type: "movestart"
+                    });
+
+                    expect(widget.popover.hide).toHaveBeenCalledWith();
+                });
+
+                it("wirecloud 1.4+", () => {
+                    widget.init();
+                    widget.popover = {
+                        disablePointerEvents: jasmine.createSpy("disablePointerEvents")
+                    };
+
+                    widget.map.dispatchEvent({
+                        type: "movestart"
+                    });
+
+                    expect(widget.popover.disablePointerEvents).toHaveBeenCalledWith();
+                });
+
+            });
+
             describe("pointermove", () => {
 
                 it("outside any feature", () => {
@@ -659,8 +730,8 @@
                     widget.init();
                     spyOn(widget.map, "getEventPixel");
                     spyOn(widget.map, "hasFeatureAtPixel").and.returnValue({});
-                    let popover_mock = widget.popover = {
-                        hide: jasmine.createSpy('hide')
+                    const popover_mock = widget.popover = {
+                        repaint: jasmine.createSpy('repaint')
                     };
 
                     widget.map.dispatchEvent({
@@ -668,7 +739,7 @@
                         dragging: true
                     });
 
-                    expect(popover_mock.hide).toHaveBeenCalled();
+                    expect(popover_mock.repaint).toHaveBeenCalled();
                 });
 
             });
@@ -1968,6 +2039,7 @@
         });
 
         describe("build marker with Font Awesome icon", () => {
+
             it("build default marker", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
@@ -1989,6 +2061,7 @@
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
             });
+
             it("build marker with icon form", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
@@ -2012,6 +2085,7 @@
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
             });
+
             it("build red marker with icon form", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
@@ -2036,6 +2110,7 @@
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
             });
+
             it("build marker with circle form", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
@@ -2059,6 +2134,7 @@
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
             });
+
             it("build marker with box form", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
@@ -2082,6 +2158,7 @@
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
             });
+
             it("should use icon cache", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
@@ -2096,7 +2173,7 @@
                         coordinates: [0, 0]
                     },
                     icon: {
-                        'fontawesome': 'fa-star'
+                        fontawesome: 'fa-star'
                     }
                 }));
                 widget.registerPoI(deepFreeze({
@@ -2107,12 +2184,13 @@
                         coordinates: [0, 0]
                     },
                     icon: {
-                        'fontawesome': 'fa-star'
+                        fontawesome: 'fa-star'
                     }
                 }));
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(2);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
             });
+
             it("fallback when glyph not found", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');

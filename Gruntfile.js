@@ -129,7 +129,6 @@ module.exports = function (grunt) {
                     'tests/js/*Spec.js'
                 ],
                 frameworks: ['jasmine'],
-                reporters: ['progress'],
                 browsers: ['ChromeHeadless', 'FirefoxHeadless'],
                 singleRun: true
             },
@@ -139,7 +138,10 @@ module.exports = function (grunt) {
                         type: 'html',
                         dir: 'build/coverage'
                     },
-                    reporters: ['progress', 'coverage'],
+                    preprocessors: {
+                        "src/js/*.js": ['coverage'],
+                    },
+                    reporters: ["progress", "coverage"]
                 }
             },
             widgetci: {
@@ -147,7 +149,7 @@ module.exports = function (grunt) {
                     junitReporter: {
                         "outputDir": 'build/test-reports'
                     },
-                    reporters: ['junit', 'coverage'],
+                    reporters: ["junit", "coverage", "progress"],
                     coverageReporter: {
                         reporters: [
                             {type: 'cobertura', dir: 'build/coverage', subdir: 'xml'},
@@ -162,6 +164,7 @@ module.exports = function (grunt) {
             widgetdebug: {
                 options: {
                     browsers: ['Chrome', 'Firefox'],
+                    reporters: ["progress"],
                     singleRun: false
                 }
             }
