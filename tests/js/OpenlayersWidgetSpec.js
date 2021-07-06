@@ -655,11 +655,15 @@
 
                 it("wirecloud 1.3 and below", () => {
                     widget.init();
-                    widget.popover = {};
+                    widget.popover = {
+                        hide: jasmine.createSpy('hide')
+                    };
 
                     widget.map.dispatchEvent({
                         type: "movestart"
                     });
+
+                    expect(widget.popover.hide).toHaveBeenCalledWith();
                 });
 
                 it("wirecloud 1.4+", () => {

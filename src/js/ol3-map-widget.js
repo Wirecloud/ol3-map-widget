@@ -581,7 +581,9 @@
             this.visiblePoisTimeout = setTimeout(this.send_visible_pois_bound, 50);
         });
         this.map.on("movestart", () => {
-            if (this.popover != null && "disablePointerEvents" in this.popover) {
+            if (this.popover != null && !("disablePointerEvents" in this.popover)) {
+                this.popover.hide();
+            } else if (this.popover != null) {
                 this.popover.disablePointerEvents();
             }
         });
