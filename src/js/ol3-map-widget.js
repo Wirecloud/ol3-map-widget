@@ -21,13 +21,13 @@
 
     "use strict";
 
-    var internalUrl = function internalUrl(data) {
-        var url = document.createElement("a");
+    const internalUrl = function internalUrl(data) {
+        const url = document.createElement("a");
         url.setAttribute('href', data);
         return url.href;
     };
 
-    var CORE_LAYERS = {
+    const CORE_LAYERS = {
         WIKIMEDIA: new ol.layer.Tile({
             source: new ol.source.OSM({
                 url: "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png"
@@ -94,7 +94,28 @@
     CORE_LAYERS.GOOGLE_HYBRID = CORE_LAYERS.MAPQUEST_HYBRID;
     CORE_LAYERS.GOOGLE_SATELLITE = CORE_LAYERS.MAPQUEST_SATELLITE;
 
-    var build_basic_style = function build_basic_style(options) {
+    const update_selected_feature = function update_selected_feature(feature) {
+        if (this.selected_feature != feature) {
+            this.selected_feature = feature;
+            if (this.popover != null) {
+                this.popover.hide();
+                this.popover = null;
+            }
+            MashupPlatform.widget.outputs.poiOutput.pushEvent(feature != null ? feature.get('data') : null);
+        }
+    };
+
+    const unselect = function unselect(feature) {
+        if (feature == null) {
+            return;
+        }
+
+        const poi_info = feature.get('data');
+        const style = parse_marker_definition.call(this, poi_info.icon, poi_info.style);
+        feature.setStyle(style);
+    };
+
+    const build_basic_style = function build_basic_style(options) {
         if (options == null) {
             options = {};
         }
@@ -137,7 +158,7 @@
             };
         }
 
-        let style = new ol.style.Style({
+        const style = new ol.style.Style({
             image: options.image,
             stroke: new ol.style.Stroke({
                 color: stroke.color,
@@ -153,8 +174,8 @@
                 return style;
             }
 
-            var minzoom = feature.get('minzoom');
-            var maxzoom = feature.get('maxzoom');
+            const minzoom = feature.get('minzoom');
+            const maxzoom = feature.get('maxzoom');
 
             if (minzoom != null && resolution > minzoom) {
                 return null;
@@ -166,7 +187,7 @@
         };
     };
 
-    var parse_marker_definition = function parse_marker_definition(icon, vector_style) {
+    const parse_marker_definition = function parse_marker_definition(icon, vector_style) {
         let clone = false;
         if (icon == null && vector_style == null) {
             return DEFAULT_MARKER;
@@ -198,8 +219,9 @@
             icon.scale = 1;
         }
 
+        let image;
         if (icon.src != null) {
-            var image = new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+            image = new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
                 anchor: icon.anchor,
                 anchorXUnits: icon.anchorXUnits,
                 anchorYUnits: icon.anchorYUnits,
@@ -215,7 +237,7 @@
             if (canvas == null) {
                 return DEFAULT_MARKER;
             }
-            var image = new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
+            image = new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
                 anchor: icon.anchor,
                 anchorXUnits: icon.anchorXUnits,
                 anchorYUnits: icon.anchorYUnits,
@@ -224,7 +246,7 @@
                 imgSize: [canvas.width, canvas.height]
             }));
         }
-        let marker_style = build_basic_style.call(this, {
+        const marker_style = build_basic_style.call(this, {
             image: image,
             style: vector_style
         });
@@ -256,7 +278,7 @@
         }
 
         this.fa_marker_cache = {};
-    }
+    };
 
     // Build a marker with Font awsome icon
     const build_font_awesome_icon = function build_font_awesome_icon(fontSymbol) {
@@ -264,7 +286,7 @@
             create_fa_glyph_table.call(this);
         }
         const glyph = fontSymbol.glyph || 'fa-star';
-        let form = fontSymbol.form || 'marker';
+        const form = fontSymbol.form || 'marker';
         const size = fontSymbol.size || 16;
         const fill = fontSymbol.fill || 'blue';
         const stroke = fontSymbol.stroke || 'white';
@@ -343,9 +365,9 @@
 
         this.fa_marker_cache[hash] = canvas;
         return this.fa_marker_cache[hash];
-    }
+    };
 
-    var send_visible_pois = function send_visible_pois() {
+    const send_visible_pois = function send_visible_pois() {
 
         if (this.visiblePoisTimeout != null) {
             clearTimeout(this.visiblePoisTimeout);
@@ -356,17 +378,17 @@
             return;
         }
 
-        var extent = this.map.getView().calculateExtent(this.map.getSize());
-        var data = this.vector_source.getFeaturesInExtent(extent).map((feature) => {
+        const extent = this.map.getView().calculateExtent(this.map.getSize());
+        const data = this.vector_source.getFeaturesInExtent(extent).map((feature) => {
             return feature.get('data');
         });
         MashupPlatform.widget.outputs.poiListOutput.pushEvent(data);
     };
 
     // Create the default Marker style
-    var DEFAULT_MARKER = null;
+    let DEFAULT_MARKER = null;
 
-    var Widget = function Widget() {
+    const Widget = function Widget() {
         this.selected_feature = null;
         this.layers_widget = null;
         this.base_layer = null;
@@ -376,7 +398,7 @@
 
     Widget.prototype.init = function init() {
 
-        let layers_button = document.getElementById('button');
+        const layers_button = document.getElementById('button');
         layers_button.addEventListener('click', (event) => {
             if (this.layers_widget == null) {
                 this.layers_widget = MashupPlatform.mashup.addWidget(MashupPlatform.prefs.get('layerswidget').trim(), {refposition: event.target.getBoundingClientRect()});
@@ -384,7 +406,7 @@
                 this.layers_widget.outputs.layerInfoOutput.connect(MashupPlatform.widget.inputs.layerInfo);
             }
         });
-        let layers_widget_ref = MashupPlatform.prefs.get('layerswidget').trim();
+        const layers_widget_ref = MashupPlatform.prefs.get('layerswidget').trim();
         if (layers_widget_ref === "") {
             layers_button.classList.remove('in');
         } else {
@@ -435,7 +457,7 @@
 
         DEFAULT_MARKER = build_basic_style.call(this);
         this.base_layer = CORE_LAYERS.OSM;
-        var initialCenter = MashupPlatform.prefs.get("initialCenter").split(",").map(Number);
+        let initialCenter = MashupPlatform.prefs.get("initialCenter").split(",").map(Number);
         if (initialCenter.length != 2 || !Number.isFinite(initialCenter[0]) || !Number.isFinite(initialCenter[1])) {
             initialCenter = [0, 0];
         }
@@ -449,17 +471,17 @@
             source: this.vector_source
         });
         this.marker_cache = {};
-        var styleCache = {};
+        const styleCache = {};
         this.vector_layer = new ol.layer.Vector({source: this.vector_source, style: DEFAULT_MARKER});
         this.cluster_layer = new ol.layer.Vector({
             source: this.cluster_source,
             style: function (feature, resolution) {
-                var features = feature.get('features');
-                var size = features.length;
+                const features = feature.get('features');
+                const size = features.length;
                 if (size === 1) {
                     return features[0].getStyle()(features[0], resolution);
                 }
-                var style = styleCache[size];
+                let style = styleCache[size];
                 if (!style) {
                     style = new ol.style.Style({
                         image: new ol.style.Circle({
@@ -498,7 +520,7 @@
 
         // display popup on click
         this.map.on('click', function (event) {
-            var features = [];
+            const features = [];
             this.map.forEachFeatureAtPixel(
                 event.pixel,
                 MashupPlatform.prefs.get('useclustering') ?
@@ -526,7 +548,7 @@
                     unselect.call(this, this.selected_feature);
                     update_selected_feature.call(this, null);
                 } else {
-                    var popup_menu = new StyledElements.PopupMenu();
+                    const popup_menu = new StyledElements.PopupMenu();
                     features.forEach((feature) => {
                         popup_menu.append(new StyledElements.MenuItem(feature.get('title') || feature.getId(), null, feature));
                     });
@@ -546,7 +568,7 @@
                 return;
             }
 
-            var feature = features[0];
+            const feature = features[0];
 
             if (feature != null && feature !== this.selected_feature) {
                 this.select_feature(feature);
@@ -567,8 +589,8 @@
                 }
                 return;
             }
-            var pixel = this.map.getEventPixel(event.originalEvent);
-            var hit = this.map.hasFeatureAtPixel(pixel);
+            const pixel = this.map.getEventPixel(event.originalEvent);
+            const hit = this.map.hasFeatureAtPixel(pixel);
             this.map.getTarget().style.cursor = hit ? 'pointer' : '';
         });
 
@@ -607,7 +629,7 @@
     };
 
     Widget.prototype.registerPoI = function registerPoI(poi_info) {
-        var iconFeature, style, geometry, marker, minzoom, maxzoom;
+        let iconFeature, style, geometry, marker;
 
         if ('location' in poi_info) {
             geometry = this.geojsonparser.readGeometry(poi_info.location).transform('EPSG:4326', 'EPSG:3857');
@@ -630,8 +652,8 @@
         }
 
         iconFeature = this.vector_source.getFeatureById(poi_info.id);
-        minzoom = poi_info.minzoom != null ? this.map.getView().getResolutionForZoom(poi_info.minzoom) : null;
-        maxzoom = poi_info.maxzoom != null ? this.map.getView().getResolutionForZoom(poi_info.maxzoom) : null;
+        const minzoom = poi_info.minzoom != null ? this.map.getView().getResolutionForZoom(poi_info.minzoom) : null;
+        const maxzoom = poi_info.maxzoom != null ? this.map.getView().getResolutionForZoom(poi_info.maxzoom) : null;
         if (iconFeature == null) {
             iconFeature = new ol.Feature({
                 geometry: geometry,
@@ -684,7 +706,7 @@
             if (this.popover != null) {
                 this.popover.hide();
             }
-            let new_selected_feature = this.vector_source.getFeatureById(this.selected_feature.getId());
+            const new_selected_feature = this.vector_source.getFeatureById(this.selected_feature.getId());
             if (new_selected_feature != null) {
                 this.select_feature(new_selected_feature);
             }
@@ -703,31 +725,31 @@
             return update_selected_feature.call(this, null);
         }
 
-        let geometry = new ol.geom.GeometryCollection(poi_info.map((poi) => {
-            var feature = this.vector_source.getFeatureById(poi.id);
+        const geometry = new ol.geom.GeometryCollection(poi_info.map((poi) => {
+            const feature = this.vector_source.getFeatureById(poi.id);
             return feature.getGeometry();
         }));
 
         // Update map view
-        let zoom = parseInt(MashupPlatform.prefs.get('poiZoom'), 10);
-        let currentZoom = this.map.getView().getZoom();
+        const zoom = parseInt(MashupPlatform.prefs.get('poiZoom'), 10);
+        const currentZoom = this.map.getView().getZoom();
         if (currentZoom < zoom) {
             this.map.getView().fit(geometry.getExtent(), {
                 maxZoom: zoom
             });
         } else {
-            let view_extent = this.map.getView().calculateExtent(this.map.getSize());
-            let geometry_extent = geometry.getExtent();
+            const view_extent = this.map.getView().calculateExtent(this.map.getSize());
+            const geometry_extent = geometry.getExtent();
             if (!ol.extent.containsExtent(view_extent, geometry_extent)) {
-                let view_size = ol.extent.getSize(view_extent);
-                let geometry_size = ol.extent.getSize(geometry_extent);
+                const view_size = ol.extent.getSize(view_extent);
+                const geometry_size = ol.extent.getSize(geometry_extent);
 
                 if (view_size[0] < geometry_size[0] && view_size[1] < geometry_size[1]) {
                     this.map.getView().fit(geometry.getExtent(), {
                         maxZoom: zoom
                     });
                 } else {
-                    let center = ol.extent.getCenter(geometry_extent);
+                    const center = ol.extent.getCenter(geometry_extent);
                     this.map.getView().setCenter(center);
                 }
             }
@@ -738,7 +760,7 @@
         }
     };
 
-    var format_builders = {
+    const format_builders = {
         "EsriJSON": ol.format.EsriJSON,
         "GeoJSON": ol.format.GeoJSON,
         "GML": ol.format.GML,
@@ -756,7 +778,7 @@
         "WMSGetFeatureInfo": ol.format.WMSGetFeatureInfo,
     }
 
-    var addFormat = function addFormat(layer_info) {
+    const addFormat = function addFormat(layer_info) {
         if (layer_info.format == null) {
             throw new MashupPlatform.wiring.EndpointValueError("format option is required");
         }
@@ -775,7 +797,7 @@
     }
 
     Widget.prototype.addLayer = function addLayer(layer_info) {
-        var builder = layer_builders[layer_info.type];
+        const builder = layer_builders[layer_info.type];
         if (builder == null) {
             throw new MashupPlatform.wiring.EndpointValueError("Invalid layer type: " + layer_info.type);
         }
@@ -783,21 +805,21 @@
         // Remove any layer with the same id
         this.removeLayer(layer_info);
 
-        var layer = builder.call(this, layer_info);
+        const layer = builder.call(this, layer_info);
         layer._layer_type = layer_info.type;
-        var layers = this.map.getLayers();
+        const layers = this.map.getLayers();
         layers.insertAt(layers.getLength() - 1, layer);
 
         this.layers[layer_info.id] = layer;
     };
 
     Widget.prototype.updateLayer = function updateLayer(layer_info) {
-        var layer = this.layers[layer_info.id];
+        const layer = this.layers[layer_info.id];
         if (layer == null) {
             throw new MashupPlatform.wiring.EndpointValueError("Layer not found: " + layer_info.id);
         }
 
-        var updater = layer_updaters[layer._layer_type];
+        const updater = layer_updaters[layer._layer_type];
         if (updater != null) {
             updater(layer, layer_info);
         }
@@ -812,14 +834,14 @@
         }
     };
 
-    var build_compatible_url = function build_compatible_url(url, required) {
+    const build_compatible_url = function build_compatible_url(url, required) {
         if (required != true && url == null) {
             return undefined;
         } else if (required == true && url == null) {
             throw new MashupPlatform.wiring.EndpointValueError("Missing layer url option");
         }
 
-        var parsed_url = new URL(url);
+        const parsed_url = new URL(url);
         /* istanbul ignore if */
         if (document.location.protocol === 'https:' && parsed_url.protocol !== 'https:') {
             return MashupPlatform.http.buildProxyURL(parsed_url);
@@ -845,7 +867,7 @@
     };
 
     const addImageWMSLayer = function addImageWMSLayer(layer_info) {
-        var params = layer_info.params;
+        let params = layer_info.params;
 
         if (params == null) {
             params = {
@@ -871,7 +893,7 @@
         return build_layer.call(this, "Image", options, layer_info);
     };
 
-    var addImageArcGISRestLayer = function addImageArcGISRestLayer(layer_info) {
+    const addImageArcGISRestLayer = function addImageArcGISRestLayer(layer_info) {
         const options = {
             source: new ol.source.ImageArcGISRest({
                 url: build_compatible_url(layer_info.url, true),
@@ -886,7 +908,7 @@
         return build_layer.call(this, "Image", options, layer_info);
     };
 
-    var addImageMapGuideLayer = function addImageMapGuideLayer(layer_info) {
+    const addImageMapGuideLayer = function addImageMapGuideLayer(layer_info) {
         const options = {
             source: new ol.source.ImageMapGuide({
                 url: build_compatible_url(layer_info.url, true),
@@ -901,7 +923,7 @@
         return build_layer.call(this, "Image", options, layer_info);
     };
 
-    var addImageStaticLayer = function addImageStaticLayer(layer_info) {
+    const addImageStaticLayer = function addImageStaticLayer(layer_info) {
         const options = {
             source: new ol.source.ImageStatic({
                 url: build_compatible_url(layer_info.url, true),
@@ -915,7 +937,7 @@
         return build_layer.call(this, "Image", options, layer_info);
     };
 
-    var addVectorLayer = function addVectorLayer(layer_info) {
+    const addVectorLayer = function addVectorLayer(layer_info) {
         const options = {
             source: new ol.source.Vector({
                 crossOrigin: layer_info.crossOrigin,
@@ -937,7 +959,7 @@
         return build_layer.call(this, "Vector", options, layer_info);
     };
 
-    var addVectorTileLayer = function addVectorTileLayer(layer_info) {
+    const addVectorTileLayer = function addVectorTileLayer(layer_info) {
         const options = {
             source: new ol.source.VectorTile({
                 cacheSize: layer_info.cacheSize,
@@ -956,7 +978,7 @@
         return build_layer.call(this, "Tile", options, layer_info);
     };
 
-    var addOSMLayer = function addOSMLayer(layer_info) {
+    const addOSMLayer = function addOSMLayer(layer_info) {
         const options = {
             opacity: layer_info.opacity,
             source: new ol.source.OSM({
@@ -972,8 +994,8 @@
         return build_layer.call(this, "Tile", options, layer_info);
     };
 
-    var addTileWMSLayer = function addTileWMSLayer(layer_info) {
-        var params = layer_info.params;
+    const addTileWMSLayer = function addTileWMSLayer(layer_info) {
+        let params = layer_info.params;
 
         if (params == null) {
             params = {
@@ -999,7 +1021,7 @@
         return build_layer.call(this, "Tile", options, layer_info);
     };
 
-    var addTileJSONLayer = function addTileJSONLayer(layer_info) {
+    const addTileJSONLayer = function addTileJSONLayer(layer_info) {
         const options = {
             source: new ol.source.TileJSON({
                 cacheSize: layer_info.cacheSize,
@@ -1015,7 +1037,7 @@
         return build_layer.call(this, "Tile", options, layer_info);
     };
 
-    var addTileUTFGridLayer = function addTileUTFGridLayer(layer_info) {
+    const addTileUTFGridLayer = function addTileUTFGridLayer(layer_info) {
         const options = {
             source: new ol.source.UTFGrid({
                 jsonp: layer_info.jsonp,
@@ -1028,7 +1050,7 @@
         return build_layer.call(this, "Tile", options, layer_info);
     };
 
-    var addXYZLayer = function addXYZLayer(layer_info) {
+    const addXYZLayer = function addXYZLayer(layer_info) {
         const options = {
             preload: layer_info.preload,
             source: new ol.source.XYZ({
@@ -1047,7 +1069,7 @@
         return build_layer.call(this, "Tile", options, layer_info);
     };
 
-    var addStamenLayer = function addStamenLayer(layer_info) {
+    const addStamenLayer = function addStamenLayer(layer_info) {
         const options = {
             source: new ol.source.Stamen({
                 layer: layer_info.layer,
@@ -1078,7 +1100,7 @@
         return build_layer.call(this, "Tile", options, layer_info);
     };
 
-    var addCartoDBLayer = function addCartoDBLayer(layer_info) {
+    const addCartoDBLayer = function addCartoDBLayer(layer_info) {
         const options = {
             source: new ol.source.CartoDB({
                 account: layer_info.account,
@@ -1098,7 +1120,7 @@
         return build_layer.call(this, "Tile", options, layer_info);
     };
 
-    var addWMTSLayer = function addWMTSLayer(layer_info) {
+    const addWMTSLayer = function addWMTSLayer(layer_info) {
         const options = {
             source: new ol.source.WMTS({
                 cacheSize: layer_info.cacheSize,
@@ -1121,7 +1143,7 @@
         return build_layer.call(this, "Tile", options, layer_info);
     };
 
-    var addZoomifyLayer = function addZoomifyLayer(layer_info) {
+    const addZoomifyLayer = function addZoomifyLayer(layer_info) {
         const options = {
             source: new ol.source.Zoomify({
                 cacheSize: layer_info.cacheSize,
@@ -1137,7 +1159,7 @@
         return build_layer.call(this, "Tile", options, layer_info);
     };
 
-    var updateURL = function updateURL(layer, layer_info) {
+    const updateURL = function updateURL(layer, layer_info) {
         const source = layer.getSource();
         if ("url" in layer_info) {
             source.setUrl(layer_info.url);
@@ -1145,7 +1167,7 @@
     };
 
     Widget.prototype.removeLayer = function removeLayer(layer_info) {
-        var layer_id = layer_info.id;
+        const layer_id = layer_info.id;
         if (layer_id in this.layers) {
             this.map.removeLayer(this.layers[layer_id]);
             delete this.layers[layer_id];
@@ -1167,40 +1189,19 @@
         this.map.getLayers().insertAt(1, enabled ? this.cluster_layer : this.vector_layer);
     };
 
-    var update_selected_feature = function update_selected_feature(feature) {
-        if (this.selected_feature != feature) {
-            this.selected_feature = feature;
-            if (this.popover != null) {
-                this.popover.hide();
-                this.popover = null;
-            }
-            MashupPlatform.widget.outputs.poiOutput.pushEvent(feature != null ? feature.get('data') : null);
-        }
-    };
-
-    var unselect = function unselect(feature) {
-        if (feature == null) {
-            return;
-        }
-
-        var poi_info = feature.get('data');
-        var style = parse_marker_definition.call(this, poi_info.icon, poi_info.style);
-        feature.setStyle(style);
-    };
-
     Widget.prototype.select_feature = function select_feature(feature) {
 
         unselect.call(this, this.selected_feature);
 
-        var poi_info = feature.get('data');
-        var style = parse_marker_definition.call(this, poi_info.iconHighlighted || poi_info.icon, poi_info.styleHighlighted || poi_info.style);
+        const poi_info = feature.get('data');
+        const style = parse_marker_definition.call(this, poi_info.iconHighlighted || poi_info.icon, poi_info.styleHighlighted || poi_info.style);
         feature.setStyle(style);
 
         update_selected_feature.call(this, feature);
 
         if (feature.get('content') != null) {
             // The feature has content to be used on a popover
-            let popover = this.popover = new StyledElements.Popover({
+            const popover = this.popover = new StyledElements.Popover({
                 placement: ['top', 'bottom', 'right', 'left'],
                 title: feature.get('title'),
                 content: new StyledElements.Fragment(feature.get('content')),
