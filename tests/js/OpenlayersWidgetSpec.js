@@ -619,6 +619,64 @@
                 });
             });
 
+            describe("moveend", () => {
+
+                it("wirecloud 1.3 and below", () => {
+                    widget.init();
+                    widget.popover = {
+                        repaint: jasmine.createSpy("repaint")
+                    };
+
+                    widget.map.dispatchEvent({
+                        type: "moveend"
+                    });
+
+                    expect(widget.popover.repaint).toHaveBeenCalledWith();
+                });
+
+                it("wirecloud 1.4+", () => {
+                    widget.init();
+                    widget.popover = {
+                        enablePointerEvents: jasmine.createSpy("enablePointerEvents"),
+                        repaint: jasmine.createSpy("repaint")
+                    };
+
+                    widget.map.dispatchEvent({
+                        type: "moveend"
+                    });
+
+                    expect(widget.popover.enablePointerEvents).toHaveBeenCalledWith();
+                    expect(widget.popover.repaint).toHaveBeenCalledWith();
+                });
+
+            });
+
+            describe("movestart", () => {
+
+                it("wirecloud 1.3 and below", () => {
+                    widget.init();
+                    widget.popover = {};
+
+                    widget.map.dispatchEvent({
+                        type: "movestart"
+                    });
+                });
+
+                it("wirecloud 1.4+", () => {
+                    widget.init();
+                    widget.popover = {
+                        disablePointerEvents: jasmine.createSpy("disablePointerEvents")
+                    };
+
+                    widget.map.dispatchEvent({
+                        type: "movestart"
+                    });
+
+                    expect(widget.popover.disablePointerEvents).toHaveBeenCalledWith();
+                });
+
+            });
+
             describe("pointermove", () => {
 
                 it("outside any feature", () => {
@@ -1969,6 +2027,7 @@
         });
 
         describe("build marker with Font Awesome icon", () => {
+
             it("build default marker", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
@@ -1990,6 +2049,7 @@
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
             });
+
             it("build marker with icon form", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
@@ -2013,6 +2073,7 @@
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
             });
+
             it("build red marker with icon form", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
@@ -2037,6 +2098,7 @@
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
             });
+
             it("build marker with circle form", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
@@ -2060,6 +2122,7 @@
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
             });
+
             it("build marker with box form", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
@@ -2083,6 +2146,7 @@
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
             });
+
             it("should use icon cache", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
@@ -2097,7 +2161,7 @@
                         coordinates: [0, 0]
                     },
                     icon: {
-                        'fontawesome': 'fa-star'
+                        fontawesome: 'fa-star'
                     }
                 }));
                 widget.registerPoI(deepFreeze({
@@ -2108,12 +2172,13 @@
                         coordinates: [0, 0]
                     },
                     icon: {
-                        'fontawesome': 'fa-star'
+                        fontawesome: 'fa-star'
                     }
                 }));
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(2);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
             });
+
             it("fallback when glyph not found", () => {
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
