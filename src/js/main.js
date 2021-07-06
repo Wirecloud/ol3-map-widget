@@ -21,7 +21,7 @@
 
     "use strict";
 
-    var parseInputEndpointData = function parseInputEndpointData(data) {
+    const parseInputEndpointData = function parseInputEndpointData(data) {
         if (typeof data === "string") {
             try {
                 data = JSON.parse(data);
@@ -34,7 +34,7 @@
         return data;
     };
 
-    var widget = new Widget('body', '#incoming-modal');
+    const widget = new Widget('body', '#incoming-modal');
     widget.init();
 
     MashupPlatform.prefs.registerCallback((new_values) => {

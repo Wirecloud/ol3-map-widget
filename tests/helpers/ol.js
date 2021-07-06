@@ -23,7 +23,7 @@
             Style: function () {}
         },
         Map: jasmine.createSpy('Map').and.callFake(function () {
-            var layers = {
+            const layers = {
                 _layers: [],
                 insertAt: jasmine.createSpy('insertAt').and.callFake(function (index, layer) {
                     this._layers.splice(index, 0, layer);

@@ -3,7 +3,7 @@
  *   Copyright (c) 2017-2021 Future Internet Consulting and Development Solutions S.L.
  */
 
-/* global MashupPlatform, MockMP, ol, Widget */
+/* global MashupPlatform, MockMP, ol, StyledElements, Widget */
 
 (function () {
 
@@ -14,9 +14,9 @@
         '<div id="setcenter-button" class="se-btn"/><div id="setzoom-button" class="se-btn"/><div id="setcenterzoom-button" class="se-btn"/>';
 
     const clearDocument = function clearDocument() {
-        var elements = document.querySelectorAll('body > *:not(.jasmine_html-reporter)');
+        const elements = document.querySelectorAll('body > *:not(.jasmine_html-reporter)');
 
-        for (var i = 0; i < elements.length; i++) {
+        for (let i = 0; i < elements.length; i++) {
             elements[i].remove();
         }
     };
@@ -24,11 +24,11 @@
     const deepFreeze = function deepFreeze(obj) {
 
         // Retrieve the property names defined on obj
-        var propNames = Object.getOwnPropertyNames(obj);
+        const propNames = Object.getOwnPropertyNames(obj);
 
         // Freeze properties before freezing self
-        propNames.forEach(function(name) {
-            var prop = obj[name];
+        propNames.forEach(function (name) {
+            const prop = obj[name];
 
             // Freeze prop if it is an object
             if (typeof prop == 'object' && prop !== null) {
@@ -53,7 +53,7 @@
 
     describe("ol3-map", () => {
 
-        var widget;
+        let widget;
 
         beforeAll(() => {
             window.MashupPlatform = new MockMP({
@@ -148,7 +148,7 @@
 
                     widget.init();
 
-                    let layers_button = document.getElementById('button');
+                    const layers_button = document.getElementById('button');
                     expect(layers_button.className).toBe('se-btn fade');
                 });
 
@@ -157,29 +157,29 @@
 
                     widget.init();
 
-                    let layers_button = document.getElementById('button');
+                    const layers_button = document.getElementById('button');
                     expect(layers_button.className).toBe('se-btn fade in');
                 });
 
                 it("widget ref (click)", () => {
-                    let ref = "CoNWeT/layer-selector/0.4";
+                    const ref = "CoNWeT/layer-selector/0.4";
                     MashupPlatform.prefs.set("layerswidget", ref);
                     widget.init();
                     createAddWidgetMock();
 
-                    let layers_button = document.getElementById('button');
+                    const layers_button = document.getElementById('button');
                     layers_button.click();
                     expect(MashupPlatform.mashup.addWidget).toHaveBeenCalledWith(ref, jasmine.any(Object));
                     expect(MashupPlatform.mashup.addWidget().outputs.layerInfoOutput.connect).toHaveBeenCalledWith(MashupPlatform.widget.inputs.layerInfo);
                 });
 
                 it("widget ref (creation is cached)", () => {
-                    let ref = "CoNWeT/layer-selector/0.4";
+                    const ref = "CoNWeT/layer-selector/0.4";
                     MashupPlatform.prefs.set("layerswidget", ref);
                     widget.init();
                     createAddWidgetMock();
 
-                    let layers_button = document.getElementById('button');
+                    const layers_button = document.getElementById('button');
                     layers_button.click();
                     MashupPlatform.mashup.addWidget.calls.reset();
                     layers_button.click();
@@ -187,25 +187,25 @@
                 });
 
                 it("widget ref (listens close events)", () => {
-                    let ref = "CoNWeT/layer-selector/0.4";
+                    const ref = "CoNWeT/layer-selector/0.4";
                     MashupPlatform.prefs.set("layerswidget", ref);
                     widget.init();
                     createAddWidgetMock();
 
-                    let layers_button = document.getElementById('button');
+                    const layers_button = document.getElementById('button');
                     layers_button.click();
                     expect(MashupPlatform.mashup.addWidget().addEventListener).toHaveBeenCalledWith("remove", jasmine.any(Function));
                     MashupPlatform.mashup.addWidget().addEventListener.calls.argsFor(0)[1]();
                 });
 
                 it("widget ref (creation after close)", () => {
-                    let ref = "CoNWeT/layer-selector/0.4";
+                    const ref = "CoNWeT/layer-selector/0.4";
                     MashupPlatform.prefs.set("layerswidget", ref);
                     widget.init();
                     createAddWidgetMock();
 
                     // Open layers widget
-                    let layers_button = document.getElementById('button');
+                    const layers_button = document.getElementById('button');
                     layers_button.click();
                     // Close it
                     MashupPlatform.mashup.addWidget().addEventListener.calls.argsFor(0)[1]();
@@ -330,8 +330,8 @@
             describe("click", () => {
 
                 it("on a not selected feature", () => {
-                    let pixel_mock = jasmine.createSpy('pixel');
-                    let feature_mock = new ol.Feature();
+                    const pixel_mock = jasmine.createSpy('pixel');
+                    const feature_mock = new ol.Feature();
                     feature_mock.set('selectable', true);
                     widget.init();
                     spyOn(widget, "select_feature");
@@ -349,12 +349,12 @@
                 });
 
                 it("on a not selected feature (through selection menu)", () => {
-                    let pixel_mock = jasmine.createSpy('pixel');
-                    let feature1_mock = new ol.Feature();
+                    const pixel_mock = jasmine.createSpy('pixel');
+                    const feature1_mock = new ol.Feature();
                     feature1_mock.set('selectable', true);
-                    let feature2_mock = new ol.Feature();
+                    const feature2_mock = new ol.Feature();
                     feature2_mock.set('selectable', true);
-                    let feature3_mock = new ol.Feature();
+                    const feature3_mock = new ol.Feature();
                     feature3_mock.set('selectable', true);
                     widget.init();
                     spyOn(widget, "select_feature");
@@ -378,13 +378,13 @@
 
                 it("on a not selected feature (through selection menu of a cluster)", () => {
                     MashupPlatform.prefs.set("useclustering", true);
-                    let pixel_mock = jasmine.createSpy('pixel');
-                    let feature1_mock = new ol.Feature();
+                    const pixel_mock = jasmine.createSpy('pixel');
+                    const feature1_mock = new ol.Feature();
                     feature1_mock.set('selectable', true);
-                    let feature2_mock = new ol.Feature();
-                    let feature3_mock = new ol.Feature();
+                    const feature2_mock = new ol.Feature();
+                    const feature3_mock = new ol.Feature();
                     feature3_mock.set('selectable', true);
-                    let cluster_feature_mock = new ol.Feature();
+                    const cluster_feature_mock = new ol.Feature();
                     spyOn(cluster_feature_mock, "get").and.returnValue([feature1_mock, feature2_mock, feature3_mock]);
                     widget.init();
                     spyOn(widget, "select_feature");
@@ -407,8 +407,8 @@
                 });
 
                 it("on a not selectable feature", () => {
-                    let pixel_mock = jasmine.createSpy('pixel');
-                    let feature_mock = new ol.Feature();
+                    const pixel_mock = jasmine.createSpy('pixel');
+                    const feature_mock = new ol.Feature();
                     feature_mock.set('selectable', false);
                     widget.init();
                     spyOn(widget, "select_feature");
@@ -426,13 +426,13 @@
                 });
 
                 it("on a not selected feature (with a marker)", (done) => {
-                    let pixel_mock = jasmine.createSpy('pixel');
-                    let feature_mock = new ol.Feature();
+                    const pixel_mock = jasmine.createSpy('pixel');
+                    const feature_mock = new ol.Feature();
                     feature_mock.set('selectable', true);
                     feature_mock.set("content", "mycontent");
                     feature_mock.set("data", {});
                     feature_mock.setGeometry(new ol.geom.Point([0, 0]));
-                    let style_mock = new ol.style.Style();
+                    const style_mock = new ol.style.Style();
                     spyOn(feature_mock, "getStyle").and.callFake(() => {return () => {return style_mock};});
                     spyOn(style_mock, 'getImage').and.returnValue({
                         getScale: () => {return 0.5;},
@@ -461,8 +461,8 @@
                 });
 
                 it("on the selected feature", () => {
-                    let pixel_mock = jasmine.createSpy('pixel');
-                    let feature_mock = new ol.Feature();
+                    const pixel_mock = jasmine.createSpy('pixel');
+                    const feature_mock = new ol.Feature();
                     feature_mock.set("data", {});
                     feature_mock.set('selectable', true);
                     widget.init();
@@ -482,13 +482,13 @@
                 });
 
                 it("on the selected feature (through selection menu)", () => {
-                    let pixel_mock = jasmine.createSpy('pixel');
-                    let feature1_mock = new ol.Feature();
+                    const pixel_mock = jasmine.createSpy('pixel');
+                    const feature1_mock = new ol.Feature();
                     feature1_mock.set('selectable', true);
-                    let feature2_mock = new ol.Feature();
+                    const feature2_mock = new ol.Feature();
                     feature2_mock.set('selectable', true);
                     feature2_mock.set('data', {});
-                    let feature3_mock = new ol.Feature();
+                    const feature3_mock = new ol.Feature();
                     feature3_mock.set('selectable', true);
                     widget.init();
                     widget.selected_feature = feature2_mock;
@@ -509,10 +509,10 @@
                 });
 
                 it("on a not selected feature (but while there is a selected feature)", () => {
-                    let pixel_mock = jasmine.createSpy('pixel');
-                    let feature_mock1 = new ol.Feature();
+                    const pixel_mock = jasmine.createSpy('pixel');
+                    const feature_mock1 = new ol.Feature();
                     feature_mock1.set('selectable', true);
-                    let feature_mock2 = new ol.Feature();
+                    const feature_mock2 = new ol.Feature();
                     feature_mock2.set('selectable', true);
                     widget.init();
                     widget.selected_feature = feature_mock1;
@@ -536,7 +536,7 @@
                 });
 
                 it("outside any feature", () => {
-                    let pixel_mock = jasmine.createSpy('pixel');
+                    const pixel_mock = jasmine.createSpy('pixel');
                     widget.init();
                     spyOn(widget, "select_feature");
                     spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
@@ -554,8 +554,8 @@
                 });
 
                 it("outside any feature (but while there is a selected feature)", (done) => {
-                    let pixel_mock = jasmine.createSpy('pixel');
-                    let feature_mock = new ol.Feature();
+                    const pixel_mock = jasmine.createSpy('pixel');
+                    const feature_mock = new ol.Feature();
                     feature_mock.set('selectable', true);
                     feature_mock.set("content", "my content");
                     feature_mock.set("data", {});
@@ -595,8 +595,7 @@
                 });
 
                 it("outside the widget (but while there is a selected feature)", () => {
-                    let pixel_mock = jasmine.createSpy('pixel');
-                    let feature_mock = new ol.Feature();
+                    const feature_mock = new ol.Feature();
                     feature_mock.set('selectable', true);
                     feature_mock.setGeometry(new ol.geom.Point([0, 0]));
                     feature_mock.setStyle(() => {return new ol.style.Style()});
@@ -606,7 +605,7 @@
                     widget.init();
                     widget.select_feature(feature_mock);
                     MashupPlatform.widget.outputs.poiOutput.reset();
-                    let popover = widget.popover;
+                    const popover = widget.popover;
                     spyOn(popover, "on");
                     spyOn(widget, "select_feature");
 
@@ -838,7 +837,7 @@
                 }));
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
-                let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                const feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
                 // Widget should add a marker point
                 expect(feature.getGeometry().getType()).toBe("GeometryCollection");
             });
@@ -857,7 +856,7 @@
                 }));
                 expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
-                let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                const feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
                 // Widget should add a marker point
                 expect(feature.getGeometry().getType()).toBe("GeometryCollection");
             });
@@ -879,14 +878,14 @@
 
             it("supports updating PoIs", () => {
                 widget.init();
-                var feature_mock = new ol.Feature();
+                const feature_mock = new ol.Feature();
                 spyOn(feature_mock, 'set');
                 spyOn(feature_mock, 'setProperties');
                 spyOn(feature_mock, 'setStyle');
 
                 spyOn(widget.vector_source, 'addFeature');
                 spyOn(widget.vector_source, 'getFeatureById').and.returnValue(feature_mock);
-                let poi_info = deepFreeze({
+                const poi_info = deepFreeze({
                     id: '1',
                     data: {},
                     location: {
@@ -914,14 +913,14 @@
 
             it("supports updating selected PoIs", () => {
                 widget.init();
-                var feature_mock = new ol.Feature();
+                const feature_mock = new ol.Feature();
                 spyOn(feature_mock, 'set');
                 spyOn(feature_mock, 'setProperties');
                 spyOn(feature_mock, 'setStyle');
 
                 spyOn(widget.vector_source, 'addFeature');
                 spyOn(widget.vector_source, 'getFeatureById').and.returnValue(feature_mock);
-                let poi_info = deepFreeze({
+                const poi_info = deepFreeze({
                     id: '1',
                     data: {},
                     location: {
@@ -944,16 +943,16 @@
                 widget.registerPoI(poi_info);
 
                 expect(feature_mock.setStyle).toHaveBeenCalledTimes(3);
-                let style1 = feature_mock.setStyle.calls.argsFor(0)[0];
-                let style2 = feature_mock.setStyle.calls.argsFor(1)[0];
-                let style3 = feature_mock.setStyle.calls.argsFor(2)[0];
+                const style1 = feature_mock.setStyle.calls.argsFor(0)[0];
+                const style2 = feature_mock.setStyle.calls.argsFor(1)[0];
+                const style3 = feature_mock.setStyle.calls.argsFor(2)[0];
 
                 expect(style1).not.toBe(style2);
                 expect(style1).toBe(style3);
             });
 
             it("sends update events when updating the selected PoI", () => {
-                var feature_mock = new ol.Feature();
+                const feature_mock = new ol.Feature();
                 widget.init();
                 widget.selected_feature = feature_mock;
                 spyOn(feature_mock, 'set');
@@ -961,7 +960,7 @@
                 spyOn(feature_mock, 'setStyle');
                 spyOn(widget.vector_source, 'addFeature');
                 spyOn(widget.vector_source, 'getFeatureById').and.returnValue(feature_mock);
-                let poi_info = deepFreeze({
+                const poi_info = deepFreeze({
                     id: '1',
                     data: {},
                     location: {
@@ -993,8 +992,8 @@
                         }));
                         expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                         expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
-                        let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
-                        let fstyle = feature.getStyle()(feature);
+                        const feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                        const fstyle = feature.getStyle()(feature);
                         expect(fstyle.getStroke().getColor()).toEqual(expected.stroke.color);
                         expect(fstyle.getStroke().getWidth()).toEqual(expected.stroke.width);
                         expect(fstyle.getFill().getColor()).toEqual(expected.fill.color);
@@ -1040,8 +1039,8 @@
                         }));
                         expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                         expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
-                        let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
-                        let fimage = feature.getStyle()(feature).getImage();
+                        const feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                        const fimage = feature.getStyle()(feature).getImage();
                         // TODO anchor can only be tested if anchorXUnits and anchorYUnits are both set to pixels
                         if (expected.anchor != null) {
                             expect(fimage.getAnchor()).toEqual(expected.anchor);
@@ -1076,7 +1075,6 @@
 
                 it("Should support caching styles", () => {
                     const hash = "vendor:domain:id";
-                    const expected = {opacity: 0.75, src: "http://localhost:9876/images/icon.png", scale: 1};
                     const iconStyle = {
                         anchor: [40, 50],
                         anchorXUnits: 'pixels',
@@ -1108,8 +1106,8 @@
                         },
                         icon: iconStyle,
                     }));
-                    let feature1 = widget.vector_source.addFeature.calls.argsFor(0)[0];
-                    let feature2 = widget.vector_source.addFeature.calls.argsFor(1)[0];
+                    const feature1 = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                    const feature2 = widget.vector_source.addFeature.calls.argsFor(1)[0];
                     expect(feature1.getStyle()).toBe(feature2.getStyle());
                 });
 
@@ -1131,8 +1129,8 @@
                         }));
                         expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                         expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
-                        let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
-                        let fstyle = feature.getStyle()(feature, resolution);
+                        const feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                        const fstyle = feature.getStyle()(feature, resolution);
                         expect(fstyle).toEqual(displayed ? jasmine.any(ol.style.Style) : null);
                     };
                 };
@@ -1158,8 +1156,8 @@
                         }));
                         expect(widget.vector_source.addFeature).toHaveBeenCalledTimes(1);
                         expect(widget.vector_source.addFeature).toHaveBeenCalledWith(jasmine.any(ol.Feature));
-                        let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
-                        let fstyle = feature.getStyle()(feature, resolution);
+                        const feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                        const fstyle = feature.getStyle()(feature, resolution);
                         expect(fstyle).toEqual(displayed ? jasmine.any(ol.style.Style) : null);
                     };
                 };
@@ -1185,7 +1183,7 @@
             });
 
             it("should maintain current selection if it exists on the new status", () => {
-                let poi_info = deepFreeze({
+                const poi_info = deepFreeze({
                     id: '1',
                     data: {},
                     location: {
@@ -1194,13 +1192,13 @@
                     }
                 });
                 widget.init();
-                let initial_feature_mock = new ol.Feature();
+                const initial_feature_mock = new ol.Feature();
                 initial_feature_mock.setId("1");
                 widget.selected_feature = initial_feature_mock;
                 widget.popover = {
                     hide: jasmine.createSpy('hide')
                 };
-                let new_feature_mock = new ol.Feature();
+                const new_feature_mock = new ol.Feature();
                 spyOn(new_feature_mock, "get").and.returnValue(poi_info);
                 spyOn(widget, "registerPoI");
                 spyOn(widget, "select_feature");
@@ -1216,7 +1214,7 @@
             });
 
             it("should clean current selection if it does not exist on the new status", () => {
-                let poi_info = deepFreeze({
+                const poi_info = deepFreeze({
                     id: '1',
                     data: {},
                     location: {
@@ -1225,10 +1223,10 @@
                     }
                 });
                 widget.init();
-                let initial_feature_mock = new ol.Feature();
+                const initial_feature_mock = new ol.Feature();
                 initial_feature_mock.setId("5");
                 widget.selected_feature = initial_feature_mock;
-                let popover = widget.popover = {
+                const popover = widget.popover = {
                     hide: jasmine.createSpy('hide')
                 };
                 spyOn(widget, 'registerPoI');
@@ -1263,7 +1261,7 @@
                 spyOn(widget.map.getView(), 'getZoom').and.returnValue(11);
                 spyOn(ol.extent, 'containsExtent').and.returnValue(true);
                 // TODO
-                let poi_info = deepFreeze({
+                const poi_info = deepFreeze({
                     id: '1',
                     data: {
                         iconHighlighted: {
@@ -1278,7 +1276,7 @@
                     }
                 });
                 widget.registerPoI(poi_info);
-                let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                const feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
                 spyOn(feature, "setStyle");
 
                 widget.centerPoI([{id: '1'}]);
@@ -1293,7 +1291,7 @@
                 widget.init();
                 spyOn(widget.map.getView(), 'fit').and.callThrough();
                 // TODO
-                let poi_info = deepFreeze({
+                const poi_info = deepFreeze({
                     id: '1',
                     data: {
                         iconHighlighted: {
@@ -1323,7 +1321,7 @@
             it("should manage selection changes", (done) => {
                 widget.init();
                 spyOn(widget.map.getView(), 'fit').and.callThrough();
-                let poi_info1 = deepFreeze({
+                const poi_info1 = deepFreeze({
                     id: '1',
                     infoWindow: "Hello world!",
                     location: {
@@ -1333,7 +1331,7 @@
                 });
                 widget.registerPoI(poi_info1);
                 spyOn(widget.vector_source, 'addFeature').and.callThrough();
-                let poi_info2 = deepFreeze({
+                const poi_info2 = deepFreeze({
                     id: '2',
                     data: {
                         iconHighlighted: {
@@ -1348,7 +1346,7 @@
                     }
                 });
                 widget.registerPoI(poi_info2);
-                let feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                const feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
                 spyOn(widget.map, 'getPixelFromCoordinate').and.returnValue([0, 0]);
                 widget.centerPoI([{id: '1'}]);
                 widget.map.getView().fit.calls.reset();
@@ -1441,8 +1439,8 @@
 
         describe("addLayer(options)", () => {
 
-            var mock_layers = function mock_layers(widget) {
-                var layers_mock = {
+            const mock_layers = function mock_layers(widget) {
+                const layers_mock = {
                     getLength: () => {return 2;},
                     insertAt: jasmine.createSpy('insertAt')
                 };
@@ -1467,7 +1465,7 @@
                 // viewMaxZoom
                 // visible
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "ImageStatic",
@@ -1495,7 +1493,7 @@
 
             it("transform extents from EPSG:4326 to current map projection by default", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "ImageStatic",
@@ -1517,7 +1515,7 @@
 
             it("supports Image WMS layers", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "ImageWMS",
@@ -1534,7 +1532,7 @@
 
             it("supports Image WMS layers (provides a default params option)", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "ImageWMS",
@@ -1548,7 +1546,7 @@
 
             it("supports Image WMS layers (uses layer id as default LAYERS parameter)", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "ImageWMS",
@@ -1565,7 +1563,7 @@
 
             it("supports ImageArcGISRest layers", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "ImageArcGISRest",
@@ -1579,7 +1577,7 @@
 
             it("supports ImageMapGuide layers", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "ImageMapGuide",
@@ -1593,7 +1591,7 @@
 
             it("supports ImageStatic layers", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "ImageStatic",
@@ -1607,7 +1605,7 @@
 
             it("supports Vector layers", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "Vector",
@@ -1622,7 +1620,6 @@
 
             it("raises an EndpointValueError exception when trying to create a Vector layer without providing the format", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
 
                 expect(() => {
                     widget.addLayer({
@@ -1635,7 +1632,6 @@
 
             it("raises an EndpointValueError exception when trying to create a Vector layer without providing a layer url", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
 
                 expect(() => {
                     widget.addLayer({
@@ -1648,7 +1644,7 @@
 
             it("supports Vector layers (with format options)", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "Vector",
@@ -1666,7 +1662,7 @@
 
             it("supports Vector layers (with GML format options)", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "Vector",
@@ -1685,7 +1681,7 @@
 
             it("supports VectorTile layers", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "VectorTile",
@@ -1704,7 +1700,7 @@
 
             it("supports OSM layers", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "OSM",
@@ -1717,7 +1713,7 @@
 
             it("supports Tile WMS layers", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "TileWMS",
@@ -1736,7 +1732,7 @@
 
             it("supports Tile WMS layers (provides a default params option)", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "TileWMS",
@@ -1751,7 +1747,7 @@
 
             it("supports Tile WMS layers (uses layer id as default LAYERS parameter)", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "TileWMS",
@@ -1769,7 +1765,7 @@
 
             it("supports Tile JSON layers", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "TileJSON",
@@ -1784,7 +1780,7 @@
 
             it("supports Tile UTF Grid layers", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "TileUTFGrid",
@@ -1798,7 +1794,7 @@
 
             it("supports XYZ layers", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "XYZ",
@@ -1812,7 +1808,7 @@
 
             it("supports Stamen layers", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "Stamen",
@@ -1826,7 +1822,7 @@
 
             it("supports BingMaps layers", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "BingMaps",
@@ -1840,7 +1836,7 @@
 
             it("supports CartoDB layers", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "CartoDB",
@@ -1864,7 +1860,7 @@
 
             it("supports WMTS layers", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "WMTS",
@@ -1878,7 +1874,7 @@
 
             it("supports Zoomify layers", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
 
                 widget.addLayer({
                     type: "Zoomify",
@@ -1893,10 +1889,10 @@
 
             it("replaces layers with the same id", () => {
                 widget.init();
-                var layers_mock = mock_layers(widget);
+                const layers_mock = mock_layers(widget);
                 spyOn(widget.map, 'removeLayer');
-                let layer_mock = jasmine.createSpy('layer_mock');
-                widget.layers["LayerName"] = layer_mock;
+                const layer_mock = jasmine.createSpy('layer_mock');
+                widget.layers.LayerName = layer_mock;
 
                 widget.addLayer({
                     type: "Vector",
@@ -1932,8 +1928,8 @@
             it("removes existing layers", () => {
                 widget.init();
                 spyOn(widget.map, 'removeLayer');
-                let layer_mock = jasmine.createSpy('layer_mock');
-                widget.layers["LayerName"] = layer_mock;
+                const layer_mock = jasmine.createSpy('layer_mock');
+                widget.layers.LayerName = layer_mock;
 
                 widget.removeLayer({
                     id: "LayerName"
@@ -1964,9 +1960,8 @@
                     setVisible: jasmine.createSpy("setVisible"),
                     _layer_type: "BingMaps"
                 };
-                widget.layers["LayerName"] = layer_mock;
+                widget.layers.LayerName = layer_mock;
 
-                const newurl = "https://newserver.example.com";
                 widget.updateLayer({
                     id: "LayerName",
                     visible: true,
@@ -1986,7 +1981,7 @@
                     getSource: jasmine.createSpy("getSource").and.returnValue(source_mock),
                     _layer_type: "XYZ"
                 };
-                widget.layers["LayerName"] = layer_mock;
+                widget.layers.LayerName = layer_mock;
 
                 const newurl = "https://newserver.example.com";
                 widget.updateLayer({
@@ -2004,7 +1999,7 @@
                     getSource: jasmine.createSpy("getSource").and.returnValue(source_mock),
                     _layer_type: "XYZ"
                 };
-                widget.layers["LayerName"] = layer_mock;
+                widget.layers.LayerName = layer_mock;
 
                 widget.updateLayer({
                     id: "LayerName"
@@ -2028,7 +2023,7 @@
             it("switches current base layer", () => {
                 widget.init();
 
-                let initial_base_layer = widget.base_layer;
+                const initial_base_layer = widget.base_layer;
                 widget.setBaseLayer({
                     id: 'CARTODB_LIGHT'
                 });
@@ -2044,8 +2039,8 @@
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
                 spyOn(widget, 'get_styleSheets').and.returnValue([
-                  {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]},
-                  {cssRules: [{selectorText: '', style: {content: ''}}]}
+                    {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]},
+                    {cssRules: [{selectorText: '', style: {content: ''}}]}
                 ]);
                 widget.registerPoI(deepFreeze({
                     id: '1',
@@ -2066,7 +2061,7 @@
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
                 spyOn(widget, 'get_styleSheets').and.returnValue([
-                  {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]}
+                    {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]}
                 ]);
                 widget.registerPoI(deepFreeze({
                     id: '1',
@@ -2090,7 +2085,7 @@
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
                 spyOn(widget, 'get_styleSheets').and.returnValue([
-                  {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]}
+                    {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]}
                 ]);
                 widget.registerPoI(deepFreeze({
                     id: '1',
@@ -2115,7 +2110,7 @@
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
                 spyOn(widget, 'get_styleSheets').and.returnValue([
-                  {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]}
+                    {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]}
                 ]);
                 widget.registerPoI(deepFreeze({
                     id: '1',
@@ -2139,7 +2134,7 @@
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
                 spyOn(widget, 'get_styleSheets').and.returnValue([
-                  {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]}
+                    {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]}
                 ]);
                 widget.registerPoI(deepFreeze({
                     id: '1',
@@ -2163,7 +2158,7 @@
                 widget.init();
                 spyOn(widget.vector_source, 'addFeature');
                 spyOn(widget, 'get_styleSheets').and.returnValue([
-                  {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]}
+                    {cssRules: [{selectorText: '.fa-star::before', style: {content: '\uf005'}}]}
                 ]);
                 widget.registerPoI(deepFreeze({
                     id: '1',

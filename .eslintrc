@@ -115,6 +115,15 @@
     "curly": [
       2,
       "all"
+    ],
+    "prefer-const": [
+      "error"
+    ],
+    "no-var": [
+      "error"
+    ],
+    "no-const-assign": [
+      "error"
     ]
   }
 }
