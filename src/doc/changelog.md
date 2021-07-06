@@ -1,6 +1,12 @@
 ## v1.2.x (2021-xx-xx)
 
 - Add a feature for building a marker with Font Awesome icon
+- Use sticky popovers on WireCloud 1.4
+- Popover events are disabled while moving/zooming the map (when using sticky
+  events).
+- Repaint popovers when moving/zooming the map (when using sticky events).
+- Fix placement of popovers when icon anchor is different to `[0.5, 1]`
+
 
 ## v1.2.3 (2021-03-25)
 
