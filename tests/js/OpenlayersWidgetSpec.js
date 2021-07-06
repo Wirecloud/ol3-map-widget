@@ -653,6 +653,14 @@
 
             describe("movestart", () => {
 
+                it("without popover", () => {
+                    widget.init();
+
+                    widget.map.dispatchEvent({
+                        type: "movestart"
+                    });
+                });
+
                 it("wirecloud 1.3 and below", () => {
                     widget.init();
                     widget.popover = {
