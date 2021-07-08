@@ -97,7 +97,7 @@
     const update_selected_feature = function update_selected_feature(feature) {
         if (this.selected_feature != feature) {
             this.selected_feature = feature;
-            if (this.popover != null) {
+            if (feature == null && this.popover != null) {
                 this.popover.hide();
                 this.popover = null;
             }
@@ -690,6 +690,12 @@
         iconFeature.setStyle(style);
 
         if (this.selected_feature === iconFeature) {
+            if (this.popover != null) {
+                this.popover.update(
+                    iconFeature.get("title"),
+                    new StyledElements.Fragment(iconFeature.get("content"))
+                );
+            }
             MashupPlatform.widget.outputs.poiOutput.pushEvent(iconFeature.get('data'));
         }
     };
@@ -702,14 +708,27 @@
     Widget.prototype.replacePoIs = function replacePoIs(poi_info) {
         this.vector_source.clear();
         poi_info.forEach(this.registerPoI, this);
+
         if (this.selected_feature != null) {
-            if (this.popover != null) {
-                this.popover.hide();
-            }
             const new_selected_feature = this.vector_source.getFeatureById(this.selected_feature.getId());
             if (new_selected_feature != null) {
-                this.select_feature(new_selected_feature);
+                const poi_info = new_selected_feature.get('data');
+                const style = parse_marker_definition.call(this, poi_info.iconHighlighted || poi_info.icon, poi_info.styleHighlighted || poi_info.style);
+                new_selected_feature.setStyle(style);
             }
+
+            if (this.popover != null) {
+                if (new_selected_feature != null) {
+                    this.popover.update(
+                        new_selected_feature.get("title"),
+                        new StyledElements.Fragment(new_selected_feature.get("content"))
+                    );
+                } else {
+                    this.popover.hide();
+                    this.popover = null;
+                }
+            }
+            update_selected_feature.call(this, new_selected_feature);
         }
     };
 
@@ -1228,6 +1247,7 @@
 
                 const refpos = {
                     getBoundingClientRect: () => {
+                        const feature = this.selected_feature;
                         const marker_coordinates = ol.extent.getCenter(feature.getGeometry().getExtent());
                         const marker_position = this.map.getPixelFromCoordinate(marker_coordinates);
                         const marker_style = feature.getStyle()(feature);
