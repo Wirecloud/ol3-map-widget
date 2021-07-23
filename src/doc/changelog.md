@@ -7,6 +7,7 @@
 - Repaint popovers when moving/zooming the map (when using sticky events).
 - Fix placement of popovers when icon anchor is different to `[0.5, 1]`
 - Switch code to use let and const
+- Update popover contents when the selected PoI is updated
 
 
 ## v1.2.3 (2021-03-25)
