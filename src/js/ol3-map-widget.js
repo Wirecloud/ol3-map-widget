@@ -596,8 +596,7 @@
             } else if (this.selected_feature != null && this.selected_feature.get('content') == null) {
                 unselect.call(this, this.selected_feature);
                 update_selected_feature.call(this, null);
-            } else if (feature !== this.selected_feature && this.popover != null) {
-                this.popover.hide();
+            } else if (feature !== this.selected_feature) {
                 update_selected_feature.call(this, null);
             }
         }.bind(this));
