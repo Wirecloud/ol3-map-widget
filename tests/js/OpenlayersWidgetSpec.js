@@ -1013,6 +1013,44 @@
                 expect(widget.selected_feature).toBe(feature_mock);
             });
 
+            it("updates popovers when updating the selected PoI (WireCloud 1.3 and below)", () => {
+                const feature_mock = new ol.Feature();
+                widget.init();
+                widget.selected_feature = feature_mock;
+                const mock_popover = widget.popover = {
+                    options: {},
+                    hide: jasmine.createSpy("hide").and.callFake(() => mock_popover),
+                    show: jasmine.createSpy("show")
+                };
+                spyOn(feature_mock, 'set');
+                spyOn(feature_mock, 'setGeometry');
+                spyOn(feature_mock, 'setStyle');
+                spyOn(widget.vector_source, 'addFeature');
+                spyOn(widget.vector_source, 'getFeatureById').and.returnValue(feature_mock);
+                const poi_info = deepFreeze({
+                    id: '1',
+                    data: {},
+                    title: "testtitle",
+                    infoWindow: "testcontent",
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                spyOn(feature_mock, "get").and.callFake((attr) => {
+                    if (attr == "conent") {
+                        return poi_info.infoWindow;
+                    } else {
+                        return poi_info[attr];
+                    }
+                });
+                widget.registerPoI(poi_info);
+
+                expect(widget.popover.hide).toHaveBeenCalledTimes(2);
+                expect(widget.popover.show).toHaveBeenCalledTimes(1);
+                expect(widget.selected_feature).toBe(feature_mock);
+            });
+
             describe("handles the style option:", () => {
                 const test = function (style, expected) {
                     return () => {
@@ -1277,6 +1315,45 @@
                 expect(widget.vector_source.getFeatureById).toHaveBeenCalledWith("1");
                 expect(widget.popover).toBe(popover);
                 expect(popover.update).toHaveBeenCalledWith("test", jasmine.any(StyledElements.Fragment));
+                expect(widget.selected_feature).toBe(new_feature_mock);
+                expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledTimes(1);
+                expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info);
+            });
+
+            it("should maintain current selection if it exists on the new status (WireCloud 1.3 and below)", () => {
+                const poi_info = deepFreeze({
+                    id: '1',
+                    data: {},
+                    title: "test",
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                widget.init();
+                const initial_feature_mock = new ol.Feature();
+                initial_feature_mock.setId("1");
+                widget.selected_feature = initial_feature_mock;
+                const popover = widget.popover = {
+                    options: {},
+                    hide: jasmine.createSpy("hide").and.callFake(() => popover),
+                    show: jasmine.createSpy("show")
+                };
+                const new_feature_mock = new ol.Feature();
+                spyOn(new_feature_mock, "get").and.callFake((attr) => attr == "data" ? poi_info : poi_info[attr]);
+                spyOn(widget, "registerPoI");
+                spyOn(widget, "select_feature");
+                spyOn(widget.vector_source, 'clear');
+                spyOn(widget.vector_source, 'getFeatureById').and.returnValue(new_feature_mock);
+
+                widget.replacePoIs([poi_info]);
+
+                expect(widget.registerPoI).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.getFeatureById).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.getFeatureById).toHaveBeenCalledWith("1");
+                expect(widget.popover).toBe(popover);
+                expect(popover.hide).toHaveBeenCalledTimes(2);
+                expect(popover.show).toHaveBeenCalledTimes(1);
                 expect(widget.selected_feature).toBe(new_feature_mock);
                 expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledTimes(1);
                 expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info);

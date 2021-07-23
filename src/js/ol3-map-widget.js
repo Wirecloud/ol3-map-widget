@@ -397,6 +397,27 @@
     };
 
     Widget.prototype.init = function init() {
+        this.refpos = {
+            getBoundingClientRect: () => {
+                const feature = this.selected_feature;
+                const marker_coordinates = ol.extent.getCenter(feature.getGeometry().getExtent());
+                const marker_position = this.map.getPixelFromCoordinate(marker_coordinates);
+                const marker_style = feature.getStyle()(feature);
+                const marker_image = marker_style.getImage();
+                let marker_size;
+                if (marker_image != null && (marker_size = marker_image.getSize()) != null) {
+                    const marker_scale = marker_image.getScale();
+                    let marker_anchor = marker_image.getAnchor();
+                    marker_size = marker_size.map((value) => value * marker_scale);
+                    marker_anchor = marker_anchor.map((value) => value * marker_scale);
+                    const top = marker_position[1] - marker_anchor[1];
+                    const left = marker_position[0] - marker_anchor[0];
+                    return new DOMRect(left, top, marker_size[0], marker_size[1]);
+                } else {
+                    return new DOMRect(marker_position[0], marker_position[1], 0, 0);
+                }
+            }
+        };
 
         const layers_button = document.getElementById('button');
         layers_button.addEventListener('click', (event) => {
@@ -691,10 +712,22 @@
 
         if (this.selected_feature === iconFeature) {
             if (this.popover != null) {
-                this.popover.update(
-                    iconFeature.get("title"),
-                    new StyledElements.Fragment(iconFeature.get("content"))
-                );
+                if ("update" in this.popover) {
+                    // WireCloud 1.4+
+                    this.popover.update(
+                        iconFeature.get("title"),
+                        new StyledElements.Fragment(iconFeature.get("content"))
+                    );
+                } else {
+                    // Workaround for WireCloud 1.3 and below
+                    const popover = this.popover;
+                    this.popover = null;
+                    popover.hide().hide();
+                    this.popover = popover;
+                    popover.options.title = iconFeature.get("title");
+                    popover.options.content = new StyledElements.Fragment(iconFeature.get("content"));
+                    popover.show(this.refpos);
+                }
             }
             MashupPlatform.widget.outputs.poiOutput.pushEvent(iconFeature.get('data'));
         }
@@ -719,10 +752,22 @@
 
             if (this.popover != null) {
                 if (new_selected_feature != null) {
-                    this.popover.update(
-                        new_selected_feature.get("title"),
-                        new StyledElements.Fragment(new_selected_feature.get("content"))
-                    );
+                    if ("update" in this.popover) {
+                        // WireCloud 1.4+
+                        this.popover.update(
+                            new_selected_feature.get("title"),
+                            new StyledElements.Fragment(new_selected_feature.get("content"))
+                        );
+                    } else {
+                        // Workaround for WireCloud 1.3 and below
+                        const popover = this.popover;
+                        this.popover = null;
+                        popover.hide().hide();
+                        this.popover = popover;
+                        popover.options.title = new_selected_feature.get("title");
+                        popover.options.content = new StyledElements.Fragment(new_selected_feature.get("content"));
+                        popover.show(this.refpos);
+                    }
                 } else {
                     this.popover.hide();
                     this.popover = null;
@@ -1245,30 +1290,8 @@
                     return;
                 }
 
-                const refpos = {
-                    getBoundingClientRect: () => {
-                        const feature = this.selected_feature;
-                        const marker_coordinates = ol.extent.getCenter(feature.getGeometry().getExtent());
-                        const marker_position = this.map.getPixelFromCoordinate(marker_coordinates);
-                        const marker_style = feature.getStyle()(feature);
-                        const marker_image = marker_style.getImage();
-                        let marker_size;
-                        if (marker_image != null && (marker_size = marker_image.getSize()) != null) {
-                            const marker_scale = marker_image.getScale();
-                            let marker_anchor = marker_image.getAnchor();
-                            marker_size = marker_size.map((value) => value * marker_scale);
-                            marker_anchor = marker_anchor.map((value) => value * marker_scale);
-                            const top = marker_position[1] - marker_anchor[1];
-                            const left = marker_position[0] - marker_anchor[0];
-                            return new DOMRect(left, top, marker_size[0], marker_size[1]);
-                        } else {
-                            return new DOMRect(marker_position[0], marker_position[1], 0, 0);
-                        }
-                    }
-                };
-
                 update_selected_feature.call(this, feature);
-                this.popover.show(refpos);
+                this.popover.show(this.refpos);
             }, 100);
         }
     };
