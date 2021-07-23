@@ -972,7 +972,82 @@
                 MashupPlatform.widget.outputs.poiOutput.reset();
                 widget.registerPoI(poi_info);
 
+                expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledTimes(1);
                 expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info);
+                expect(widget.selected_feature).toBe(feature_mock);
+            });
+
+            it("updates popovers when updating the selected PoI", () => {
+                const feature_mock = new ol.Feature();
+                widget.init();
+                widget.selected_feature = feature_mock;
+                widget.popover = {
+                    update: jasmine.createSpy("update")
+                };
+                spyOn(feature_mock, 'set');
+                spyOn(feature_mock, 'setGeometry');
+                spyOn(feature_mock, 'setStyle');
+                spyOn(widget.vector_source, 'addFeature');
+                spyOn(widget.vector_source, 'getFeatureById').and.returnValue(feature_mock);
+                const poi_info = deepFreeze({
+                    id: '1',
+                    data: {},
+                    title: "testtitle",
+                    infoWindow: "testcontent",
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                spyOn(feature_mock, "get").and.callFake((attr) => {
+                    if (attr == "conent") {
+                        return poi_info.infoWindow;
+                    } else {
+                        return poi_info[attr];
+                    }
+                });
+                widget.registerPoI(poi_info);
+
+                expect(widget.popover.update).toHaveBeenCalledTimes(1);
+                expect(widget.popover.update).toHaveBeenCalledWith(poi_info.title, jasmine.any(StyledElements.Fragment));
+                expect(widget.selected_feature).toBe(feature_mock);
+            });
+
+            it("updates popovers when updating the selected PoI (WireCloud 1.3 and below)", () => {
+                const feature_mock = new ol.Feature();
+                widget.init();
+                widget.selected_feature = feature_mock;
+                const mock_popover = widget.popover = {
+                    options: {},
+                    hide: jasmine.createSpy("hide").and.callFake(() => mock_popover),
+                    show: jasmine.createSpy("show")
+                };
+                spyOn(feature_mock, 'set');
+                spyOn(feature_mock, 'setGeometry');
+                spyOn(feature_mock, 'setStyle');
+                spyOn(widget.vector_source, 'addFeature');
+                spyOn(widget.vector_source, 'getFeatureById').and.returnValue(feature_mock);
+                const poi_info = deepFreeze({
+                    id: '1',
+                    data: {},
+                    title: "testtitle",
+                    infoWindow: "testcontent",
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                spyOn(feature_mock, "get").and.callFake((attr) => {
+                    if (attr == "conent") {
+                        return poi_info.infoWindow;
+                    } else {
+                        return poi_info[attr];
+                    }
+                });
+                widget.registerPoI(poi_info);
+
+                expect(widget.popover.hide).toHaveBeenCalledTimes(2);
+                expect(widget.popover.show).toHaveBeenCalledTimes(1);
                 expect(widget.selected_feature).toBe(feature_mock);
             });
 
@@ -1180,12 +1255,39 @@
 
                 expect(widget.registerPoI).not.toHaveBeenCalled();
                 expect(widget.selected_feature).toBe(null);
+                expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).not.toHaveBeenCalled();
+            });
+
+            it("supports cleaning current PoIs (having a selected poi)", () => {
+                widget.init();
+                const initial_feature_mock = new ol.Feature();
+                initial_feature_mock.setId("1");
+                widget.selected_feature = initial_feature_mock;
+                const popover = widget.popover = {
+                    update: jasmine.createSpy("update"),
+                    hide: jasmine.createSpy("hide")
+                };
+                spyOn(widget, "registerPoI");
+                spyOn(widget, "select_feature");
+                spyOn(widget.vector_source, "clear");
+
+                widget.replacePoIs([]);
+
+                expect(widget.registerPoI).not.toHaveBeenCalled();
+                expect(widget.select_feature).not.toHaveBeenCalled();
+                expect(popover.update).not.toHaveBeenCalled();
+                expect(popover.hide).toHaveBeenCalledWith();
+                expect(widget.popover).toBe(null);
+                expect(widget.selected_feature).toBe(null);
+                expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledTimes(1);
+                expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(null);
             });
 
             it("should maintain current selection if it exists on the new status", () => {
                 const poi_info = deepFreeze({
                     id: '1',
                     data: {},
+                    title: "test",
                     location: {
                         type: 'Point',
                         coordinates: [0, 0]
@@ -1195,11 +1297,12 @@
                 const initial_feature_mock = new ol.Feature();
                 initial_feature_mock.setId("1");
                 widget.selected_feature = initial_feature_mock;
-                widget.popover = {
-                    hide: jasmine.createSpy('hide')
+                const popover = widget.popover = {
+                    update: jasmine.createSpy("update"),
+                    hide: jasmine.createSpy("hide")
                 };
                 const new_feature_mock = new ol.Feature();
-                spyOn(new_feature_mock, "get").and.returnValue(poi_info);
+                spyOn(new_feature_mock, "get").and.callFake((attr) => attr == "data" ? poi_info : poi_info[attr]);
                 spyOn(widget, "registerPoI");
                 spyOn(widget, "select_feature");
                 spyOn(widget.vector_source, 'clear');
@@ -1210,7 +1313,50 @@
                 expect(widget.registerPoI).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.getFeatureById).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.getFeatureById).toHaveBeenCalledWith("1");
-                expect(widget.select_feature).toHaveBeenCalledWith(new_feature_mock);
+                expect(widget.popover).toBe(popover);
+                expect(popover.update).toHaveBeenCalledWith("test", jasmine.any(StyledElements.Fragment));
+                expect(widget.selected_feature).toBe(new_feature_mock);
+                expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledTimes(1);
+                expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info);
+            });
+
+            it("should maintain current selection if it exists on the new status (WireCloud 1.3 and below)", () => {
+                const poi_info = deepFreeze({
+                    id: '1',
+                    data: {},
+                    title: "test",
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                widget.init();
+                const initial_feature_mock = new ol.Feature();
+                initial_feature_mock.setId("1");
+                widget.selected_feature = initial_feature_mock;
+                const popover = widget.popover = {
+                    options: {},
+                    hide: jasmine.createSpy("hide").and.callFake(() => popover),
+                    show: jasmine.createSpy("show")
+                };
+                const new_feature_mock = new ol.Feature();
+                spyOn(new_feature_mock, "get").and.callFake((attr) => attr == "data" ? poi_info : poi_info[attr]);
+                spyOn(widget, "registerPoI");
+                spyOn(widget, "select_feature");
+                spyOn(widget.vector_source, 'clear');
+                spyOn(widget.vector_source, 'getFeatureById').and.returnValue(new_feature_mock);
+
+                widget.replacePoIs([poi_info]);
+
+                expect(widget.registerPoI).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.getFeatureById).toHaveBeenCalledTimes(1);
+                expect(widget.vector_source.getFeatureById).toHaveBeenCalledWith("1");
+                expect(widget.popover).toBe(popover);
+                expect(popover.hide).toHaveBeenCalledTimes(2);
+                expect(popover.show).toHaveBeenCalledTimes(1);
+                expect(widget.selected_feature).toBe(new_feature_mock);
+                expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledTimes(1);
+                expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info);
             });
 
             it("should clean current selection if it does not exist on the new status", () => {
@@ -1239,6 +1385,9 @@
                 expect(widget.vector_source.getFeatureById).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.getFeatureById).toHaveBeenCalledWith("5");
                 expect(popover.hide).toHaveBeenCalledTimes(1);
+                expect(widget.popover).toBe(null);
+                expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledTimes(1);
+                expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(null);
             });
 
         });
@@ -1360,7 +1509,7 @@
                         expect(widget.map.getView().fit).not.toHaveBeenCalled();
                         expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledTimes(1);
                         expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info2);
-                        expect(widget.popover).toBe(null);
+                        expect(widget.popover).not.toBe(null);
                         expect(widget.selected_feature).toBe(feature);
                         done();
                     });
