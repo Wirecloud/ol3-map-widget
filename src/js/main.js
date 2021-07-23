@@ -101,7 +101,11 @@
             poi_info = [poi_info];
         }
 
-        poi_info.forEach(widget.registerPoI, widget);
+        poi_info.forEach((poi) => {
+            if (poi != null && typeof poi === "object") {
+                widget.registerPoI(poi)
+            }
+        });
         widget.centerPoI(poi_info);
     });
 

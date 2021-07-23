@@ -98,8 +98,9 @@
         if (this.selected_feature != feature) {
             this.selected_feature = feature;
             if (feature == null && this.popover != null) {
-                this.popover.hide();
+                const popover = this.popover;
                 this.popover = null;
+                popover.hide();
             }
             MashupPlatform.widget.outputs.poiOutput.pushEvent(feature != null ? feature.get('data') : null);
         }
@@ -782,33 +783,35 @@
      * @param poi_info
      */
     Widget.prototype.centerPoI = function centerPoI(poi_info) {
-        if (poi_info.length === 0) {
+        const geometries = poi_info.map((poi) => {
+            const feature = this.vector_source.getFeatureById(typeof poi === "string" ? poi : poi.id);
+            return feature != null ? feature.getGeometry() : null;
+        }).filter((geometry) => geometry != null);
+
+        if (geometries.length === 0) {
             // Just empty current selection
             unselect.call(this, this.selected_feature);
             return update_selected_feature.call(this, null);
         }
 
-        const geometry = new ol.geom.GeometryCollection(poi_info.map((poi) => {
-            const feature = this.vector_source.getFeatureById(poi.id);
-            return feature.getGeometry();
-        }));
+        const geometryset = new ol.geom.GeometryCollection(geometries);
 
         // Update map view
         const zoom = parseInt(MashupPlatform.prefs.get('poiZoom'), 10);
         const currentZoom = this.map.getView().getZoom();
         if (currentZoom < zoom) {
-            this.map.getView().fit(geometry.getExtent(), {
+            this.map.getView().fit(geometryset.getExtent(), {
                 maxZoom: zoom
             });
         } else {
             const view_extent = this.map.getView().calculateExtent(this.map.getSize());
-            const geometry_extent = geometry.getExtent();
+            const geometry_extent = geometryset.getExtent();
             if (!ol.extent.containsExtent(view_extent, geometry_extent)) {
                 const view_size = ol.extent.getSize(view_extent);
                 const geometry_size = ol.extent.getSize(geometry_extent);
 
                 if (view_size[0] < geometry_size[0] && view_size[1] < geometry_size[1]) {
-                    this.map.getView().fit(geometry.getExtent(), {
+                    this.map.getView().fit(geometryset.getExtent(), {
                         maxZoom: zoom
                     });
                 } else {
@@ -819,7 +822,7 @@
         }
 
         if (poi_info.length == 1) {
-            this.select_feature(this.vector_source.getFeatureById(poi_info[0].id));
+            this.select_feature(this.vector_source.getFeatureById(typeof poi_info[0] === "string" ? poi_info[0] : poi_info[0].id));
         }
     };
 
@@ -1253,6 +1256,10 @@
     };
 
     Widget.prototype.select_feature = function select_feature(feature) {
+        if (this.selected_feature === feature) {
+            // Selection is not changing
+            return;
+        }
 
         unselect.call(this, this.selected_feature);
 
@@ -1262,7 +1269,7 @@
 
         update_selected_feature.call(this, feature);
 
-        if (feature.get('content') != null) {
+        if (this.popover == null && feature.get('content') != null) {
             // The feature has content to be used on a popover
             const popover = this.popover = new StyledElements.Popover({
                 placement: ['top', 'bottom', 'right', 'left'],
@@ -1292,6 +1299,10 @@
                 update_selected_feature.call(this, feature);
                 this.popover.show(this.refpos);
             }, 100);
+        } else if (this.popover != null && feature.get("content") == null) {
+            const popover = this.popover;
+            this.popover = null;
+            popover.hide().hide();
         }
     };
 

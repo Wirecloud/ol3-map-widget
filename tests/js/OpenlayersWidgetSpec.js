@@ -1509,6 +1509,88 @@
                         expect(widget.map.getView().fit).not.toHaveBeenCalled();
                         expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledTimes(1);
                         expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info2);
+                        expect(widget.popover).toBe(null);
+                        expect(widget.selected_feature).toBe(feature);
+                        done();
+                    });
+                }, 300);
+            });
+
+            it("should manage selection changes (by id)", (done) => {
+                widget.init();
+                spyOn(widget.map.getView(), 'fit').and.callThrough();
+                const poi_info1 = deepFreeze({
+                    id: '1',
+                    infoWindow: "Hello world!",
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                widget.registerPoI(poi_info1);
+                spyOn(widget.vector_source, 'addFeature').and.callThrough();
+                const poi_info2 = deepFreeze({
+                    id: '2',
+                    data: {
+                        iconHighlighted: {
+                            src: "https://www.example.com/image.png",
+                            opacity: 0.2,
+                            scale: 0.1
+                        }
+                    },
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                widget.registerPoI(poi_info2);
+                const feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                spyOn(widget.map, 'getPixelFromCoordinate').and.returnValue([0, 0]);
+                widget.centerPoI(["1"]);
+                widget.map.getView().fit.calls.reset();
+                MashupPlatform.widget.outputs.poiOutput.pushEvent.calls.reset();
+
+                setTimeout(() => {
+                    expect(widget.popover).not.toBe(null);
+                    widget.centerPoI(['2']);
+
+                    setTimeout(() => {
+                        expect(widget.map.getView().fit).not.toHaveBeenCalled();
+                        expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledTimes(1);
+                        expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info2);
+                        expect(widget.popover).toBe(null);
+                        expect(widget.selected_feature).toBe(feature);
+                        done();
+                    });
+                }, 300);
+            });
+
+            it("should mantain selection (by id)", (done) => {
+                widget.init();
+                spyOn(widget.map.getView(), 'fit').and.callThrough();
+                spyOn(widget.vector_source, 'addFeature').and.callThrough();
+                const poi_info1 = deepFreeze({
+                    id: '1',
+                    infoWindow: "Hello world!",
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                widget.registerPoI(poi_info1);
+                const feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                spyOn(widget.map, 'getPixelFromCoordinate').and.returnValue([0, 0]);
+                widget.centerPoI(["1"]);
+                widget.map.getView().fit.calls.reset();
+                MashupPlatform.widget.outputs.poiOutput.pushEvent.calls.reset();
+
+                setTimeout(() => {
+                    expect(widget.popover).not.toBe(null);
+                    widget.centerPoI(["1"]);
+
+                    setTimeout(() => {
+                        expect(widget.map.getView().fit).not.toHaveBeenCalled();
+                        expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).not.toHaveBeenCalled();
                         expect(widget.popover).not.toBe(null);
                         expect(widget.selected_feature).toBe(feature);
                         done();
