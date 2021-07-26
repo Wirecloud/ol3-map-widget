@@ -94,6 +94,43 @@
     CORE_LAYERS.GOOGLE_HYBRID = CORE_LAYERS.MAPQUEST_HYBRID;
     CORE_LAYERS.GOOGLE_SATELLITE = CORE_LAYERS.MAPQUEST_SATELLITE;
 
+    const create_popover = function create_popover(feature) {
+        // The feature has content to be used on a popover
+        this.popover = new StyledElements.Popover({
+            placement: ['top', 'bottom', 'right', 'left'],
+            title: feature.get('title'),
+            content: new StyledElements.Fragment(feature.get('content')),
+            sticky: true
+        });
+        this.popover.on('hide', (popover) => {
+            // The popover can be hidden by clicking outside the widget. So we have to listen to this event
+            // On the other side, we have to detect if this popover is applying to current state
+            if (this.popover === popover) {
+                this.popover = null;
+                update_selected_feature.call(this, null);
+            }
+        });
+        this.popover.show(this.refpos);
+    };
+
+    const update_popover = function update_popover(feature) {
+        if ("update" in this.popover) {
+            // WireCloud 1.4+
+            this.popover.update(
+                feature.get("title"),
+                new StyledElements.Fragment(feature.get("content"))
+            );
+        } else {
+            // Workaround for WireCloud 1.3 and below
+            const popover = this.popover;
+            this.popover = null;
+            popover.hide().hide();
+            create_popover.call(this, feature);
+            // Call show method again to cancel fade animation
+            this.popover.show(this.refpos);
+        }
+    };
+
     const update_selected_feature = function update_selected_feature(feature) {
         if (this.selected_feature != feature) {
             this.selected_feature = feature;
@@ -395,6 +432,7 @@
         this.base_layer = null;
         this.popover = null;
         this.layers = {};
+        this.centering = false;
     };
 
     Widget.prototype.init = function init() {
@@ -625,7 +663,9 @@
         });
         this.map.on("movestart", () => {
             if (this.popover != null && !("disablePointerEvents" in this.popover)) {
-                this.popover.hide();
+                if (!this.centering) {
+                    this.popover.hide();
+                }
             } else if (this.popover != null) {
                 this.popover.disablePointerEvents();
             }
@@ -638,6 +678,7 @@
                 this.popover.repaint();
             }
             send_visible_pois.call(this);
+            this.centering = false;
         });
 
         this.geojsonparser = new ol.format.GeoJSON();
@@ -712,22 +753,7 @@
 
         if (this.selected_feature === iconFeature) {
             if (this.popover != null) {
-                if ("update" in this.popover) {
-                    // WireCloud 1.4+
-                    this.popover.update(
-                        iconFeature.get("title"),
-                        new StyledElements.Fragment(iconFeature.get("content"))
-                    );
-                } else {
-                    // Workaround for WireCloud 1.3 and below
-                    const popover = this.popover;
-                    this.popover = null;
-                    popover.hide().hide();
-                    this.popover = popover;
-                    popover.options.title = iconFeature.get("title");
-                    popover.options.content = new StyledElements.Fragment(iconFeature.get("content"));
-                    popover.show(this.refpos);
-                }
+                update_popover.call(this, iconFeature);
             }
             MashupPlatform.widget.outputs.poiOutput.pushEvent(iconFeature.get('data'));
         }
@@ -752,22 +778,7 @@
 
             if (this.popover != null) {
                 if (new_selected_feature != null) {
-                    if ("update" in this.popover) {
-                        // WireCloud 1.4+
-                        this.popover.update(
-                            new_selected_feature.get("title"),
-                            new StyledElements.Fragment(new_selected_feature.get("content"))
-                        );
-                    } else {
-                        // Workaround for WireCloud 1.3 and below
-                        const popover = this.popover;
-                        this.popover = null;
-                        popover.hide().hide();
-                        this.popover = popover;
-                        popover.options.title = new_selected_feature.get("title");
-                        popover.options.content = new StyledElements.Fragment(new_selected_feature.get("content"));
-                        popover.show(this.refpos);
-                    }
+                    update_popover.call(this, new_selected_feature);
                 } else {
                     this.popover.hide();
                     this.popover = null;
@@ -800,6 +811,7 @@
         const zoom = parseInt(MashupPlatform.prefs.get('poiZoom'), 10);
         const currentZoom = this.map.getView().getZoom();
         if (currentZoom < zoom) {
+            this.centering = true;
             this.map.getView().fit(geometryset.getExtent(), {
                 maxZoom: zoom
             });
@@ -810,6 +822,7 @@
                 const view_size = ol.extent.getSize(view_extent);
                 const geometry_size = ol.extent.getSize(geometry_extent);
 
+                this.centering = true;
                 if (view_size[0] < geometry_size[0] && view_size[1] < geometry_size[1]) {
                     this.map.getView().fit(geometryset.getExtent(), {
                         maxZoom: zoom
@@ -1270,39 +1283,22 @@
         update_selected_feature.call(this, feature);
 
         if (this.popover == null && feature.get('content') != null) {
-            // The feature has content to be used on a popover
-            const popover = this.popover = new StyledElements.Popover({
-                placement: ['top', 'bottom', 'right', 'left'],
-                title: feature.get('title'),
-                content: new StyledElements.Fragment(feature.get('content')),
-                sticky: true
-            });
-            popover.on('show', () => {
-                update_selected_feature.call(this, feature);
-            });
-            popover.on('hide', (popover) => {
-                // The popover can be hidden by clicking outside the widget. So we have to listen to this event
-                // On the other side, we have to detect if this popover is applying to current state
-                if (this.popover === popover) {
-                    this.popover = null;
-                    update_selected_feature.call(this, null);
-                }
-            });
+            create_popover.call(this, feature);
 
-            // Delay popover show action
+            // Repaint popover after 200ms, to handle the situation where the
+            // marker is not yet loaded
+            // TODO, do this with events instead of using a fixed time
             setTimeout(() => {
-                if (this.popover !== popover) {
-                    // Selection has changed in the middle
-                    return;
+                if (this.popover != null) {
+                    this.popover.repaint();
                 }
-
-                update_selected_feature.call(this, feature);
-                this.popover.show(this.refpos);
-            }, 100);
+            }, 200);
         } else if (this.popover != null && feature.get("content") == null) {
             const popover = this.popover;
             this.popover = null;
             popover.hide().hide();
+        } else if (this.popover != null /* && feature.get("content") != null */) {
+            update_popover.call(this, feature);
         }
     };
 
