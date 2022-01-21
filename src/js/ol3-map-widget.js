@@ -579,7 +579,7 @@
         });
 
         // display popup on click
-        this.map.on('click', function (event) {
+        this.map.on("click", (event) => {
             const features = [];
             this.map.forEachFeatureAtPixel(
                 event.pixel,
@@ -635,10 +635,10 @@
             } else if (this.selected_feature != null && this.selected_feature.get('content') == null) {
                 unselect.call(this, this.selected_feature);
                 update_selected_feature.call(this, null);
-            } else if (feature !== this.selected_feature) {
+            } else {
                 update_selected_feature.call(this, null);
             }
-        }.bind(this));
+        });
 
         // change mouse cursor when over marker
         this.map.on('pointermove', (event) => {
