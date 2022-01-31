@@ -6,7 +6,8 @@
   "globals": {
     "MashupPlatform": false,
     "Promise": false,
-    "WeakMap": false
+    "WeakMap": false,
+    "DOMRect": false
   },
   "rules": {
     "indent": [
