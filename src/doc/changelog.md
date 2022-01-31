@@ -1,4 +1,4 @@
-## v1.2.x (2021-xx-xx)
+## v1.2.4 (2022-01-31)
 
 - Add a feature for building a marker with Font Awesome icon
 - Use sticky popovers on WireCloud 1.4
