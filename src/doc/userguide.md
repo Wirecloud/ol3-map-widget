@@ -68,13 +68,13 @@ Map viewer widget using OpenLayers. It can receive Layers or Point of Interest d
         - `anchor`: Anchor position. Default value is `[0.5, 0.5]` (icon
           center).
         - `anchorXUnits`: Units in which the anchor x value is specified. A
-          value of `'fraction'` indicates the x value is a fraction of the
-          icon. A value of `'pixels'` indicates the x value in pixels. Default
-          is `'fraction'`.
+          value of `"fraction"` indicates the x value is a fraction of the
+          icon. A value of `"pixels"` indicates the x value in pixels. Default
+          is `"fraction"`.
         - `anchorYUnits`: Units in which the anchor y value is specified. A
-          value of `'fraction'` indicates the y value is a fraction of the
-          icon. A value of `'pixels'` indicates the y value in pixels. Default
-          is `'fraction'`.
+          value of `"fraction"` indicates the y value is a fraction of the
+          icon. A value of `"pixels"` indicates the y value in pixels. Default
+          is `"fraction"`.
         - `opacity`: Opacity of the icon (range from 0 to 1). Default is `1`.
         - `scale`: Scale. Default is `1`.
         - `src`: Image source URI.
@@ -117,9 +117,40 @@ Map viewer widget using OpenLayers. It can receive Layers or Point of Interest d
     - `subtitle`: subtitle associated to the PoI
     - `title`: title associated to the PoI
     - `tooltip`: text to be displayed as tooltip when the mouse is over the PoI.
-- **Insert/Update Centered PoI**: Insert or update a PoI and change the viewport
-  centering the map on it. Uses the same format used by the **Insert/Update PoI**
-  endpoint.
+- **Center PoI**: Updates the viewport to make visible the provided list of
+    PoIs. If the viewport is already displaying the provide list of PoIs, the
+    viewport is not modified. This endpoint can also be used to update or to insert
+    new PoIs by providing PoI information using the same format used in the
+    **Insert/Update PoI** endpoint.
+
+    Examples:
+
+    - `null`: Clears current selection.
+    - `["vehicle-1", "vehicle-2"]`: Ensures `vehicle-1` and `vehicle-2` are
+        visible.
+    - ```json
+      [{
+          "id": "vehicle-1",
+          "location": {
+              "type": "Point",
+              "coordinates": [
+                  -8.51,
+                  41.11
+              ]
+          },
+          "infoWindow": "test1",
+          "icon": {
+              "fontawesome": {
+                  "glyph": "fa-motorcycle"
+              }
+          }
+      }]
+      ```
+
+        Updates `vehicle-1` and makes it visible on the map. If `vehicle-1` is
+        not the current selecte PoI, selection will be udpated to make it the
+        selected PoI.
+
 - **Delete PoI**: Removes a point or more point of interests from the map.
 - **Replace PoIs**: Replace all the rendered PoIs by the ones provided in the
   event. Uses the same format used by the **Insert/Update PoI**

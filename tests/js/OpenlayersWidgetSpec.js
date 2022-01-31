@@ -456,6 +456,7 @@
                         // Check popover is placed taking into account the poi marker position
                         expect(style_mock.getImage().getSize).toHaveBeenCalledTimes(1);
                         expect(widget.select_feature).toHaveBeenCalledWith(feature_mock);
+                        widget.popover = null;
                         done();
                     }, 150);
                 });
@@ -553,7 +554,7 @@
                     expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).not.toHaveBeenCalled();
                 });
 
-                it("outside any feature (but while there is a selected feature)", (done) => {
+                it("outside any feature (but while there is a selected feature)", () => {
                     const pixel_mock = jasmine.createSpy('pixel');
                     const feature_mock = new ol.Feature();
                     feature_mock.set('selectable', true);
@@ -565,33 +566,31 @@
                     widget.init();
                     spyOn(widget.map, 'getPixelFromCoordinate').and.returnValue([0, 0]);
                     widget.select_feature(feature_mock);
-                    widget.popover.addEventListener('show', () => {
-                        MashupPlatform.widget.outputs.poiOutput.reset();
-                        const popover = widget.popover;
-                        // TODO, the following line is required as the CSS
-                        // animation is not processed
-                        document.body.querySelector('.popover').classList.remove('in');
-                        spyOn(popover, "on");
-                        spyOn(popover, "hide").and.callThrough();
-                        spyOn(widget, "select_feature");
 
-                        spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
-                            expect(pixel).toBe(pixel_mock);
-                            return undefined;
-                        });
+                    MashupPlatform.widget.outputs.poiOutput.reset();
+                    const popover = widget.popover;
+                    // TODO, the following line is required as the CSS
+                    // animation is not processed
+                    document.body.querySelector('.popover').classList.remove('in');
+                    spyOn(popover, "on");
+                    spyOn(popover, "hide").and.callThrough();
+                    spyOn(widget, "select_feature");
 
-                        widget.map.dispatchEvent({
-                            type: "click",
-                            pixel: pixel_mock
-                        });
-
-                        expect(widget.popover).toBe(null)
-                        expect(widget.selected_feature).toBe(null);
-                        expect(popover.hide).toHaveBeenCalled();
-                        expect(widget.select_feature).not.toHaveBeenCalled();
-                        expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(null);
-                        done();
+                    spyOn(widget.map, 'forEachFeatureAtPixel').and.callFake((pixel, listener) => {
+                        expect(pixel).toBe(pixel_mock);
+                        return undefined;
                     });
+
+                    widget.map.dispatchEvent({
+                        type: "click",
+                        pixel: pixel_mock
+                    });
+
+                    expect(widget.popover).toBe(null)
+                    expect(widget.selected_feature).toBe(null);
+                    expect(popover.hide).toHaveBeenCalled();
+                    expect(widget.select_feature).not.toHaveBeenCalled();
+                    expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(null);
                 });
 
                 it("outside the widget (but while there is a selected feature)", () => {
@@ -603,10 +602,11 @@
                     feature_mock.set("data", {});
 
                     widget.init();
+                    const popover = new StyledElements.Popover();
+                    spyOn(popover, "show");
+                    spyOn(StyledElements, "Popover").and.returnValue(popover);
                     widget.select_feature(feature_mock);
                     MashupPlatform.widget.outputs.poiOutput.reset();
-                    const popover = widget.popover;
-                    spyOn(popover, "on");
                     spyOn(widget, "select_feature");
 
                     // Simulate the popover has been hidden by a third party code
@@ -1017,11 +1017,18 @@
                 const feature_mock = new ol.Feature();
                 widget.init();
                 widget.selected_feature = feature_mock;
-                const mock_popover = widget.popover = {
+                const oldpopover = widget.popover = {
                     options: {},
-                    hide: jasmine.createSpy("hide").and.callFake(() => mock_popover),
+                    hide: jasmine.createSpy("hide").and.callFake(() => oldpopover),
                     show: jasmine.createSpy("show")
                 };
+                const newpopover = {
+                    options: {},
+                    on: jasmine.createSpy("on"),
+                    hide: jasmine.createSpy("hide"),
+                    show: jasmine.createSpy("show")
+                };
+                spyOn(StyledElements, "Popover").and.returnValue(newpopover);
                 spyOn(feature_mock, 'set');
                 spyOn(feature_mock, 'setGeometry');
                 spyOn(feature_mock, 'setStyle');
@@ -1046,8 +1053,9 @@
                 });
                 widget.registerPoI(poi_info);
 
-                expect(widget.popover.hide).toHaveBeenCalledTimes(2);
-                expect(widget.popover.show).toHaveBeenCalledTimes(1);
+                expect(oldpopover.hide).toHaveBeenCalledTimes(2);
+                expect(newpopover.show).toHaveBeenCalledTimes(2);
+                expect(widget.popover).toBe(newpopover);
                 expect(widget.selected_feature).toBe(feature_mock);
             });
 
@@ -1334,11 +1342,18 @@
                 const initial_feature_mock = new ol.Feature();
                 initial_feature_mock.setId("1");
                 widget.selected_feature = initial_feature_mock;
-                const popover = widget.popover = {
+                const oldpopover = widget.popover = {
                     options: {},
-                    hide: jasmine.createSpy("hide").and.callFake(() => popover),
+                    hide: jasmine.createSpy("hide").and.callFake(() => oldpopover),
                     show: jasmine.createSpy("show")
                 };
+                const newpopover = {
+                    options: {},
+                    on: jasmine.createSpy("on"),
+                    hide: jasmine.createSpy("hide"),
+                    show: jasmine.createSpy("show")
+                };
+                spyOn(StyledElements, "Popover").and.returnValue(newpopover);
                 const new_feature_mock = new ol.Feature();
                 spyOn(new_feature_mock, "get").and.callFake((attr) => attr == "data" ? poi_info : poi_info[attr]);
                 spyOn(widget, "registerPoI");
@@ -1351,9 +1366,9 @@
                 expect(widget.registerPoI).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.getFeatureById).toHaveBeenCalledTimes(1);
                 expect(widget.vector_source.getFeatureById).toHaveBeenCalledWith("1");
-                expect(widget.popover).toBe(popover);
-                expect(popover.hide).toHaveBeenCalledTimes(2);
-                expect(popover.show).toHaveBeenCalledTimes(1);
+                expect(widget.popover).toBe(newpopover);
+                expect(oldpopover.hide).toHaveBeenCalledTimes(2);
+                expect(newpopover.show).toHaveBeenCalledTimes(2);
                 expect(widget.selected_feature).toBe(new_feature_mock);
                 expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledTimes(1);
                 expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info);
@@ -1509,6 +1524,88 @@
                         expect(widget.map.getView().fit).not.toHaveBeenCalled();
                         expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledTimes(1);
                         expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info2);
+                        expect(widget.popover).toBe(null);
+                        expect(widget.selected_feature).toBe(feature);
+                        done();
+                    });
+                }, 300);
+            });
+
+            it("should manage selection changes (by id)", (done) => {
+                widget.init();
+                spyOn(widget.map.getView(), 'fit').and.callThrough();
+                const poi_info1 = deepFreeze({
+                    id: '1',
+                    infoWindow: "Hello world!",
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                widget.registerPoI(poi_info1);
+                spyOn(widget.vector_source, 'addFeature').and.callThrough();
+                const poi_info2 = deepFreeze({
+                    id: '2',
+                    data: {
+                        iconHighlighted: {
+                            src: "https://www.example.com/image.png",
+                            opacity: 0.2,
+                            scale: 0.1
+                        }
+                    },
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                widget.registerPoI(poi_info2);
+                const feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                spyOn(widget.map, 'getPixelFromCoordinate').and.returnValue([0, 0]);
+                widget.centerPoI(["1"]);
+                widget.map.getView().fit.calls.reset();
+                MashupPlatform.widget.outputs.poiOutput.pushEvent.calls.reset();
+
+                setTimeout(() => {
+                    expect(widget.popover).not.toBe(null);
+                    widget.centerPoI(['2']);
+
+                    setTimeout(() => {
+                        expect(widget.map.getView().fit).not.toHaveBeenCalled();
+                        expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledTimes(1);
+                        expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).toHaveBeenCalledWith(poi_info2);
+                        expect(widget.popover).toBe(null);
+                        expect(widget.selected_feature).toBe(feature);
+                        done();
+                    });
+                }, 300);
+            });
+
+            it("should mantain selection (by id)", (done) => {
+                widget.init();
+                spyOn(widget.map.getView(), 'fit').and.callThrough();
+                spyOn(widget.vector_source, 'addFeature').and.callThrough();
+                const poi_info1 = deepFreeze({
+                    id: '1',
+                    infoWindow: "Hello world!",
+                    location: {
+                        type: 'Point',
+                        coordinates: [0, 0]
+                    }
+                });
+                widget.registerPoI(poi_info1);
+                const feature = widget.vector_source.addFeature.calls.argsFor(0)[0];
+                spyOn(widget.map, 'getPixelFromCoordinate').and.returnValue([0, 0]);
+                widget.centerPoI(["1"]);
+                widget.map.getView().fit.calls.reset();
+                MashupPlatform.widget.outputs.poiOutput.pushEvent.calls.reset();
+
+                setTimeout(() => {
+                    expect(widget.popover).not.toBe(null);
+                    widget.centerPoI(["1"]);
+
+                    setTimeout(() => {
+                        expect(widget.map.getView().fit).not.toHaveBeenCalled();
+                        expect(MashupPlatform.widget.outputs.poiOutput.pushEvent).not.toHaveBeenCalled();
                         expect(widget.popover).not.toBe(null);
                         expect(widget.selected_feature).toBe(feature);
                         done();
