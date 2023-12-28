@@ -14,108 +14,117 @@
  * limitations under the License.
  */
 
-/* global Widget */
+/* global _CoNWeT_ol3_Widget_Internal */
 
 
 (function () {
 
     "use strict";
 
-    const parseInputEndpointData = function parseInputEndpointData(data) {
-        if (typeof data === "string") {
-            try {
-                data = JSON.parse(data);
-            } catch (e) {
-                throw new MashupPlatform.wiring.EndpointTypeError();
+    class Widget {
+        constructor(MashupPlatform, shadowDOM, extra) {
+            this.MashupPlatform = MashupPlatform;
+            this.shadowDOM = shadowDOM;
+
+            this.widget = new _CoNWeT_ol3_Widget_Internal(MashupPlatform, shadowDOM, extra);
+            this.widget.init();
+
+            this.MashupPlatform.prefs.registerCallback((new_values) => {
+                if ("useclustering" in new_values) {
+                    this.widget.setClustering(new_values.useclustering);
+                }
+            });
+
+            this.MashupPlatform.wiring.registerCallback('layerInfo', (commands) => {
+                commands = this.parseInputEndpointData(commands);
+
+                if (!Array.isArray(commands)) {
+                    commands = [commands];
+                }
+
+                if (commands.some((command) => {return command == null || ["addLayer", "updateLayer", "removeLayer", "setBaseLayer"].indexOf(command.action) === -1;})) {
+                    throw new this.MashupPlatform.wiring.EndpointValueError("Invalid command action");
+                }
+
+                commands.forEach((command) => {
+                    switch (command.action) {
+                    case "addLayer":
+                        this.widget.addLayer(command.data);
+                        break;
+                    case "updateLayer":
+                        this.widget.updateLayer(command.data);
+                        break;
+                    case "removeLayer":
+                        this.widget.removeLayer(command.data);
+                        break;
+                    case "setBaseLayer":
+                        this.widget.setBaseLayer(command.data);
+                        break;
+                    }
+                });
+            });
+
+            this.MashupPlatform.wiring.registerCallback('poiInput', (poi_info) => {
+                poi_info = this.parseInputEndpointData(poi_info);
+
+                if (!Array.isArray(poi_info)) {
+                    poi_info = [poi_info];
+                }
+                poi_info.forEach(this.widget.registerPoI, this.widget);
+            });
+
+            this.MashupPlatform.wiring.registerCallback('replacePoIs', (poi_info) => {
+                poi_info = this.parseInputEndpointData(poi_info);
+
+                if (!Array.isArray(poi_info)) {
+                    poi_info = [poi_info];
+                }
+                this.widget.replacePoIs(poi_info);
+            });
+
+            this.MashupPlatform.wiring.registerCallback('poiInputCenter', (poi_info) => {
+                if (poi_info == null) {
+                    poi_info = [];
+                }
+
+                poi_info = this.parseInputEndpointData(poi_info);
+
+                if (!Array.isArray(poi_info)) {
+                    poi_info = [poi_info];
+                }
+
+                poi_info.forEach((poi) => {
+                    if (poi != null && typeof poi === "object") {
+                        this.widget.registerPoI(poi)
+                    }
+                });
+                this.widget.centerPoI(poi_info);
+            });
+
+            this.MashupPlatform.wiring.registerCallback('deletePoiInput', (poi_info) => {
+                poi_info = this.parseInputEndpointData(poi_info);
+
+                if (!Array.isArray(poi_info)) {
+                    poi_info = [poi_info];
+                }
+                poi_info.forEach(this.widget.removePoI, this.widget);
+            });
+        }
+
+        parseInputEndpointData(data) {
+            if (typeof data === "string") {
+                try {
+                    data = JSON.parse(data);
+                } catch (e) {
+                    throw new this.MashupPlatform.wiring.EndpointTypeError();
+                }
+            } else if (data == null || typeof data !== "object") {
+                throw new this.MashupPlatform.wiring.EndpointTypeError();
             }
-        } else if (data == null || typeof data !== "object") {
-            throw new MashupPlatform.wiring.EndpointTypeError();
+            return data;
         }
-        return data;
-    };
+    }
 
-    const widget = new Widget('body', '#incoming-modal');
-    widget.init();
-
-    MashupPlatform.prefs.registerCallback((new_values) => {
-        if ("useclustering" in new_values) {
-            widget.setClustering(new_values.useclustering);
-        }
-    });
-
-    MashupPlatform.wiring.registerCallback('layerInfo', (commands) => {
-        commands = parseInputEndpointData(commands);
-
-        if (!Array.isArray(commands)) {
-            commands = [commands];
-        }
-
-        if (commands.some((command) => {return command == null || ["addLayer", "updateLayer", "removeLayer", "setBaseLayer"].indexOf(command.action) === -1;})) {
-            throw new MashupPlatform.wiring.EndpointValueError("Invalid command action");
-        }
-
-        commands.forEach((command) => {
-            switch (command.action) {
-            case "addLayer":
-                widget.addLayer(command.data);
-                break;
-            case "updateLayer":
-                widget.updateLayer(command.data);
-                break;
-            case "removeLayer":
-                widget.removeLayer(command.data);
-                break;
-            case "setBaseLayer":
-                widget.setBaseLayer(command.data);
-                break;
-            }
-        });
-    });
-
-    MashupPlatform.wiring.registerCallback('poiInput', (poi_info) => {
-        poi_info = parseInputEndpointData(poi_info);
-
-        if (!Array.isArray(poi_info)) {
-            poi_info = [poi_info];
-        }
-        poi_info.forEach(widget.registerPoI, widget);
-    });
-
-    MashupPlatform.wiring.registerCallback('replacePoIs', (poi_info) => {
-        poi_info = parseInputEndpointData(poi_info);
-
-        if (!Array.isArray(poi_info)) {
-            poi_info = [poi_info];
-        }
-        widget.replacePoIs(poi_info);
-    });
-
-    MashupPlatform.wiring.registerCallback('poiInputCenter', (poi_info) => {
-        if (poi_info == null) {
-            poi_info = [];
-        }
-
-        poi_info = parseInputEndpointData(poi_info);
-
-        if (!Array.isArray(poi_info)) {
-            poi_info = [poi_info];
-        }
-
-        poi_info.forEach((poi) => {
-            if (poi != null && typeof poi === "object") {
-                widget.registerPoI(poi)
-            }
-        });
-        widget.centerPoI(poi_info);
-    });
-
-    MashupPlatform.wiring.registerCallback('deletePoiInput', (poi_info) => {
-        poi_info = parseInputEndpointData(poi_info);
-
-        if (!Array.isArray(poi_info)) {
-            poi_info = [poi_info];
-        }
-        poi_info.forEach(widget.removePoI, widget);
-    });
+    window.CoNWeT_ol3_Widget = Widget;
 
 })();
