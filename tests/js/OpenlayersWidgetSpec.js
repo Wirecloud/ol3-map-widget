@@ -3,7 +3,7 @@
  *   Copyright (c) 2017-2021 Future Internet Consulting and Development Solutions S.L.
  */
 
-/* global MashupPlatform, MockMP, ol, StyledElements, Widget */
+/* global MashupPlatform, MockMP, ol, StyledElements, _CoNWeT_ol3_Widget_Internal, shadowDOM, shadowBody */
 
 (function () {
 
@@ -14,11 +14,7 @@
         '<div id="setcenter-button" class="se-btn"/><div id="setzoom-button" class="se-btn"/><div id="setcenterzoom-button" class="se-btn"/>';
 
     const clearDocument = function clearDocument() {
-        const elements = document.querySelectorAll('body > *:not(.jasmine_html-reporter)');
-
-        for (let i = 0; i < elements.length; i++) {
-            elements[i].remove();
-        }
+        shadowBody.innerHTML = '';
     };
 
     const deepFreeze = function deepFreeze(obj) {
@@ -68,14 +64,26 @@
                 inputs: ['layerInfo'],
                 outputs: ['poiListOutput', 'poiOutput']
             });
+
+            const container = document.createElement('div');
+            container.id = 'container';
+            container.attachShadow({mode: 'open'});
+
+            const containerBody = document.createElement('body');
+            container.shadowRoot.appendChild(containerBody);
+
+            document.body.appendChild(container);
+
+            window.shadowDOM = container.shadowRoot;
+            window.shadowBody = containerBody;
         });
 
         beforeEach(() => {
             clearDocument();
-            document.body.innerHTML += HTML_FIXTURE;
+            shadowBody.innerHTML += HTML_FIXTURE;
             MashupPlatform.reset();
             MashupPlatform.prefs.set.calls.reset();
-            widget = new Widget();
+            widget = new _CoNWeT_ol3_Widget_Internal(MashupPlatform, shadowDOM, {StyledElements: StyledElements});
         });
 
         afterEach(() => {
@@ -148,7 +156,7 @@
 
                     widget.init();
 
-                    const layers_button = document.getElementById('button');
+                    const layers_button = shadowDOM.getElementById('button');
                     expect(layers_button.className).toBe('se-btn fade');
                 });
 
@@ -157,7 +165,7 @@
 
                     widget.init();
 
-                    const layers_button = document.getElementById('button');
+                    const layers_button = shadowDOM.getElementById('button');
                     expect(layers_button.className).toBe('se-btn fade in');
                 });
 
@@ -167,7 +175,7 @@
                     widget.init();
                     createAddWidgetMock();
 
-                    const layers_button = document.getElementById('button');
+                    const layers_button = shadowDOM.getElementById('button');
                     layers_button.click();
                     expect(MashupPlatform.mashup.addWidget).toHaveBeenCalledWith(ref, jasmine.any(Object));
                     expect(MashupPlatform.mashup.addWidget().outputs.layerInfoOutput.connect).toHaveBeenCalledWith(MashupPlatform.widget.inputs.layerInfo);
@@ -179,7 +187,7 @@
                     widget.init();
                     createAddWidgetMock();
 
-                    const layers_button = document.getElementById('button');
+                    const layers_button = shadowDOM.getElementById('button');
                     layers_button.click();
                     MashupPlatform.mashup.addWidget.calls.reset();
                     layers_button.click();
@@ -192,7 +200,7 @@
                     widget.init();
                     createAddWidgetMock();
 
-                    const layers_button = document.getElementById('button');
+                    const layers_button = shadowDOM.getElementById('button');
                     layers_button.click();
                     expect(MashupPlatform.mashup.addWidget().addEventListener).toHaveBeenCalledWith("remove", jasmine.any(Function));
                     MashupPlatform.mashup.addWidget().addEventListener.calls.argsFor(0)[1]();
@@ -205,7 +213,7 @@
                     createAddWidgetMock();
 
                     // Open layers widget
-                    const layers_button = document.getElementById('button');
+                    const layers_button = shadowDOM.getElementById('button');
                     layers_button.click();
                     // Close it
                     MashupPlatform.mashup.addWidget().addEventListener.calls.argsFor(0)[1]();
@@ -228,11 +236,11 @@
 
                     widget.init();
 
-                    const setcenter_button = document.getElementById('setcenter-button');
+                    const setcenter_button = shadowDOM.getElementById('setcenter-button');
                     expect(setcenter_button.className).toBe('se-btn hidden');
-                    const setzoom_button = document.getElementById('setzoom-button');
+                    const setzoom_button = shadowDOM.getElementById('setzoom-button');
                     expect(setzoom_button.className).toBe('se-btn hidden');
-                    const setcenterzoom_button = document.getElementById('setcenterzoom-button');
+                    const setcenterzoom_button = shadowDOM.getElementById('setcenterzoom-button');
                     expect(setcenterzoom_button.className).toBe('se-btn hidden');
                 });
 
@@ -241,11 +249,11 @@
 
                     widget.init();
 
-                    const setcenter_button = document.getElementById('setcenter-button');
+                    const setcenter_button = shadowDOM.getElementById('setcenter-button');
                     expect(setcenter_button.className).toBe('se-btn');
-                    const setzoom_button = document.getElementById('setzoom-button');
+                    const setzoom_button = shadowDOM.getElementById('setzoom-button');
                     expect(setzoom_button.className).toBe('se-btn');
-                    const setcenterzoom_button = document.getElementById('setcenterzoom-button');
+                    const setcenterzoom_button = shadowDOM.getElementById('setcenterzoom-button');
                     expect(setcenterzoom_button.className).toBe('se-btn');
                 });
 
@@ -255,18 +263,18 @@
 
                     MashupPlatform.mashup.context.registerCallback.calls.argsFor(0)[0]({editing: true});
 
-                    const setcenter_button = document.getElementById('setcenter-button');
+                    const setcenter_button = shadowDOM.getElementById('setcenter-button');
                     expect(setcenter_button.className).toBe('se-btn');
-                    const setzoom_button = document.getElementById('setzoom-button');
+                    const setzoom_button = shadowDOM.getElementById('setzoom-button');
                     expect(setzoom_button.className).toBe('se-btn');
-                    const setcenterzoom_button = document.getElementById('setcenterzoom-button');
+                    const setcenterzoom_button = shadowDOM.getElementById('setcenterzoom-button');
                     expect(setcenterzoom_button.className).toBe('se-btn');
                 });
 
                 it("should allow to setup current center as the default value for the initialCenter setting", () => {
                     MashupPlatform.mashup.context.setContext({editing: true});
                     widget.init();
-                    const setcenter_button = document.getElementById('setcenter-button');
+                    const setcenter_button = shadowDOM.getElementById('setcenter-button');
 
                     setcenter_button.click();
 
@@ -276,7 +284,7 @@
                 it("should allow to setup current zoom level as the default value for the initialZoom setting", () => {
                     MashupPlatform.mashup.context.setContext({editing: true});
                     widget.init();
-                    const setzoom_button = document.getElementById('setzoom-button');
+                    const setzoom_button = shadowDOM.getElementById('setzoom-button');
 
                     setzoom_button.click();
 
@@ -286,7 +294,7 @@
                 it("should allow to setup current zoom level and center position as the default initial values", () => {
                     MashupPlatform.mashup.context.setContext({editing: true});
                     widget.init();
-                    const setcenterzoom_button = document.getElementById('setcenterzoom-button');
+                    const setcenterzoom_button = shadowDOM.getElementById('setcenterzoom-button');
 
                     setcenterzoom_button.click();
 

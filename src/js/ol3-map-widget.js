@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2017 CoNWeT Lab., Universidad Politecnica de Madrid
- * Copyright (c) 2017-2021 Future Internet Consulting and Development Solutions S.L.
+ * Copyright (c) 2017-2023 Future Internet Consulting and Development Solutions S.L.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* globals ol, StyledElements */
+/* globals ol, ResizeObserver */
 
 (function () {
 
@@ -96,10 +96,10 @@
 
     const create_popover = function create_popover(feature) {
         // The feature has content to be used on a popover
-        this.popover = new StyledElements.Popover({
+        this.popover = new this.StyledElements.Popover({
             placement: ['top', 'bottom', 'right', 'left'],
             title: feature.get('title'),
-            content: new StyledElements.Fragment(feature.get('content')),
+            content: new this.StyledElements.Fragment(feature.get('content')),
             sticky: true
         });
         this.popover.on('hide', (popover) => {
@@ -118,7 +118,7 @@
             // WireCloud 1.4+
             this.popover.update(
                 feature.get("title"),
-                new StyledElements.Fragment(feature.get("content"))
+                new this.StyledElements.Fragment(feature.get("content"))
             );
         } else {
             // Workaround for WireCloud 1.3 and below
@@ -139,7 +139,7 @@
                 this.popover = null;
                 popover.hide();
             }
-            MashupPlatform.widget.outputs.poiOutput.pushEvent(feature != null ? feature.get('data') : null);
+            this.MashupPlatform.widget.outputs.poiOutput.pushEvent(feature != null ? feature.get('data') : null);
         }
     };
 
@@ -412,7 +412,7 @@
             this.visiblePoisTimeout = null;
         }
 
-        if (!MashupPlatform.widget.outputs.poiListOutput.connected) {
+        if (!this.MashupPlatform.widget.outputs.poiListOutput.connected) {
             return;
         }
 
@@ -420,13 +420,17 @@
         const data = this.vector_source.getFeaturesInExtent(extent).map((feature) => {
             return feature.get('data');
         });
-        MashupPlatform.widget.outputs.poiListOutput.pushEvent(data);
+        this.MashupPlatform.widget.outputs.poiListOutput.pushEvent(data);
     };
 
     // Create the default Marker style
     let DEFAULT_MARKER = null;
 
-    const Widget = function Widget() {
+    const Widget = function Widget(MashupPlatform, shadowDOM, extra) {
+        this.MashupPlatform = MashupPlatform;
+        this.shadowDOM = shadowDOM;
+        this.StyledElements = extra.StyledElements;
+
         this.selected_feature = null;
         this.layers_widget = null;
         this.base_layer = null;
@@ -458,15 +462,15 @@
             }
         };
 
-        const layers_button = document.getElementById('button');
+        const layers_button = this.shadowDOM.getElementById('button');
         layers_button.addEventListener('click', (event) => {
             if (this.layers_widget == null) {
-                this.layers_widget = MashupPlatform.mashup.addWidget(MashupPlatform.prefs.get('layerswidget').trim(), {refposition: event.target.getBoundingClientRect()});
+                this.layers_widget = this.MashupPlatform.mashup.addWidget(this.MashupPlatform.prefs.get('layerswidget').trim(), {refposition: event.target.getBoundingClientRect()});
                 this.layers_widget.addEventListener('remove', () => this.layers_widget = null);
-                this.layers_widget.outputs.layerInfoOutput.connect(MashupPlatform.widget.inputs.layerInfo);
+                this.layers_widget.outputs.layerInfoOutput.connect(this.MashupPlatform.widget.inputs.layerInfo);
             }
         });
-        const layers_widget_ref = MashupPlatform.prefs.get('layerswidget').trim();
+        const layers_widget_ref = this.MashupPlatform.prefs.get('layerswidget').trim();
         if (layers_widget_ref === "") {
             layers_button.classList.remove('in');
         } else {
@@ -474,27 +478,27 @@
         }
 
         // Edit buttons
-        const setcenter_button = document.getElementById("setcenter-button");
+        const setcenter_button = this.shadowDOM.getElementById("setcenter-button");
         setcenter_button.addEventListener('click', (event) => {
             const currentCenter = this.map.getView().getCenter();
             const newValue = ol.proj.transform(currentCenter, 'EPSG:3857', 'EPSG:4326');
-            MashupPlatform.prefs.set(
+            this.MashupPlatform.prefs.set(
                 "initialCenter",
                 newValue.join(", ")
             );
         });
-        const setzoom_button = document.getElementById("setzoom-button");
+        const setzoom_button = this.shadowDOM.getElementById("setzoom-button");
         setzoom_button.addEventListener('click', (event) => {
-            MashupPlatform.prefs.set(
+            this.MashupPlatform.prefs.set(
                 "initialZoom",
                 this.map.getView().getZoom()
             );
         });
-        const setcenterzoom_button = document.getElementById("setcenterzoom-button");
+        const setcenterzoom_button = this.shadowDOM.getElementById("setcenterzoom-button");
         setcenterzoom_button.addEventListener('click', (event) => {
             const currentCenter = this.map.getView().getCenter();
             const newValue = ol.proj.transform(currentCenter, 'EPSG:3857', 'EPSG:4326');
-            MashupPlatform.prefs.set({
+            this.MashupPlatform.prefs.set({
                 initialCenter: newValue.join(", "),
                 initialZoom: this.map.getView().getZoom()
             });
@@ -512,12 +516,12 @@
                 setcenterzoom_button.classList.add("hidden");
             }
         };
-        MashupPlatform.mashup.context.registerCallback(update_ui_buttons);
-        update_ui_buttons({editing: MashupPlatform.mashup.context.get("editing")});
+        this.MashupPlatform.mashup.context.registerCallback(update_ui_buttons);
+        update_ui_buttons({editing: this.MashupPlatform.mashup.context.get("editing")});
 
         DEFAULT_MARKER = build_basic_style.call(this);
         this.base_layer = CORE_LAYERS.OSM;
-        let initialCenter = MashupPlatform.prefs.get("initialCenter").split(",").map(Number);
+        let initialCenter = this.MashupPlatform.prefs.get("initialCenter").split(",").map(Number);
         if (initialCenter.length != 2 || !Number.isFinite(initialCenter[0]) || !Number.isFinite(initialCenter[1])) {
             initialCenter = [0, 0];
         }
@@ -567,23 +571,40 @@
         });
 
         this.map = new ol.Map({
-            target: document.getElementById('map'),
+            target: this.shadowDOM.getElementById('map'),
             layers: [
                 this.base_layer,
-                MashupPlatform.prefs.get("useclustering") ? this.cluster_layer : this.vector_layer
+                this.MashupPlatform.prefs.get("useclustering") ? this.cluster_layer : this.vector_layer
             ],
             view: new ol.View({
                 center: ol.proj.transform(initialCenter, 'EPSG:4326', 'EPSG:3857'),
-                zoom: parseInt(MashupPlatform.prefs.get('initialZoom'), 10)
+                zoom: parseInt(this.MashupPlatform.prefs.get('initialZoom'), 10)
             })
         });
+
+        this.map.setSize([this.shadowDOM.getElementById('map').clientWidth, this.shadowDOM.getElementById('map').clientHeight]);
+
+        // We set up a resize observer to update the map size when the widget
+        // container is resized
+        if ('ResizeObserver' in window) {
+            const resizeObserver = new ResizeObserver((entries) => {
+                const entry = entries[0];
+                this.map.setSize([entry.contentRect.width, entry.contentRect.height]);
+            });
+
+            resizeObserver.observe(this.shadowDOM.getElementById('map'));
+        } else {
+            this.MashupPlatform.widget.context.registerCallback(() => {
+                this.map.setSize([this.shadowDOM.getElementById('map').clientWidth, this.shadowDOM.getElementById('map').clientHeight]);
+            });
+        }
 
         // display popup on click
         this.map.on("click", (event) => {
             const features = [];
             this.map.forEachFeatureAtPixel(
                 event.pixel,
-                MashupPlatform.prefs.get('useclustering') ?
+                this.MashupPlatform.prefs.get('useclustering') ?
                     (feature, layer) => {
                         feature.get('features').forEach((feature) => {
                             if (feature.get('selectable')) {
@@ -608,9 +629,9 @@
                     unselect.call(this, this.selected_feature);
                     update_selected_feature.call(this, null);
                 } else {
-                    const popup_menu = new StyledElements.PopupMenu();
+                    const popup_menu = new this.StyledElements.PopupMenu();
                     features.forEach((feature) => {
-                        popup_menu.append(new StyledElements.MenuItem(feature.get('title') || feature.getId(), null, feature));
+                        popup_menu.append(new this.StyledElements.MenuItem(feature.get('title') || feature.getId(), null, feature));
                     });
                     popup_menu.addEventListener("click", (menu, item) => {
                         this.select_feature(item.context);
@@ -755,7 +776,7 @@
             if (this.popover != null) {
                 update_popover.call(this, iconFeature);
             }
-            MashupPlatform.widget.outputs.poiOutput.pushEvent(iconFeature.get('data'));
+            this.MashupPlatform.widget.outputs.poiOutput.pushEvent(iconFeature.get('data'));
         }
     };
 
@@ -808,7 +829,7 @@
         const geometryset = new ol.geom.GeometryCollection(geometries);
 
         // Update map view
-        const zoom = parseInt(MashupPlatform.prefs.get('poiZoom'), 10);
+        const zoom = parseInt(this.MashupPlatform.prefs.get('poiZoom'), 10);
         const currentZoom = this.map.getView().getZoom();
         if (currentZoom < zoom) {
             this.centering = true;
@@ -859,7 +880,7 @@
 
     const addFormat = function addFormat(layer_info) {
         if (layer_info.format == null) {
-            throw new MashupPlatform.wiring.EndpointValueError("format option is required");
+            throw new this.MashupPlatform.wiring.EndpointValueError("format option is required");
         }
 
         if (typeof layer_info.format === "string") {
@@ -878,7 +899,7 @@
     Widget.prototype.addLayer = function addLayer(layer_info) {
         const builder = layer_builders[layer_info.type];
         if (builder == null) {
-            throw new MashupPlatform.wiring.EndpointValueError("Invalid layer type: " + layer_info.type);
+            throw new this.MashupPlatform.wiring.EndpointValueError("Invalid layer type: " + layer_info.type);
         }
 
         // Remove any layer with the same id
@@ -895,7 +916,7 @@
     Widget.prototype.updateLayer = function updateLayer(layer_info) {
         const layer = this.layers[layer_info.id];
         if (layer == null) {
-            throw new MashupPlatform.wiring.EndpointValueError("Layer not found: " + layer_info.id);
+            throw new this.MashupPlatform.wiring.EndpointValueError("Layer not found: " + layer_info.id);
         }
 
         const updater = layer_updaters[layer._layer_type];
@@ -917,13 +938,13 @@
         if (required != true && url == null) {
             return undefined;
         } else if (required == true && url == null) {
-            throw new MashupPlatform.wiring.EndpointValueError("Missing layer url option");
+            throw new this.MashupPlatform.wiring.EndpointValueError("Missing layer url option");
         }
 
         const parsed_url = new URL(url);
         /* istanbul ignore if */
         if (document.location.protocol === 'https:' && parsed_url.protocol !== 'https:') {
-            return MashupPlatform.http.buildProxyURL(parsed_url);
+            return this.MashupPlatform.http.buildProxyURL(parsed_url);
         } else {
             return url;
         }
@@ -958,7 +979,7 @@
 
         const options = {
             source: new ol.source.ImageWMS({
-                url: build_compatible_url(layer_info.url, true),
+                url: build_compatible_url.call(this, layer_info.url, true),
                 params: params,
                 projection: layer_info.projection,
                 crossOrigin: layer_info.crossOrigin,
@@ -975,7 +996,7 @@
     const addImageArcGISRestLayer = function addImageArcGISRestLayer(layer_info) {
         const options = {
             source: new ol.source.ImageArcGISRest({
-                url: build_compatible_url(layer_info.url, true),
+                url: build_compatible_url.call(this, layer_info.url, true),
                 crossOrigin: layer_info.crossOrigin,
                 hidpi: layer_info.hidpi,
                 logo: layer_info.logo,
@@ -990,7 +1011,7 @@
     const addImageMapGuideLayer = function addImageMapGuideLayer(layer_info) {
         const options = {
             source: new ol.source.ImageMapGuide({
-                url: build_compatible_url(layer_info.url, true),
+                url: build_compatible_url.call(this, layer_info.url, true),
                 displayDpi: layer_info.displayDpi,
                 metersPerUnit: layer_info.metersPerUnit,
                 hidpi: layer_info.hidpi,
@@ -1005,7 +1026,7 @@
     const addImageStaticLayer = function addImageStaticLayer(layer_info) {
         const options = {
             source: new ol.source.ImageStatic({
-                url: build_compatible_url(layer_info.url, true),
+                url: build_compatible_url.call(this, layer_info.url, true),
                 crossOrigin: layer_info.crossOrigin,
                 logo: layer_info.logo,
                 imageExtent: layer_info.imageExtent,
@@ -1020,12 +1041,12 @@
         const options = {
             source: new ol.source.Vector({
                 crossOrigin: layer_info.crossOrigin,
-                format: addFormat(layer_info),
+                format: addFormat.call(this, layer_info),
                 wrapX: layer_info.wrapX,
                 // Vector source does not require an url
                 // But currently we do not provide support to populate this
                 // layer using any other way, so this parameter is required
-                url: build_compatible_url(layer_info.url, true),
+                url: build_compatible_url.call(this, layer_info.url, true),
             }),
             style: new ol.style.Style({
                 stroke: new ol.style.Stroke({
@@ -1043,13 +1064,13 @@
             source: new ol.source.VectorTile({
                 cacheSize: layer_info.cacheSize,
                 crossOrigin: layer_info.crossOrigin,
-                format: addFormat(layer_info),
+                format: addFormat.call(this, layer_info),
                 logo: layer_info.logo,
                 overlaps: layer_info.overlaps,
                 projection: layer_info.projection,
                 state: layer_info.state,
                 tileClass: layer_info.tileClass,
-                url: build_compatible_url(layer_info.url, true),
+                url: build_compatible_url.call(this, layer_info.url, true),
                 wrapX: layer_info.wrapX
             })
         };
@@ -1062,7 +1083,7 @@
             opacity: layer_info.opacity,
             source: new ol.source.OSM({
                 wrapX: layer_info.wrapX,
-                url: build_compatible_url(layer_info.url, false),
+                url: build_compatible_url.call(this, layer_info.url, false),
                 cacheSize: layer_info.cacheSize,
                 maxZoom: layer_info.maxZoom,
                 opaque: layer_info.opaque,
@@ -1092,7 +1113,7 @@
                 logo: layer_info.logo,
                 opaque: layer_info.opaque,
                 params: layer_info.params,
-                url: build_compatible_url(layer_info.url, true),
+                url: build_compatible_url.call(this, layer_info.url, true),
                 wrapX: layer_info.wrapX
             })
         };
@@ -1108,7 +1129,7 @@
                 jsonp: layer_info.jsonp,
                 reprojectionErrorThreshold: layer_info.reprojectionErrorThreshold,
                 tileJSON: layer_info.tileJSON,
-                url: build_compatible_url(layer_info.url, true),
+                url: build_compatible_url.call(this, layer_info.url, true),
                 wrapX: layer_info.wrapX
             })
         };
@@ -1122,7 +1143,7 @@
                 jsonp: layer_info.jsonp,
                 preemptive: layer_info.preemptive,
                 tileJSON: layer_info.tileJSON,
-                url: build_compatible_url(layer_info.url, false),
+                url: build_compatible_url.call(this, layer_info.url, false),
             })
         };
 
@@ -1135,7 +1156,7 @@
             source: new ol.source.XYZ({
                 cacheSize: layer_info.cacheSize,
                 wrapX: layer_info.wrapX,
-                url: build_compatible_url(layer_info.url, true),
+                url: build_compatible_url.call(this, layer_info.url, true),
                 logo: layer_info.logo,
                 maxZoom: layer_info.maxZoom,
                 minZoom: layer_info.minZoom,
@@ -1155,7 +1176,7 @@
                 maxZoom: layer_info.maxZoom,
                 minZoom: layer_info.minZoom,
                 opaque: layer_info.opaque,
-                url: build_compatible_url(layer_info.url, false)
+                url: build_compatible_url.call(this, layer_info.url, false)
             })
         };
 
@@ -1213,7 +1234,7 @@
                 style: layer_info.style,
                 tilePixelRatio: layer_info.tilePixelRatio,
                 transition: layer_info.transition,
-                url: build_compatible_url(layer_info.url, true),
+                url: build_compatible_url.call(this, layer_info.url, true),
                 version: layer_info.version,
                 wrapX: layer_info.wrapX
             })
@@ -1230,7 +1251,7 @@
                 projection: layer_info.projection,
                 tierSizeCalculation: layer_info.tierSizeCalculation,
                 transition: layer_info.transition,
-                url: build_compatible_url(layer_info.url, false),
+                url: build_compatible_url.call(this, layer_info.url, false),
                 size: layer_info.size
             })
         };
@@ -1255,7 +1276,7 @@
 
     Widget.prototype.setBaseLayer = function setBaseLayer(layer_info) {
         if (layer_info.id == null || !(layer_info.id in CORE_LAYERS)) {
-            throw new MashupPlatform.wiring.EndpointValueError('Invalid layer id');
+            throw new this.MashupPlatform.wiring.EndpointValueError('Invalid layer id');
         }
 
         this.map.removeLayer(this.base_layer);
@@ -1337,6 +1358,6 @@
         "Zoomify": updateURL
     };
 
-    window.Widget = Widget;
+    window._CoNWeT_ol3_Widget_Internal = Widget;
 
 })();
