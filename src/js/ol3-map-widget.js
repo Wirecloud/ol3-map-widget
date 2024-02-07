@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* globals ol */
+/* globals ol, ResizeObserver */
 
 (function () {
 
