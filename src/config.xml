@@ -1,5 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<widget xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="CoNWeT" name="ol3-map" version="1.2.4">
+<widget xmlns="http://wirecloud.conwet.fi.upm.es/ns/macdescription/1" vendor="CoNWeT" name="ol3-map" version="2.0.0">
+
+    <macversion>2</macversion>
+
     <details>
         <title>OpenLayers Map</title>
         <email>wirecloud@conwet.com</email>
@@ -39,5 +42,13 @@
     </wiring>
 
     <contents src="index.html" useplatformstyle="true"/>
+    <scripts>
+        <script src="lib/js/proj4.js" />
+        <script src="lib/js/ol.js" />
+        <script src="lib/js/ol-ext.min.js" />
+        <script src="js/ol3-map-widget.js" />
+        <script src="js/main.js" />
+    </scripts>
+    <entrypoint name="CoNWeT_ol3_Widget" />
     <rendering height="300px" width="300px"/>
 </widget>

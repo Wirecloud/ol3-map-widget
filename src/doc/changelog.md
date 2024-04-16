@@ -1,3 +1,7 @@
+## v2.0.0 (2023-12-28)
+
+- Updates widget to `macversion` 2.
+
 ## v1.2.4 (2022-01-31)
 
 - Add a feature for building a marker with Font Awesome icon
